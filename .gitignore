@@ -23,7 +23,6 @@ publish/
 ## IDE
 .vs/
 .vscode/
-.github/
 *.code-workspace
 .idea/
 

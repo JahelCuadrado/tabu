@@ -1,0 +1,182 @@
+/* Custom touches that complement Tailwind */
+
+/* Tab mocks in hero preview */
+.tab-mock {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.45rem 0.45rem 0 0;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgb(71 85 105);
+  background: transparent;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
+}
+.dark .tab-mock { color: rgb(148 163 184); }
+.tab-mock:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+.dark .tab-mock:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+.tab-mock.active {
+  background: white;
+  color: #0b0b14;
+  border-color: rgba(15, 23, 42, 0.08);
+  border-bottom-color: white;
+  box-shadow: 0 -1px 0 rgba(124, 58, 237, 0.4) inset;
+}
+.dark .tab-mock.active {
+  background: rgb(16 16 28);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.08);
+  border-bottom-color: rgb(16 16 28);
+}
+.tab-dot {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 9999px;
+}
+
+/* Feature cards */
+.feature-card {
+  position: relative;
+  overflow: hidden;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.dark .feature-card {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(16, 16, 28, 0.5);
+}
+.feature-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(124, 58, 237, 0.4);
+  box-shadow: 0 30px 60px -30px rgba(124, 58, 237, 0.25);
+}
+.feature-card h3 {
+  margin-top: 1rem;
+  font-weight: 600;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+.feature-card p {
+  margin-top: 0.4rem;
+  color: rgb(71 85 105);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+.dark .feature-card p { color: rgb(148 163 184); }
+.feature-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.7rem;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(6, 182, 212, 0.15));
+  color: rgb(124 58 237);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+}
+.dark .feature-icon { color: rgb(192 132 252); }
+
+/* Download cards */
+.download-card {
+  display: block;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.dark .download-card {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(16, 16, 28, 0.6);
+}
+.download-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(124, 58, 237, 0.5);
+  box-shadow: 0 30px 60px -30px rgba(124, 58, 237, 0.4);
+}
+
+/* FAQ */
+.faq-item {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 0.85rem;
+  padding: 0;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+.dark .faq-item {
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(16, 16, 28, 0.5);
+}
+.faq-item[open] {
+  border-color: rgba(124, 58, 237, 0.4);
+}
+.faq-item summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item p {
+  padding: 0 1.25rem 1.1rem;
+  color: rgb(71 85 105);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+.dark .faq-item p { color: rgb(148 163 184); }
+.faq-chevron {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.2s ease;
+  margin-left: 1rem;
+  opacity: 0.6;
+}
+.faq-item[open] .faq-chevron {
+  transform: rotate(-135deg);
+}
+
+/* Inline links inside copy */
+.link {
+  color: rgb(124 58 237);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: rgba(124, 58, 237, 0.3);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.15s ease;
+}
+.link:hover { text-decoration-color: rgba(124, 58, 237, 1); }
+.dark .link { color: rgb(192 132 252); }
+
+/* Lang button active state set via JS */
+.lang-btn.is-active {
+  background: rgb(15 23 42);
+  color: white;
+}
+.dark .lang-btn.is-active {
+  background: white;
+  color: rgb(15 23 42);
+}
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

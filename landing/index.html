@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0b14" />
+    <title>Tabu — A faster way to switch windows on Windows</title>
+    <meta name="description" content="Tabu is a lightweight, multi-monitor tab bar that lives at the top of every screen and lets you flip through your windows like browser tabs." />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Tabu — Window switcher for Windows" />
+    <meta property="og:description" content="A lightweight tab bar that brings browser-style window switching to every monitor." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://jahelcuadrado.github.io/tabu/" />
+    <meta property="og:image" content="https://jahelcuadrado.github.io/tabu/assets/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Favicon (inline SVG) -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1' y1='0' y2='1'%3E%3Cstop offset='0' stop-color='%237c3aed'/%3E%3Cstop offset='1' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='url(%23g)'/%3E%3Crect x='10' y='14' width='14' height='8' rx='2' fill='white'/%3E%3Crect x='26' y='14' width='14' height='8' rx='2' fill='white' opacity='.7'/%3E%3Crect x='42' y='14' width='12' height='8' rx='2' fill='white' opacity='.4'/%3E%3Crect x='10' y='28' width='44' height='22' rx='3' fill='white' opacity='.15'/%3E%3C/svg%3E"
+    />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind Play CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "system-ui", "sans-serif"],
+              mono: ["JetBrains Mono", "ui-monospace", "monospace"],
+            },
+            colors: {
+              brand: {
+                50: "#f3f1ff",
+                100: "#ebe7ff",
+                200: "#d9d2ff",
+                300: "#bcaeff",
+                400: "#9b81ff",
+                500: "#7c3aed",
+                600: "#6d28d9",
+                700: "#5b21b6",
+                800: "#4c1d95",
+                900: "#2e1065",
+              },
+              ink: {
+                950: "#08080f",
+                900: "#0b0b14",
+                800: "#10101c",
+                700: "#1a1a2c",
+                600: "#252540",
+              },
+            },
+            boxShadow: {
+              glow: "0 0 60px -15px rgba(124, 58, 237, 0.5)",
+              card: "0 1px 0 0 rgba(255,255,255,0.06) inset, 0 30px 60px -30px rgba(0,0,0,0.6)",
+            },
+            animation: {
+              "fade-up": "fadeUp 0.7s ease-out both",
+              "blob-1": "blob 18s ease-in-out infinite",
+              "blob-2": "blob 22s ease-in-out infinite reverse",
+            },
+            keyframes: {
+              fadeUp: {
+                "0%": { opacity: "0", transform: "translateY(16px)" },
+                "100%": { opacity: "1", transform: "translateY(0)" },
+              },
+              blob: {
+                "0%,100%": { transform: "translate(0,0) scale(1)" },
+                "33%": { transform: "translate(30px,-50px) scale(1.1)" },
+                "66%": { transform: "translate(-20px,40px) scale(0.95)" },
+              },
+            },
+          },
+        },
+      };
+    </script>
+
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+
+  <body
+    class="min-h-screen bg-white text-ink-900 antialiased selection:bg-brand-500 selection:text-white dark:bg-ink-950 dark:text-slate-100"
+  >
+    <!-- Background ambient blobs (dark only) -->
+    <div aria-hidden="true" class="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+      <div class="absolute -top-40 -left-40 h-[480px] w-[480px] rounded-full bg-brand-600/30 blur-3xl animate-blob-1 dark:opacity-100 opacity-30"></div>
+      <div class="absolute top-1/2 -right-40 h-[520px] w-[520px] rounded-full bg-cyan-500/20 blur-3xl animate-blob-2 dark:opacity-100 opacity-20"></div>
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.04),transparent_60%)] dark:block hidden"></div>
+    </div>
+
+    <!-- ============ NAV ============ -->
+    <header class="sticky top-0 z-40 w-full backdrop-blur-md bg-white/70 dark:bg-ink-950/70 border-b border-slate-900/5 dark:border-white/5">
+      <nav class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3">
+        <a href="#top" class="flex items-center gap-2.5 group">
+          <span class="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-cyan-500 shadow-glow transition-transform group-hover:scale-105">
+            <svg viewBox="0 0 24 24" class="h-5 w-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="5" width="6" height="3" rx="1" />
+              <rect x="10" y="5" width="6" height="3" rx="1" opacity=".7" />
+              <rect x="3" y="10" width="18" height="9" rx="1.5" opacity=".35" />
+            </svg>
+          </span>
+          <span class="text-lg font-semibold tracking-tight">Tabu</span>
+        </a>
+
+        <div class="hidden items-center gap-7 text-sm font-medium text-slate-600 dark:text-slate-300 md:flex">
+          <a href="#features" class="transition hover:text-ink-900 dark:hover:text-white" data-i18n="nav.features">Features</a>
+          <a href="#download" class="transition hover:text-ink-900 dark:hover:text-white" data-i18n="nav.download">Download</a>
+          <a href="#faq" class="transition hover:text-ink-900 dark:hover:text-white" data-i18n="nav.faq">FAQ</a>
+          <a href="https://github.com/JahelCuadrado/tabu" target="_blank" rel="noopener" class="transition hover:text-ink-900 dark:hover:text-white">GitHub</a>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <!-- Lang -->
+          <div class="flex items-center rounded-lg border border-slate-900/10 dark:border-white/10 p-0.5 text-xs font-semibold">
+            <button data-lang="en" class="lang-btn px-2 py-1 rounded-md transition">EN</button>
+            <button data-lang="es" class="lang-btn px-2 py-1 rounded-md transition">ES</button>
+          </div>
+          <!-- Theme -->
+          <button
+            id="theme-toggle"
+            type="button"
+            class="grid h-9 w-9 place-items-center rounded-lg border border-slate-900/10 dark:border-white/10 transition hover:bg-slate-100 dark:hover:bg-white/5"
+            aria-label="Toggle theme"
+          >
+            <svg class="h-4 w-4 dark:hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+            <svg class="hidden h-4 w-4 dark:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+          <a
+            href="#download"
+            class="ml-1 hidden md:inline-flex items-center gap-1.5 rounded-lg bg-ink-900 px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-ink-800 dark:bg-white dark:text-ink-900 dark:hover:bg-slate-200"
+            data-i18n="nav.cta"
+          >Get Tabu</a>
+        </div>
+      </nav>
+    </header>
+
+    <!-- ============ HERO ============ -->
+    <section id="top" class="relative pt-20 pb-24 sm:pt-28 sm:pb-32">
+      <div class="mx-auto max-w-7xl px-6">
+        <div class="mx-auto max-w-3xl text-center animate-fade-up">
+          <a href="https://github.com/JahelCuadrado/tabu/releases/latest" target="_blank" rel="noopener"
+             class="inline-flex items-center gap-2 rounded-full border border-slate-900/10 dark:border-white/10 bg-white/60 dark:bg-white/5 px-3 py-1 text-xs font-medium text-slate-600 dark:text-slate-300 backdrop-blur transition hover:border-brand-500/40 hover:text-ink-900 dark:hover:text-white">
+            <span class="grid h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+            <span data-i18n="hero.badge">New release available</span>
+            <span class="text-slate-400">·</span>
+            <span id="latest-version" class="font-mono text-brand-600 dark:text-brand-300">v1.0.0</span>
+            <svg viewBox="0 0 24 24" class="h-3 w-3" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 5l7 7-7 7"/></svg>
+          </a>
+
+          <h1 class="mt-6 text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-6xl">
+            <span data-i18n="hero.title1">A faster way to switch</span>
+            <br />
+            <span class="bg-gradient-to-r from-brand-500 via-fuchsia-500 to-cyan-500 bg-clip-text text-transparent" data-i18n="hero.title2">windows on Windows.</span>
+          </h1>
+
+          <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-600 dark:text-slate-300" data-i18n="hero.subtitle">
+            Tabu docks a clean tab bar at the top of every monitor so you can flip between apps like browser tabs. Multi-monitor, multilingual and instantly out of the way.
+          </p>
+
+          <div class="mt-9 flex flex-wrap items-center justify-center gap-3">
+            <a
+              id="hero-download"
+              href="#download"
+              class="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 px-5 py-3 text-sm font-semibold text-white shadow-glow transition hover:scale-[1.02] active:scale-[0.99]"
+            >
+              <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z"/></svg>
+              <span data-i18n="hero.cta">Download for Windows</span>
+              <span class="text-xs opacity-80">·</span>
+              <span class="text-xs font-mono opacity-90" id="hero-size">~64 MB</span>
+            </a>
+            <a
+              href="https://github.com/JahelCuadrado/tabu"
+              target="_blank" rel="noopener"
+              class="inline-flex items-center gap-2 rounded-xl border border-slate-900/15 dark:border-white/15 bg-white/50 dark:bg-white/5 px-5 py-3 text-sm font-semibold transition hover:bg-white dark:hover:bg-white/10"
+            >
+              <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.36-3.88-1.36-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.18.08 1.8 1.21 1.8 1.21 1.04 1.78 2.74 1.27 3.41.97.1-.76.41-1.27.74-1.56-2.55-.29-5.23-1.27-5.23-5.66 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.18 1.17a11 11 0 0 1 5.79 0c2.21-1.48 3.18-1.17 3.18-1.17.62 1.59.23 2.76.11 3.05.74.8 1.18 1.82 1.18 3.07 0 4.4-2.69 5.36-5.25 5.65.42.36.79 1.07.79 2.16v3.2c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+              <span>GitHub</span>
+              <span class="text-xs text-slate-500 dark:text-slate-400" id="star-count">★</span>
+            </a>
+          </div>
+
+          <p class="mt-5 text-xs text-slate-500 dark:text-slate-400" data-i18n="hero.requirements">
+            Windows 10/11 · 64-bit · No .NET install required · Free &amp; open source
+          </p>
+        </div>
+
+        <!-- Mock preview -->
+        <div class="relative mx-auto mt-16 max-w-5xl animate-fade-up" style="animation-delay:.15s">
+          <div class="absolute -inset-4 rounded-[28px] bg-gradient-to-r from-brand-500/30 via-fuchsia-500/20 to-cyan-500/30 blur-2xl"></div>
+          <div class="relative overflow-hidden rounded-2xl border border-slate-900/10 dark:border-white/10 bg-white/70 dark:bg-ink-900/80 shadow-card backdrop-blur">
+            <!-- Tabu bar mock -->
+            <div class="flex items-center gap-1 border-b border-slate-900/10 dark:border-white/10 bg-slate-100/70 dark:bg-ink-800 px-2 py-1.5">
+              <div class="flex gap-1.5 pr-3">
+                <span class="h-2.5 w-2.5 rounded-full bg-red-400"></span>
+                <span class="h-2.5 w-2.5 rounded-full bg-amber-400"></span>
+                <span class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
+              </div>
+              <div class="flex flex-1 items-center gap-1 overflow-hidden">
+                <div class="tab-mock active">
+                  <span class="tab-dot bg-blue-500"></span> Visual Studio Code
+                </div>
+                <div class="tab-mock"><span class="tab-dot bg-orange-500"></span> Figma</div>
+                <div class="tab-mock"><span class="tab-dot bg-emerald-500"></span> Spotify</div>
+                <div class="tab-mock"><span class="tab-dot bg-fuchsia-500"></span> Notion</div>
+                <div class="tab-mock hidden sm:flex"><span class="tab-dot bg-cyan-500"></span> Chrome — GitHub</div>
+                <div class="tab-mock hidden md:flex"><span class="tab-dot bg-rose-500"></span> Slack</div>
+              </div>
+            </div>
+            <div class="grid place-items-center bg-gradient-to-br from-slate-50 to-slate-100 dark:from-ink-900 dark:to-ink-800 p-12 text-center min-h-[260px]">
+              <div class="space-y-3">
+                <div class="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400" data-i18n="hero.preview.label">Live preview</div>
+                <div class="text-2xl font-semibold tracking-tight" data-i18n="hero.preview.title">Your windows, neatly arranged at the top of every screen.</div>
+                <div class="text-sm text-slate-500 dark:text-slate-400" data-i18n="hero.preview.subtitle">Click to switch · Middle-click to close · Auto-hide optional</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FEATURES ============ -->
+    <section id="features" class="relative py-24 border-t border-slate-900/5 dark:border-white/5">
+      <div class="mx-auto max-w-7xl px-6">
+        <div class="mx-auto max-w-2xl text-center">
+          <p class="text-sm font-semibold uppercase tracking-widest text-brand-600 dark:text-brand-300" data-i18n="features.eyebrow">What's inside</p>
+          <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl" data-i18n="features.title">Built for people with too many windows.</h2>
+          <p class="mt-4 text-slate-600 dark:text-slate-300" data-i18n="features.subtitle">Lightweight, native, and quietly powerful. No bloat, no telemetry.</p>
+        </div>
+
+        <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- Cards generated -->
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>
+            <h3 data-i18n="features.f1.title">Multi-monitor by design</h3>
+            <p data-i18n="features.f1.desc">A docked AppBar appears on every screen and reserves real estate so other windows never overlap it.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M4 6h16M4 12h10M4 18h16"/></svg></div>
+            <h3 data-i18n="features.f2.title">One‑click window switching</h3>
+            <p data-i18n="features.f2.desc">All your top‑level windows shown as tabs, grouped per monitor. Click to focus, middle‑click to close.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="3.5"/></svg></div>
+            <h3 data-i18n="features.f3.title">Auto-hide that stays out of the way</h3>
+            <p data-i18n="features.f3.desc">Hide the bar until you need it. Reveals when you point to the top edge — like macOS, but better.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M12 21s-7-4.5-7-10a7 7 0 0 1 14 0c0 5.5-7 10-7 10z"/><circle cx="12" cy="11" r="2.5"/></svg></div>
+            <h3 data-i18n="features.f4.title">Themes &amp; accent colors</h3>
+            <p data-i18n="features.f4.desc">Light or dark, with custom accent. Matches your taste, not the other way around.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
+            <h3 data-i18n="features.f5.title">10 languages out of the box</h3>
+            <p data-i18n="features.f5.desc">English, Spanish, French, German, Italian, Portuguese, Russian, Japanese, Chinese and Korean.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M5 3v18M19 3v18M5 8h14M5 16h14"/></svg></div>
+            <h3 data-i18n="features.f6.title">Launch at startup, optional</h3>
+            <p data-i18n="features.f6.desc">Toggle from Settings. Stored per-user — no admin rights, no surprises, no telemetry.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DOWNLOAD ============ -->
+    <section id="download" class="relative py-24 border-t border-slate-900/5 dark:border-white/5">
+      <div class="mx-auto max-w-5xl px-6">
+        <div class="text-center">
+          <p class="text-sm font-semibold uppercase tracking-widest text-brand-600 dark:text-brand-300" data-i18n="download.eyebrow">Get Tabu</p>
+          <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl" data-i18n="download.title">Choose how you want to run it.</h2>
+          <p class="mt-4 text-slate-600 dark:text-slate-300" data-i18n="download.subtitle">Both downloads are free, signed with your trust, and self‑contained — zero dependencies.</p>
+        </div>
+
+        <div class="mt-12 grid gap-6 md:grid-cols-2">
+          <!-- Installer -->
+          <a id="dl-installer" href="https://github.com/JahelCuadrado/tabu/releases/latest" target="_blank" rel="noopener" class="download-card group">
+            <div class="flex items-start gap-4">
+              <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-glow">
+                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <h3 class="text-lg font-semibold" data-i18n="download.installer.title">Windows Installer</h3>
+                  <span class="rounded-full bg-brand-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-700 dark:text-brand-300" data-i18n="download.recommended">Recommended</span>
+                </div>
+                <p class="mt-1 text-sm text-slate-600 dark:text-slate-400" data-i18n="download.installer.desc">
+                  One‑click setup with desktop icon and optional autostart. Per‑user install, no admin needed.
+                </p>
+                <div class="mt-4 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                  <span class="font-mono" id="installer-name">TabuSetup-v1.0.0-win-x64.exe</span>
+                  <span>·</span>
+                  <span class="font-mono" id="installer-size">~64 MB</span>
+                </div>
+              </div>
+              <svg class="h-5 w-5 text-slate-400 transition group-hover:translate-x-1 group-hover:text-brand-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+
+          <!-- Portable -->
+          <a id="dl-portable" href="https://github.com/JahelCuadrado/tabu/releases/latest" target="_blank" rel="noopener" class="download-card group">
+            <div class="flex items-start gap-4">
+              <div class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-cyan-500 to-emerald-500 text-white shadow-glow">
+                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="text-lg font-semibold" data-i18n="download.portable.title">Portable .zip</h3>
+                <p class="mt-1 text-sm text-slate-600 dark:text-slate-400" data-i18n="download.portable.desc">
+                  Single‑file executable. Unzip and run from any folder or USB drive. No install, no traces.
+                </p>
+                <div class="mt-4 flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                  <span class="font-mono" id="portable-name">Tabu-v1.0.0-portable-win-x64.zip</span>
+                  <span>·</span>
+                  <span class="font-mono" id="portable-size">~64 MB</span>
+                </div>
+              </div>
+              <svg class="h-5 w-5 text-slate-400 transition group-hover:translate-x-1 group-hover:text-cyan-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        </div>
+
+        <p class="mt-8 text-center text-xs text-slate-500 dark:text-slate-400" data-i18n="download.smartscreen">
+          On first launch Windows SmartScreen may show a warning because the binary isn't code‑signed yet. Click <em>More info → Run anyway</em>.
+        </p>
+      </div>
+    </section>
+
+    <!-- ============ FAQ ============ -->
+    <section id="faq" class="relative py-24 border-t border-slate-900/5 dark:border-white/5">
+      <div class="mx-auto max-w-3xl px-6">
+        <div class="text-center">
+          <p class="text-sm font-semibold uppercase tracking-widest text-brand-600 dark:text-brand-300" data-i18n="faq.eyebrow">FAQ</p>
+          <h2 class="mt-3 text-3xl font-bold tracking-tight sm:text-4xl" data-i18n="faq.title">Frequently asked questions</h2>
+        </div>
+
+        <div class="mt-10 space-y-3">
+          <details class="faq-item">
+            <summary><span data-i18n="faq.q1">Is Tabu really free?</span><span class="faq-chevron"></span></summary>
+            <p data-i18n="faq.a1">Yes. Tabu is open source under the MIT license. No ads, no telemetry, no premium tier.</p>
+          </details>
+          <details class="faq-item">
+            <summary><span data-i18n="faq.q2">Does it work on Windows 11?</span><span class="faq-chevron"></span></summary>
+            <p data-i18n="faq.a2">Yes. Tabu requires Windows 10 1809 (build 17763) or newer, on x64.</p>
+          </details>
+          <details class="faq-item">
+            <summary><span data-i18n="faq.q3">Why does Windows show a SmartScreen warning?</span><span class="faq-chevron"></span></summary>
+            <p data-i18n="faq.a3">The binary is not code‑signed yet. Click <em>More info → Run anyway</em>. Once enough people download it, SmartScreen will stop warning.</p>
+          </details>
+          <details class="faq-item">
+            <summary><span data-i18n="faq.q4">Where are settings stored?</span><span class="faq-chevron"></span></summary>
+            <p data-i18n="faq.a4">In <code>%LocalAppData%\Tabu\settings.json</code>. Removing that file resets Tabu.</p>
+          </details>
+          <details class="faq-item">
+            <summary><span data-i18n="faq.q5">Can I contribute?</span><span class="faq-chevron"></span></summary>
+            <p data-i18n="faq.a5">Absolutely. PRs and issues are welcome on <a class="link" href="https://github.com/JahelCuadrado/tabu" target="_blank" rel="noopener">GitHub</a>.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="relative border-t border-slate-900/5 dark:border-white/5 py-10">
+      <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 md:flex-row">
+        <div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+          <span class="grid h-6 w-6 place-items-center rounded-md bg-gradient-to-br from-brand-500 to-cyan-500 text-white">
+            <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="currentColor"><rect x="3" y="5" width="6" height="3" rx="1"/><rect x="3" y="10" width="18" height="9" rx="1.5" opacity=".5"/></svg>
+          </span>
+          <span>© <span id="year">2026</span> Tabu · MIT License · <span id="footer-version">v1.0.0</span></span>
+        </div>
+        <div class="flex items-center gap-5 text-sm text-slate-500 dark:text-slate-400">
+          <a href="https://github.com/JahelCuadrado/tabu" target="_blank" rel="noopener" class="hover:text-ink-900 dark:hover:text-white transition">GitHub</a>
+          <a href="https://github.com/JahelCuadrado/tabu/issues" target="_blank" rel="noopener" class="hover:text-ink-900 dark:hover:text-white transition" data-i18n="footer.issues">Report an issue</a>
+          <a href="https://github.com/JahelCuadrado/tabu/blob/main/LICENSE" target="_blank" rel="noopener" class="hover:text-ink-900 dark:hover:text-white transition">License</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
