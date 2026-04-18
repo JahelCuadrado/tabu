@@ -5,6 +5,7 @@
     <Color x:Key="PrimaryBackgroundColor">#1A1A2E</Color>
     <Color x:Key="SecondaryBackgroundColor">#16213E</Color>
     <Color x:Key="TertiaryBackgroundColor">#0F3460</Color>
+    <Color x:Key="ActiveTabBackgroundColor">#163E72</Color>
 
     <!-- Accent -->
     <Color x:Key="AccentColor">#533483</Color>
@@ -29,6 +30,7 @@
     <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="{StaticResource PrimaryBackgroundColor}" />
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="{StaticResource SecondaryBackgroundColor}" />
     <SolidColorBrush x:Key="TertiaryBackgroundBrush" Color="{StaticResource TertiaryBackgroundColor}" />
+    <SolidColorBrush x:Key="ActiveTabBackgroundBrush" Color="{StaticResource ActiveTabBackgroundColor}" />
     <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
     <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}" />
     <SolidColorBrush x:Key="PrimaryTextBrush" Color="{StaticResource PrimaryTextColor}" />

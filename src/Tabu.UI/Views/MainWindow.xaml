@@ -153,7 +153,7 @@
                         </Border>
                         <DataTemplate.Triggers>
                             <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource TertiaryBackgroundBrush}" />
+                                <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource ActiveTabBackgroundBrush}" />
                                 <Setter TargetName="TabBorder" Property="TextBlock.Foreground" Value="{DynamicResource PrimaryTextBrush}" />
                                 <Setter TargetName="CloseBtn" Property="Visibility" Value="Visible" />
                             </DataTrigger>

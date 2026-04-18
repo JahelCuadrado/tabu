@@ -29,7 +29,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="CloseBorder" Background="{TemplateBinding Background}"
-                            CornerRadius="4" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}">
+                            CornerRadius="9" Width="{TemplateBinding Width}" Height="{TemplateBinding Height}">
                         <TextBlock Text="✕" FontSize="{TemplateBinding FontSize}"
                                    Foreground="{TemplateBinding Foreground}"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -37,8 +37,8 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="CloseBorder" Property="Background" Value="{DynamicResource DangerBrush}" />
-                            <Setter Property="Foreground" Value="White" />
+                            <Setter TargetName="CloseBorder" Property="Background" Value="{DynamicResource TertiaryBackgroundBrush}" />
+                            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
