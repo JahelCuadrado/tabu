@@ -18,6 +18,7 @@ public sealed class MainViewModel : ObservableObject
     private AppTheme _appTheme = AppTheme.System;
     private double _barOpacity = 1.0;
     private bool _useFixedTabWidth;
+    private bool _showBranding = true;
     private IntPtr? _monitorFilter;
 
     public ObservableCollection<TabViewModel> Tabs { get; } = new();
@@ -90,6 +91,18 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
+    public bool ShowBranding
+    {
+        get => _showBranding;
+        set
+        {
+            if (SetProperty(ref _showBranding, value))
+            {
+                BrandingChangeRequested?.Invoke(value);
+            }
+        }
+    }
+
     public ICommand SwitchToCommand { get; }
     public ICommand NextTabCommand { get; }
     public ICommand PrevTabCommand { get; }
@@ -101,6 +114,7 @@ public sealed class MainViewModel : ObservableObject
     public event Action<AppTheme>? ThemeChangeRequested;
     public event Action<double>? OpacityChangeRequested;
     public event Action<bool>? TabWidthChangeRequested;
+    public event Action<bool>? BrandingChangeRequested;
 
     public MainViewModel(WindowSwitcher switcher, bool startPolling = true)
     {

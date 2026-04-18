@@ -58,6 +58,15 @@ public partial class SettingsWindow : Window
             TabFullWidthRadio.IsChecked = true;
         }
 
+        if (_viewModel.ShowBranding)
+        {
+            BrandingVisibleRadio.IsChecked = true;
+        }
+        else
+        {
+            BrandingHiddenRadio.IsChecked = true;
+        }
+
         _initialized = true;
     }
 
@@ -126,6 +135,18 @@ public partial class SettingsWindow : Window
         if (fixedWidth != _viewModel.UseFixedTabWidth)
         {
             _viewModel.UseFixedTabWidth = fixedWidth;
+        }
+    }
+
+    private void Branding_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+
+        bool show = BrandingVisibleRadio.IsChecked == true;
+
+        if (show != _viewModel.ShowBranding)
+        {
+            _viewModel.ShowBranding = show;
         }
     }
 

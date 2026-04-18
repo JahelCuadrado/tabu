@@ -41,6 +41,7 @@ public partial class App : System.Windows.Application
         _primaryViewModel.ThemeChangeRequested += OnThemeChangeRequested;
         _primaryViewModel.OpacityChangeRequested += OnOpacityChangeRequested;
         _primaryViewModel.TabWidthChangeRequested += OnTabWidthChangeRequested;
+        _primaryViewModel.BrandingChangeRequested += OnBrandingChangeRequested;
 
         _themeManager.Apply(AppTheme.System);
 
@@ -99,6 +100,20 @@ public partial class App : System.Windows.Application
         });
     }
 
+    private void OnBrandingChangeRequested(bool show)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            foreach (var bar in _secondaryBars)
+            {
+                if (bar.DataContext is MainViewModel vm)
+                {
+                    vm.ShowBranding = show;
+                }
+            }
+        });
+    }
+
     private void ApplyDetectionMode(bool sameScreenOnly)
     {
         var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
@@ -143,7 +158,8 @@ public partial class App : System.Windows.Application
                 IsBarOnAllMonitors = true,
                 IsDetectSameScreenOnly = sameScreen,
                 BarOpacity = _primaryViewModel?.BarOpacity ?? 1.0,
-                UseFixedTabWidth = _primaryViewModel?.UseFixedTabWidth ?? false
+                UseFixedTabWidth = _primaryViewModel?.UseFixedTabWidth ?? false,
+                ShowBranding = _primaryViewModel?.ShowBranding ?? true
             };
 
             var bar = new MainWindow(vm) { TargetScreen = screen, IsPrimary = false };

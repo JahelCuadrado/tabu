@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Tabu Settings"
-        Width="340" Height="470"
+        Width="340" Height="530"
         WindowStyle="None" AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
@@ -52,6 +52,7 @@
             <!-- Content -->
             <Grid Grid.Row="1" Margin="20,16,20,20">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -182,8 +183,39 @@
                         ValueChanged="Opacity_Changed" />
             </StackPanel>
 
+            <!-- Branding -->
+            <StackPanel Grid.Row="4" Margin="0,0,0,16">
+                <TextBlock Text="Branding" FontSize="12" FontWeight="Medium"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           Margin="0,0,0,8" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <RadioButton x:Name="BrandingVisibleRadio"
+                                 Grid.Column="0"
+                                 GroupName="Branding"
+                                 IsChecked="True"
+                                 Checked="Branding_Changed"
+                                 Foreground="{DynamicResource PrimaryTextBrush}"
+                                 Margin="0,0,8,0">
+                        <TextBlock Text="Show logo" FontSize="11"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </RadioButton>
+                    <RadioButton x:Name="BrandingHiddenRadio"
+                                 Grid.Column="1"
+                                 GroupName="Branding"
+                                 Checked="Branding_Changed"
+                                 Foreground="{DynamicResource PrimaryTextBrush}">
+                        <TextBlock Text="Hide logo" FontSize="11"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </RadioButton>
+                </Grid>
+            </StackPanel>
+
             <!-- Tab Width -->
-            <StackPanel Grid.Row="4" Margin="0,0,0,12">
+            <StackPanel Grid.Row="5" Margin="0,0,0,12">
                 <TextBlock Text="Tab Width" FontSize="12" FontWeight="Medium"
                            Foreground="{DynamicResource SecondaryTextBrush}"
                            Margin="0,0,0,8" />
@@ -214,7 +246,7 @@
             </StackPanel>
 
             <!-- Done button -->
-            <Button Grid.Row="6"
+            <Button Grid.Row="7"
                     Content="Done"
                     Style="{DynamicResource PrimaryButtonStyle}"
                     Click="Close_Click"
