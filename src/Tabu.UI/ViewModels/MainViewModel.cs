@@ -135,6 +135,17 @@ public sealed class MainViewModel : ObservableObject
     public ICommand GoToTabCommand { get; }
     public ICommand CloseTabCommand { get; }
 
+    /// <summary>
+    /// Moves the source tab to the position of the target tab.
+    /// </summary>
+    public void MoveTab(TabViewModel source, TabViewModel target)
+    {
+        int oldIndex = Tabs.IndexOf(source);
+        int newIndex = Tabs.IndexOf(target);
+        if (oldIndex < 0 || newIndex < 0 || oldIndex == newIndex) return;
+        Tabs.Move(oldIndex, newIndex);
+    }
+
     public event Action<bool>? BarPlacementChangeRequested;
     public event Action<bool>? DetectionModeChangeRequested;
     public event Action<AppTheme>? ThemeChangeRequested;

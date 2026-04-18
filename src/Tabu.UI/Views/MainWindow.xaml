@@ -59,7 +59,7 @@
             </StackPanel>
 
             <!-- Tabs -->
-            <ItemsControl Grid.Column="1" ItemsSource="{Binding Tabs}" Margin="0">
+            <ItemsControl x:Name="TabsControl" Grid.Column="1" ItemsSource="{Binding Tabs}" Margin="0">
                 <ItemsControl.Style>
                     <Style TargetType="ItemsControl">
                         <Setter Property="ItemsPanel">
@@ -90,6 +90,8 @@
                                 Padding="6,4" Margin="1,4"
                                 Cursor="Hand"
                                 MouseLeftButtonDown="Tab_MouseLeftButtonDown"
+                                MouseMove="Tab_MouseMove"
+                                MouseLeftButtonUp="Tab_MouseLeftButtonUp"
                                 MouseDown="Tab_MouseDown"
                                 Tag="{Binding}"
                                 MinWidth="32">

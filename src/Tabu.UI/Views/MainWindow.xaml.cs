@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Media;
 using Tabu.Domain.Entities;
 using Tabu.UI.ViewModels;
 
@@ -13,9 +14,16 @@ public partial class MainWindow : Window
     private const int GWL_EXSTYLE = -20;
     private const long WS_EX_TOOLWINDOW = 0x00000080L;
     private const int BarHeightPixels = 36;
+    private const double DragThreshold = 6.0;
 
     private IntPtr _hwnd;
     private bool _appBarRegistered;
+
+    // Drag-and-drop state
+    private bool _isDragging;
+    private Point _dragStartPoint;
+    private Border? _dragSource;
+    private TabViewModel? _dragTab;
 
     private MainViewModel ViewModel => (MainViewModel)DataContext;
 
@@ -193,8 +201,115 @@ public partial class MainWindow : Window
     {
         if (sender is Border border && border.Tag is TabViewModel tab)
         {
+            _dragStartPoint = e.GetPosition(this);
+            _dragSource = border;
+            _dragTab = tab;
+            _isDragging = false;
+            border.CaptureMouse();
+        }
+    }
+
+    private void Tab_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (_dragTab is null) return;
+        if (e.LeftButton != MouseButtonState.Pressed)
+        {
+            CancelDrag();
+            return;
+        }
+
+        var currentPos = e.GetPosition(this);
+        var delta = currentPos - _dragStartPoint;
+
+        if (!_isDragging && (Math.Abs(delta.X) > DragThreshold || Math.Abs(delta.Y) > DragThreshold))
+        {
+            _isDragging = true;
+            if (_dragSource is not null) _dragSource.Opacity = 0.5;
+        }
+
+        if (_isDragging)
+        {
+            var targetBorder = FindTabBorderAtPosition(currentPos);
+            if (targetBorder is not null && targetBorder.Tag is TabViewModel targetTab && targetTab != _dragTab)
+            {
+                ViewModel.MoveTab(_dragTab, targetTab);
+                // After Move, the ItemsControl may recreate containers — update _dragSource
+                _dragSource = FindTabBorderForTab(_dragTab);
+                if (_dragSource is not null) _dragSource.Opacity = 0.5;
+            }
+        }
+    }
+
+    private void Tab_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (_dragSource is null) return;
+
+        bool wasDragging = _isDragging;
+        var tab = _dragTab;
+
+        CancelDrag();
+
+        // If it was a simple click (no drag), switch to the tab
+        if (!wasDragging && tab is not null)
+        {
             ViewModel.SwitchToCommand.Execute(tab);
         }
+    }
+
+    private void CancelDrag()
+    {
+        var source = _dragSource;
+        _dragSource = null;
+        _dragTab = null;
+        _isDragging = false;
+
+        if (source is null) return;
+        try
+        {
+            source.ReleaseMouseCapture();
+            source.Opacity = 1.0;
+            source.Cursor = Cursors.Hand;
+        }
+        catch
+        {
+            // Border may have been disconnected from visual tree during reorder
+        }
+    }
+
+    private Border? FindTabBorderAtPosition(Point position)
+    {
+        var hit = VisualTreeHelper.HitTest(this, position);
+        if (hit?.VisualHit is null) return null;
+
+        DependencyObject current = hit.VisualHit;
+        while (current is not null)
+        {
+            if (current is Border border && border.Tag is TabViewModel)
+                return border;
+            current = VisualTreeHelper.GetParent(current);
+        }
+        return null;
+    }
+
+    private Border? FindTabBorderForTab(TabViewModel tab)
+    {
+        var container = TabsControl.ItemContainerGenerator.ContainerFromItem(tab);
+        if (container is null) return null;
+        return FindChildBorder(container);
+    }
+
+    private static Border? FindChildBorder(DependencyObject parent)
+    {
+        int count = VisualTreeHelper.GetChildrenCount(parent);
+        for (int i = 0; i < count; i++)
+        {
+            var child = VisualTreeHelper.GetChild(parent, i);
+            if (child is Border border && border.Tag is TabViewModel)
+                return border;
+            var result = FindChildBorder(child);
+            if (result is not null) return result;
+        }
+        return null;
     }
 
     private void Tab_MouseDown(object sender, MouseButtonEventArgs e)
