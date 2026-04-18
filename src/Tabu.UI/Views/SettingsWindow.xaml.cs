@@ -14,32 +14,61 @@ public partial class SettingsWindow : Window
         InitializeComponent();
 
         // Sync radio buttons with current state
-        if (_viewModel.IsAllMonitors)
+        if (_viewModel.IsBarOnAllMonitors)
         {
-            AllMonitorsRadio.IsChecked = true;
+            AllBarsRadio.IsChecked = true;
         }
         else
         {
-            PrimaryOnlyRadio.IsChecked = true;
+            PrimaryBarRadio.IsChecked = true;
+        }
+
+        if (_viewModel.IsDetectSameScreenOnly)
+        {
+            DetectSameScreenRadio.IsChecked = true;
+        }
+        else
+        {
+            DetectAllRadio.IsChecked = true;
         }
 
         _initialized = true;
     }
 
-    private void MonitorMode_Changed(object sender, RoutedEventArgs e)
+    private void BarPlacement_Changed(object sender, RoutedEventArgs e)
     {
         if (!_initialized) return;
 
-        bool allMonitors = AllMonitorsRadio.IsChecked == true;
+        bool allMonitors = AllBarsRadio.IsChecked == true;
 
-        if (allMonitors != _viewModel.IsAllMonitors)
+        if (allMonitors != _viewModel.IsBarOnAllMonitors)
         {
-            _viewModel.ToggleMonitorModeCommand.Execute(null);
+            _viewModel.IsBarOnAllMonitors = allMonitors;
+        }
+    }
+
+    private void DetectionMode_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+
+        bool sameScreen = DetectSameScreenRadio.IsChecked == true;
+
+        if (sameScreen != _viewModel.IsDetectSameScreenOnly)
+        {
+            _viewModel.IsDetectSameScreenOnly = sameScreen;
         }
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    private void Header_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
+        {
+            DragMove();
+        }
     }
 }

@@ -19,6 +19,8 @@ public partial class MainWindow : Window
 
     private MainViewModel ViewModel => (MainViewModel)DataContext;
 
+    public ScreenInfo? TargetScreen { get; set; }
+
     public MainWindow(MainViewModel viewModel)
     {
         InitializeComponent();
@@ -34,7 +36,7 @@ public partial class MainWindow : Window
         _hwnd = helper.Handle;
 
         SetToolWindowStyle(_hwnd);
-        PositionOnScreen(null);
+        PositionOnScreen(TargetScreen);
         RegisterAppBar();
 
         ViewModel.SetOwnHandle(_hwnd);
@@ -109,10 +111,21 @@ public partial class MainWindow : Window
     {
         var abd = NewAppBarData();
         abd.uEdge = ABE_TOP;
-        abd.rc.Left = 0;
-        abd.rc.Top = 0;
-        abd.rc.Right = GetSystemMetrics(SM_CXSCREEN);
-        abd.rc.Bottom = BarHeightPixels;
+
+        if (TargetScreen is not null)
+        {
+            abd.rc.Left = TargetScreen.Left;
+            abd.rc.Top = TargetScreen.Top;
+            abd.rc.Right = TargetScreen.Left + TargetScreen.Width;
+            abd.rc.Bottom = TargetScreen.Top + BarHeightPixels;
+        }
+        else
+        {
+            abd.rc.Left = 0;
+            abd.rc.Top = 0;
+            abd.rc.Right = GetSystemMetrics(SM_CXSCREEN);
+            abd.rc.Bottom = BarHeightPixels;
+        }
 
         SHAppBarMessage(ABM_QUERYPOS, ref abd);
         SHAppBarMessage(ABM_SETPOS, ref abd);

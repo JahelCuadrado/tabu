@@ -12,22 +12,34 @@ public sealed class MainViewModel : ObservableObject
 {
     private readonly WindowSwitcher _switcher;
     private readonly DispatcherTimer? _pollTimer;
-    private bool _isAllMonitors;
+    private bool _isBarOnAllMonitors;
+    private bool _isDetectSameScreenOnly;
     private IntPtr? _monitorFilter;
 
     public ObservableCollection<TabViewModel> Tabs { get; } = new();
 
     public bool HasTabs => Tabs.Count > 0;
 
-    public bool IsAllMonitors
+    public bool IsBarOnAllMonitors
     {
-        get => _isAllMonitors;
+        get => _isBarOnAllMonitors;
         set
         {
-            if (SetProperty(ref _isAllMonitors, value))
+            if (SetProperty(ref _isBarOnAllMonitors, value))
             {
-                OnPropertyChanged(nameof(MonitorModeLabel));
-                OnPropertyChanged(nameof(MonitorModeTooltip));
+                BarPlacementChangeRequested?.Invoke(value);
+            }
+        }
+    }
+
+    public bool IsDetectSameScreenOnly
+    {
+        get => _isDetectSameScreenOnly;
+        set
+        {
+            if (SetProperty(ref _isDetectSameScreenOnly, value))
+            {
+                DetectionModeChangeRequested?.Invoke(value);
             }
         }
     }
@@ -38,20 +50,14 @@ public sealed class MainViewModel : ObservableObject
         set => SetProperty(ref _monitorFilter, value);
     }
 
-    public string MonitorModeLabel => IsAllMonitors ? "⊞ All" : "⊞ Primary";
-
-    public string MonitorModeTooltip => IsAllMonitors
-        ? "Bar on all screens — click for primary only"
-        : "Bar on primary only — click for all screens";
-
     public ICommand SwitchToCommand { get; }
     public ICommand NextTabCommand { get; }
     public ICommand PrevTabCommand { get; }
     public ICommand GoToTabCommand { get; }
     public ICommand CloseTabCommand { get; }
-    public ICommand ToggleMonitorModeCommand { get; }
 
-    public event Action<bool>? MonitorModeChangeRequested;
+    public event Action<bool>? BarPlacementChangeRequested;
+    public event Action<bool>? DetectionModeChangeRequested;
 
     public MainViewModel(WindowSwitcher switcher, bool startPolling = true)
     {
@@ -62,7 +68,6 @@ public sealed class MainViewModel : ObservableObject
         PrevTabCommand = new RelayCommand(PrevTab);
         GoToTabCommand = new RelayCommand(p => GoToTab(p));
         CloseTabCommand = new RelayCommand(p => CloseTab(p as TabViewModel));
-        ToggleMonitorModeCommand = new RelayCommand(ToggleMonitorMode);
 
         _switcher.WindowsChanged += OnWindowsChanged;
 
@@ -84,12 +89,6 @@ public sealed class MainViewModel : ObservableObject
     {
         _pollTimer?.Stop();
         _switcher.WindowsChanged -= OnWindowsChanged;
-    }
-
-    private void ToggleMonitorMode()
-    {
-        IsAllMonitors = !IsAllMonitors;
-        MonitorModeChangeRequested?.Invoke(IsAllMonitors);
     }
 
     private void SwitchTo(TabViewModel? tab)

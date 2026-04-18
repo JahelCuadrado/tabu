@@ -34,7 +34,8 @@ public partial class App : System.Windows.Application
         var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
 
         _primaryViewModel = new MainViewModel(switcher);
-        _primaryViewModel.MonitorModeChangeRequested += OnMonitorModeChangeRequested;
+        _primaryViewModel.BarPlacementChangeRequested += OnBarPlacementChangeRequested;
+        _primaryViewModel.DetectionModeChangeRequested += OnDetectionModeChangeRequested;
 
         _primaryBar = new MainWindow(_primaryViewModel);
         _primaryBar.Show();
@@ -42,7 +43,7 @@ public partial class App : System.Windows.Application
         base.OnStartup(e);
     }
 
-    private void OnMonitorModeChangeRequested(bool allMonitors)
+    private void OnBarPlacementChangeRequested(bool allMonitors)
     {
         Dispatcher.BeginInvoke(() =>
         {
@@ -53,28 +54,58 @@ public partial class App : System.Windows.Application
         });
     }
 
-    private void ActivateAllMonitorBars()
+    private void OnDetectionModeChangeRequested(bool sameScreenOnly)
+    {
+        Dispatcher.BeginInvoke(() => ApplyDetectionMode(sameScreenOnly));
+    }
+
+    private void ApplyDetectionMode(bool sameScreenOnly)
     {
         var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
         var screens = switcher.GetAllScreens();
         var primaryScreen = screens.FirstOrDefault(s => s.IsPrimary);
 
-        // Only update the filter — don't reposition the primary bar (AppBar handles it)
+        if (_primaryViewModel is not null)
+        {
+            _primaryViewModel.MonitorFilter = sameScreenOnly && primaryScreen is not null
+                ? primaryScreen.Handle
+                : null;
+        }
+
+        foreach (var bar in _secondaryBars)
+        {
+            if (bar.DataContext is MainViewModel vm)
+            {
+                // Secondary bars keep their screen filter if sameScreenOnly; otherwise show all
+                vm.MonitorFilter = sameScreenOnly ? vm.MonitorFilter : null;
+            }
+        }
+    }
+
+    private void ActivateAllMonitorBars()
+    {
+        var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
+        var screens = switcher.GetAllScreens();
+        var primaryScreen = screens.FirstOrDefault(s => s.IsPrimary);
+        bool sameScreen = _primaryViewModel?.IsDetectSameScreenOnly ?? false;
+
         if (_primaryViewModel is not null && primaryScreen is not null)
         {
-            _primaryViewModel.MonitorFilter = primaryScreen.Handle;
+            _primaryViewModel.MonitorFilter = sameScreen ? primaryScreen.Handle : null;
         }
 
         foreach (var screen in screens.Where(s => !s.IsPrimary))
         {
             var vm = new MainViewModel(switcher, startPolling: false)
             {
-                MonitorFilter = screen.Handle,
-                IsAllMonitors = true
+                MonitorFilter = sameScreen ? screen.Handle : null,
+                IsBarOnAllMonitors = true,
+                IsDetectSameScreenOnly = sameScreen
             };
-            vm.MonitorModeChangeRequested += OnMonitorModeChangeRequested;
+            vm.BarPlacementChangeRequested += OnBarPlacementChangeRequested;
+            vm.DetectionModeChangeRequested += OnDetectionModeChangeRequested;
 
-            var bar = new MainWindow(vm);
+            var bar = new MainWindow(vm) { TargetScreen = screen };
             bar.Show();
             _secondaryBars.Add(bar);
         }
@@ -88,7 +119,6 @@ public partial class App : System.Windows.Application
         }
         _secondaryBars.Clear();
 
-        // Only clear the filter — don't reposition (AppBar keeps it in place)
         if (_primaryViewModel is not null)
         {
             _primaryViewModel.MonitorFilter = null;
