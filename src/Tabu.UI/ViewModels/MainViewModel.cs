@@ -17,6 +17,7 @@ public sealed class MainViewModel : ObservableObject
     private bool _isDetectSameScreenOnly;
     private AppTheme _appTheme = AppTheme.System;
     private double _barOpacity = 1.0;
+    private bool _useFixedTabWidth;
     private IntPtr? _monitorFilter;
 
     public ObservableCollection<TabViewModel> Tabs { get; } = new();
@@ -77,6 +78,18 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
+    public bool UseFixedTabWidth
+    {
+        get => _useFixedTabWidth;
+        set
+        {
+            if (SetProperty(ref _useFixedTabWidth, value))
+            {
+                TabWidthChangeRequested?.Invoke(value);
+            }
+        }
+    }
+
     public ICommand SwitchToCommand { get; }
     public ICommand NextTabCommand { get; }
     public ICommand PrevTabCommand { get; }
@@ -87,6 +100,7 @@ public sealed class MainViewModel : ObservableObject
     public event Action<bool>? DetectionModeChangeRequested;
     public event Action<AppTheme>? ThemeChangeRequested;
     public event Action<double>? OpacityChangeRequested;
+    public event Action<bool>? TabWidthChangeRequested;
 
     public MainViewModel(WindowSwitcher switcher, bool startPolling = true)
     {

@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Tabu Settings"
-        Width="340" Height="410"
+        Width="340" Height="470"
         WindowStyle="None" AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
@@ -52,6 +52,7 @@
             <!-- Content -->
             <Grid Grid.Row="1" Margin="20,16,20,20">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -164,7 +165,7 @@
             </StackPanel>
 
             <!-- Opacity -->
-            <StackPanel Grid.Row="3" Margin="0,0,0,12">
+            <StackPanel Grid.Row="3" Margin="0,0,0,16">
                 <Grid Margin="0,0,0,6">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -181,8 +182,39 @@
                         ValueChanged="Opacity_Changed" />
             </StackPanel>
 
+            <!-- Tab Width -->
+            <StackPanel Grid.Row="4" Margin="0,0,0,12">
+                <TextBlock Text="Tab Width" FontSize="12" FontWeight="Medium"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           Margin="0,0,0,8" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <RadioButton x:Name="TabFullWidthRadio"
+                                 Grid.Column="0"
+                                 GroupName="TabWidth"
+                                 IsChecked="True"
+                                 Checked="TabWidth_Changed"
+                                 Foreground="{DynamicResource PrimaryTextBrush}"
+                                 Margin="0,0,8,0">
+                        <TextBlock Text="Full width" FontSize="11"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </RadioButton>
+                    <RadioButton x:Name="TabFixedWidthRadio"
+                                 Grid.Column="1"
+                                 GroupName="TabWidth"
+                                 Checked="TabWidth_Changed"
+                                 Foreground="{DynamicResource PrimaryTextBrush}">
+                        <TextBlock Text="Fixed width" FontSize="11"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </RadioButton>
+                </Grid>
+            </StackPanel>
+
             <!-- Done button -->
-            <Button Grid.Row="5"
+            <Button Grid.Row="6"
                     Content="Done"
                     Style="{DynamicResource PrimaryButtonStyle}"
                     Click="Close_Click"

@@ -14,6 +14,7 @@
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <converters:NullToCollapsedConverter x:Key="NullToCollapsedConverter" />
             <converters:NotNullToBoolConverter x:Key="NotNullToBoolConverter" />
+            <converters:BoolToTabWidthConverter x:Key="BoolToTabWidthConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

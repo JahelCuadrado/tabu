@@ -49,6 +49,15 @@ public partial class SettingsWindow : Window
         OpacitySlider.Value = _viewModel.BarOpacity * 100;
         OpacityValueText.Text = $"{(int)(_viewModel.BarOpacity * 100)}%";
 
+        if (_viewModel.UseFixedTabWidth)
+        {
+            TabFixedWidthRadio.IsChecked = true;
+        }
+        else
+        {
+            TabFullWidthRadio.IsChecked = true;
+        }
+
         _initialized = true;
     }
 
@@ -106,6 +115,18 @@ public partial class SettingsWindow : Window
         double opacity = e.NewValue / 100.0;
         _viewModel.BarOpacity = opacity;
         OpacityValueText.Text = $"{(int)e.NewValue}%";
+    }
+
+    private void TabWidth_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+
+        bool fixedWidth = TabFixedWidthRadio.IsChecked == true;
+
+        if (fixedWidth != _viewModel.UseFixedTabWidth)
+        {
+            _viewModel.UseFixedTabWidth = fixedWidth;
+        }
     }
 
     private void Header_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)

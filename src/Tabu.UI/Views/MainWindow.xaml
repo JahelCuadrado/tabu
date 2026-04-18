@@ -59,11 +59,28 @@
 
             <!-- Tabs -->
             <ItemsControl Grid.Column="1" ItemsSource="{Binding Tabs}" Margin="0">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <UniformGrid Rows="1" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
+                <ItemsControl.Style>
+                    <Style TargetType="ItemsControl">
+                        <Setter Property="ItemsPanel">
+                            <Setter.Value>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Rows="1" />
+                                </ItemsPanelTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding UseFixedTabWidth}" Value="True">
+                                <Setter Property="ItemsPanel">
+                                    <Setter.Value>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ItemsControl.Style>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type vm:TabViewModel}">
                         <Border x:Name="TabBorder"
@@ -95,7 +112,7 @@
                                         Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                         CommandParameter="{Binding}"
                                         Margin="4,0,0,0"
-                                        Visibility="Collapsed" />
+                                        Visibility="Hidden" />
                             </Grid>
                         </Border>
                         <DataTemplate.Triggers>
@@ -107,6 +124,9 @@
                             <Trigger SourceName="TabBorder" Property="IsMouseOver" Value="True">
                                 <Setter TargetName="CloseBtn" Property="Visibility" Value="Visible" />
                             </Trigger>
+                            <DataTrigger Binding="{Binding DataContext.UseFixedTabWidth, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
+                                <Setter TargetName="TabBorder" Property="Width" Value="200" />
+                            </DataTrigger>
                         </DataTemplate.Triggers>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

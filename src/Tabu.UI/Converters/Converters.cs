@@ -30,3 +30,14 @@ public sealed class NotNullToBoolConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         => throw new NotSupportedException();
 }
+
+public sealed class BoolToTabWidthConverter : IValueConverter
+{
+    private const double FixedTabMaxWidth = 200.0;
+
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        => value is true ? FixedTabMaxWidth : double.PositiveInfinity;
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
