@@ -25,6 +25,9 @@
     <sys:String x:Key="Settings_BarVisibility">바 표시</sys:String>
     <sys:String x:Key="Settings_AlwaysVisible">항상 표시</sys:String>
     <sys:String x:Key="Settings_AutoHide">자동 숨김</sys:String>
+    <sys:String x:Key="Settings_Startup">Windows 시작 시 실행</sys:String>
+    <sys:String x:Key="Settings_StartAtLogin">사용</sys:String>
+    <sys:String x:Key="Settings_DontStartAtLogin">사용 안 함</sys:String>
     <sys:String x:Key="Settings_Done">완료</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">설정</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Tabu 닫기</sys:String>

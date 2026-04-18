@@ -93,6 +93,15 @@ public partial class SettingsWindow : Window
             BarAlwaysVisibleRadio.IsChecked = true;
         }
 
+        if (_viewModel.LaunchAtStartup)
+        {
+            StartupEnabledRadio.IsChecked = true;
+        }
+        else
+        {
+            StartupDisabledRadio.IsChecked = true;
+        }
+
         _initialized = true;
     }
 
@@ -205,6 +214,18 @@ public partial class SettingsWindow : Window
         if (autoHide != _viewModel.AutoHideBar)
         {
             _viewModel.AutoHideBar = autoHide;
+        }
+    }
+
+    private void Startup_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+
+        bool enabled = StartupEnabledRadio.IsChecked == true;
+
+        if (enabled != _viewModel.LaunchAtStartup)
+        {
+            _viewModel.LaunchAtStartup = enabled;
         }
     }
 

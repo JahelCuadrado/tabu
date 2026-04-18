@@ -25,6 +25,9 @@
     <sys:String x:Key="Settings_BarVisibility">Видимость панели</sys:String>
     <sys:String x:Key="Settings_AlwaysVisible">Всегда видна</sys:String>
     <sys:String x:Key="Settings_AutoHide">Автоскрытие</sys:String>
+    <sys:String x:Key="Settings_Startup">Запускать вместе с Windows</sys:String>
+    <sys:String x:Key="Settings_StartAtLogin">Включено</sys:String>
+    <sys:String x:Key="Settings_DontStartAtLogin">Выключено</sys:String>
     <sys:String x:Key="Settings_Done">Готово</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">Настройки</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Закрыть Tabu</sys:String>

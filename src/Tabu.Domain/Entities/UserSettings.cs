@@ -11,4 +11,5 @@ public sealed class UserSettings
     public string Language { get; set; } = "en";
     public string AccentColor { get; set; } = "blue";
     public bool AutoHideBar { get; set; }
+    public bool LaunchAtStartup { get; set; }
 }

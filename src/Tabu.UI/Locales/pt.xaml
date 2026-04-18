@@ -25,6 +25,9 @@
     <sys:String x:Key="Settings_BarVisibility">Visibilidade da barra</sys:String>
     <sys:String x:Key="Settings_AlwaysVisible">Sempre visível</sys:String>
     <sys:String x:Key="Settings_AutoHide">Ocultar automaticamente</sys:String>
+    <sys:String x:Key="Settings_Startup">Iniciar com o Windows</sys:String>
+    <sys:String x:Key="Settings_StartAtLogin">Ativado</sys:String>
+    <sys:String x:Key="Settings_DontStartAtLogin">Desativado</sys:String>
     <sys:String x:Key="Settings_Done">Concluído</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">Configurações</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Fechar Tabu</sys:String>

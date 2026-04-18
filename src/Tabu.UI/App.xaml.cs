@@ -52,7 +52,8 @@ public partial class App : System.Windows.Application
             ShowBranding = saved.ShowBranding,
             Language = saved.Language,
             AccentColor = saved.AccentColor,
-            AutoHideBar = saved.AutoHideBar
+            AutoHideBar = saved.AutoHideBar,
+            LaunchAtStartup = saved.LaunchAtStartup
         };
 
         _primaryViewModel.BarPlacementChangeRequested += OnBarPlacementChangeRequested;
@@ -64,6 +65,11 @@ public partial class App : System.Windows.Application
         _primaryViewModel.LanguageChangeRequested += OnLanguageChangeRequested;
         _primaryViewModel.AccentColorChangeRequested += OnAccentColorChangeRequested;
         _primaryViewModel.AutoHideChangeRequested += OnAutoHideChangeRequested;
+        _primaryViewModel.LaunchAtStartupChangeRequested += OnLaunchAtStartupChangeRequested;
+
+        // Reconcile the Run registry value with the persisted preference so that
+        // moving/renaming the executable still keeps autostart consistent.
+        StartupRegistration.SetEnabled(saved.LaunchAtStartup);
 
         var theme = Enum.TryParse<AppTheme>(saved.AppTheme, out var parsed) ? parsed : AppTheme.System;
         _primaryViewModel.AppTheme = theme;
@@ -192,6 +198,12 @@ public partial class App : System.Windows.Application
         PersistSettings();
     }
 
+    private void OnLaunchAtStartupChangeRequested(bool enabled)
+    {
+        StartupRegistration.SetEnabled(enabled);
+        PersistSettings();
+    }
+
     private void ApplyDetectionMode(bool sameScreenOnly)
     {
         var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
@@ -293,7 +305,8 @@ public partial class App : System.Windows.Application
             ShowBranding = _primaryViewModel.ShowBranding,
             Language = _primaryViewModel.Language,
             AccentColor = _primaryViewModel.AccentColor,
-            AutoHideBar = _primaryViewModel.AutoHideBar
+            AutoHideBar = _primaryViewModel.AutoHideBar,
+            LaunchAtStartup = _primaryViewModel.LaunchAtStartup
         };
 
         Task.Run(() =>
