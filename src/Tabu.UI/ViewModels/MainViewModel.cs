@@ -68,7 +68,13 @@ public sealed class MainViewModel : ObservableObject
     public double BarOpacity
     {
         get => _barOpacity;
-        set => SetProperty(ref _barOpacity, Math.Clamp(value, 0.3, 1.0));
+        set
+        {
+            if (SetProperty(ref _barOpacity, Math.Clamp(value, 0.3, 1.0)))
+            {
+                OpacityChangeRequested?.Invoke(_barOpacity);
+            }
+        }
     }
 
     public ICommand SwitchToCommand { get; }
@@ -80,6 +86,7 @@ public sealed class MainViewModel : ObservableObject
     public event Action<bool>? BarPlacementChangeRequested;
     public event Action<bool>? DetectionModeChangeRequested;
     public event Action<AppTheme>? ThemeChangeRequested;
+    public event Action<double>? OpacityChangeRequested;
 
     public MainViewModel(WindowSwitcher switcher, bool startPolling = true)
     {

@@ -39,6 +39,7 @@ public partial class App : System.Windows.Application
         _primaryViewModel.BarPlacementChangeRequested += OnBarPlacementChangeRequested;
         _primaryViewModel.DetectionModeChangeRequested += OnDetectionModeChangeRequested;
         _primaryViewModel.ThemeChangeRequested += OnThemeChangeRequested;
+        _primaryViewModel.OpacityChangeRequested += OnOpacityChangeRequested;
 
         _themeManager.Apply(AppTheme.System);
 
@@ -67,6 +68,20 @@ public partial class App : System.Windows.Application
     private void OnThemeChangeRequested(AppTheme theme)
     {
         Dispatcher.BeginInvoke(() => _themeManager.Apply(theme));
+    }
+
+    private void OnOpacityChangeRequested(double opacity)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            foreach (var bar in _secondaryBars)
+            {
+                if (bar.DataContext is MainViewModel vm)
+                {
+                    vm.BarOpacity = opacity;
+                }
+            }
+        });
     }
 
     private void ApplyDetectionMode(bool sameScreenOnly)
@@ -111,7 +126,8 @@ public partial class App : System.Windows.Application
             {
                 MonitorFilter = sameScreen ? screen.Handle : null,
                 IsBarOnAllMonitors = true,
-                IsDetectSameScreenOnly = sameScreen
+                IsDetectSameScreenOnly = sameScreen,
+                BarOpacity = _primaryViewModel?.BarOpacity ?? 1.0
             };
 
             var bar = new MainWindow(vm) { TargetScreen = screen, IsPrimary = false };
