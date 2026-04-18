@@ -4,6 +4,7 @@
         xmlns:vm="clr-namespace:Tabu.UI.ViewModels"
         xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
         Title="Tabu"
+        Icon="pack://application:,,,/Assets/tabu.ico"
         Height="36" Width="800"
         WindowStyle="None" AllowsTransparency="True"
         Background="Transparent"

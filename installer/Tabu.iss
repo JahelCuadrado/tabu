@@ -2,7 +2,7 @@
 ; Builds TabuSetup.exe from the published single-file Tabu.UI.exe.
 
 #define MyAppName        "Tabu"
-#define MyAppVersion     "1.0.0"
+#define MyAppVersion     "1.1.0"
 #define MyAppPublisher   "Jahel Cuadrado"
 #define MyAppURL         "https://github.com/JahelCuadrado/tabu"
 #define MyAppExeName     "Tabu.UI.exe"
@@ -31,7 +31,7 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName} {#MyAppVersion}
-SetupIconFile=
+SetupIconFile=..\src\Tabu.UI\Assets\tabu.ico
 MinVersion=10.0.17763
 CloseApplications=yes
 RestartApplications=no
