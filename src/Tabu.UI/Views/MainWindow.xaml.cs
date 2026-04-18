@@ -20,6 +20,7 @@ public partial class MainWindow : Window
     private MainViewModel ViewModel => (MainViewModel)DataContext;
 
     public ScreenInfo? TargetScreen { get; set; }
+    public bool IsPrimary { get; set; } = true;
 
     public MainWindow(MainViewModel viewModel)
     {
@@ -38,6 +39,12 @@ public partial class MainWindow : Window
         SetToolWindowStyle(_hwnd);
         PositionOnScreen(TargetScreen);
         RegisterAppBar();
+
+        if (!IsPrimary)
+        {
+            SettingsButton.Visibility = Visibility.Collapsed;
+            CloseButton.Visibility = Visibility.Collapsed;
+        }
 
         ViewModel.SetOwnHandle(_hwnd);
     }

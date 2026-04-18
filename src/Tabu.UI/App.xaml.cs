@@ -76,8 +76,9 @@ public partial class App : System.Windows.Application
         {
             if (bar.DataContext is MainViewModel vm)
             {
-                // Secondary bars keep their screen filter if sameScreenOnly; otherwise show all
-                vm.MonitorFilter = sameScreenOnly ? vm.MonitorFilter : null;
+                vm.MonitorFilter = sameScreenOnly && bar.TargetScreen is not null
+                    ? bar.TargetScreen.Handle
+                    : null;
             }
         }
     }
@@ -102,10 +103,8 @@ public partial class App : System.Windows.Application
                 IsBarOnAllMonitors = true,
                 IsDetectSameScreenOnly = sameScreen
             };
-            vm.BarPlacementChangeRequested += OnBarPlacementChangeRequested;
-            vm.DetectionModeChangeRequested += OnDetectionModeChangeRequested;
 
-            var bar = new MainWindow(vm) { TargetScreen = screen };
+            var bar = new MainWindow(vm) { TargetScreen = screen, IsPrimary = false };
             bar.Show();
             _secondaryBars.Add(bar);
         }

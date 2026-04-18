@@ -111,7 +111,7 @@
             </ItemsControl>
 
             <!-- Settings button -->
-            <Button Grid.Column="2"
+            <Button x:Name="SettingsButton" Grid.Column="2"
                     Click="Settings_Click"
                     ToolTip="Settings"
                     Style="{StaticResource TitleBarButtonStyle}"
@@ -119,7 +119,7 @@
                     Width="36" Height="36" />
 
             <!-- Close button -->
-            <Button Grid.Column="3"
+            <Button x:Name="CloseButton" Grid.Column="3"
                     Style="{StaticResource CloseWindowButtonStyle}"
                     Content="&#xE8BB;" Click="Close_Click"
                     ToolTip="Close Tabu"
