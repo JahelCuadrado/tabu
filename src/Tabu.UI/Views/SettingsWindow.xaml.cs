@@ -1,4 +1,6 @@
 using System.Windows;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using Tabu.UI.Services;
 using Tabu.UI.ViewModels;
 
@@ -13,6 +15,7 @@ public partial class SettingsWindow : Window
     {
         _viewModel = viewModel;
         InitializeComponent();
+        Loaded += OnLoaded;
 
         // Sync radio buttons with current state
         if (_viewModel.IsBarOnAllMonitors)
@@ -210,6 +213,24 @@ public partial class SettingsWindow : Window
         if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)
         {
             DragMove();
+        }
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        const int durationMs = 220;
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        var duration = System.TimeSpan.FromMilliseconds(durationMs);
+
+        var fade = new DoubleAnimation(0, 1, duration) { EasingFunction = ease };
+        var grow = new DoubleAnimation(0.94, 1, duration) { EasingFunction = ease };
+
+        SettingsRoot.BeginAnimation(OpacityProperty, fade);
+
+        if (SettingsRoot.RenderTransform is ScaleTransform scale)
+        {
+            scale.BeginAnimation(ScaleTransform.ScaleXProperty, grow);
+            scale.BeginAnimation(ScaleTransform.ScaleYProperty, grow);
         }
     }
 }

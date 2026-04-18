@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Tabu.Domain.Entities;
 using Tabu.UI.ViewModels;
@@ -30,6 +31,9 @@ public partial class MainWindow : Window
     private Point _dragStartPoint;
     private Border? _dragSource;
     private TabViewModel? _dragTab;
+    private double _dragGrabOffsetX;
+    private TranslateTransform? _dragTranslate;
+    private int _dragOriginalIdx;
 
     private MainViewModel ViewModel => (MainViewModel)DataContext;
 
@@ -216,8 +220,11 @@ public partial class MainWindow : Window
         if (sender is Border border && border.Tag is TabViewModel tab)
         {
             _dragStartPoint = e.GetPosition(this);
+            _dragGrabOffsetX = e.GetPosition(border).X;
             _dragSource = border;
             _dragTab = tab;
+            _dragOriginalIdx = ViewModel.Tabs.IndexOf(tab);
+            _dragTranslate = EnsureWritableDragTransforms(border);
             _isDragging = false;
             border.CaptureMouse();
         }
@@ -225,7 +232,7 @@ public partial class MainWindow : Window
 
     private void Tab_MouseMove(object sender, MouseEventArgs e)
     {
-        if (_dragTab is null) return;
+        if (_dragTab is null || _dragSource is null) return;
         if (e.LeftButton != MouseButtonState.Pressed)
         {
             CancelDrag();
@@ -238,20 +245,101 @@ public partial class MainWindow : Window
         if (!_isDragging && (Math.Abs(delta.X) > DragThreshold || Math.Abs(delta.Y) > DragThreshold))
         {
             _isDragging = true;
-            if (_dragSource is not null) _dragSource.Opacity = 0.5;
+            Panel.SetZIndex(_dragSource, 1000);
+            _dragSource.Cursor = Cursors.SizeAll;
         }
 
-        if (_isDragging)
+        if (!_isDragging) return;
+
+        // Always force-own the transform on each frame so FluidMove can't override us
+        _dragTranslate = EnsureWritableDragTransforms(_dragSource);
+
+        // 1) Make the dragged tab follow the cursor 1:1
+        UpdateDragTranslation(currentPos);
+
+        // 2) Detect a sibling tab whose center the cursor crossed and reorder
+        TryReorderUnderCursor(currentPos);
+    }
+
+    private void TryReorderUnderCursor(Point cursorInWindow)
+    {
+        if (_dragSource is null || _dragTab is null) return;
+
+        var draggedIdx = ViewModel.Tabs.IndexOf(_dragTab);
+        if (draggedIdx < 0) return;
+
+        // Visual center of the dragged tab (where the user is currently dragging it).
+        double draggedCenter = cursorInWindow.X - _dragGrabOffsetX + _dragSource.ActualWidth / 2.0;
+
+        // Trigger swap before reaching the neighbor's center: bias each neighbor's
+        // effective center toward the dragged tab's ORIGINAL position. The original
+        // index is fixed for the whole drag, so this remains a monotonic step
+        // function in draggedCenter (no oscillation while dragging slowly).
+        const double TriggerOffsetRatio = 0.25;
+
+        int newIndex = 0;
+        for (int i = 0; i < ViewModel.Tabs.Count; i++)
         {
-            var targetBorder = FindTabBorderAtPosition(currentPos);
-            if (targetBorder is not null && targetBorder.Tag is TabViewModel targetTab && targetTab != _dragTab)
+            if (i == draggedIdx) continue;
+
+            var border = FindTabBorderForTab(ViewModel.Tabs[i]);
+            if (border is null || border.ActualWidth <= 0)
             {
-                ViewModel.MoveTab(_dragTab, targetTab);
-                // After Move, the ItemsControl may recreate containers — update _dragSource
-                _dragSource = FindTabBorderForTab(_dragTab);
-                if (_dragSource is not null) _dragSource.Opacity = 0.5;
+                if (i < draggedIdx) newIndex++;
+                continue;
             }
+
+            var slotOriginInWindow = border.TranslatePoint(new Point(0, 0), this);
+            double slotLeft = slotOriginInWindow.X;
+            if (border.RenderTransform is Transform t && !t.Value.IsIdentity)
+            {
+                slotLeft -= t.Value.OffsetX;
+            }
+            double slotCenter = slotLeft + border.ActualWidth / 2.0;
+
+            // For neighbors that started to the LEFT of the original drag position,
+            // shift their effective center to the RIGHT (so dragged needs less
+            // leftward motion to displace them). Mirror for the other side.
+            double effectiveCenter = i < _dragOriginalIdx
+                ? slotCenter + border.ActualWidth * TriggerOffsetRatio
+                : slotCenter - border.ActualWidth * TriggerOffsetRatio;
+
+            if (effectiveCenter < draggedCenter) newIndex++;
         }
+
+        if (newIndex == draggedIdx) return;
+
+        // Resolve target tab from the desired index and reorder
+        var targetTab = ViewModel.Tabs[newIndex];
+        ViewModel.MoveTab(_dragTab, targetTab);
+
+        // Same Border instance usually persists (UniformGrid/StackPanel reuse containers).
+        // Re-resolve, force layout, then re-translate so the tab sticks to the cursor.
+        var newSource = FindTabBorderForTab(_dragTab) ?? _dragSource;
+        if (!ReferenceEquals(newSource, _dragSource))
+        {
+            try { _dragSource.ReleaseMouseCapture(); } catch { }
+            Panel.SetZIndex(_dragSource, 0);
+            _dragSource = newSource;
+            Panel.SetZIndex(_dragSource, 1000);
+            _dragSource.CaptureMouse();
+        }
+        TabsControl.UpdateLayout();
+        _dragTranslate = EnsureWritableDragTransforms(_dragSource);
+        UpdateDragTranslation(cursorInWindow);
+    }
+
+    private void UpdateDragTranslation(Point cursorInWindow)
+    {
+        if (_dragSource is null || _dragTranslate is null) return;
+
+        // Slot position = where layout placed the tab (without our translate)
+        var slotOriginInWindow = _dragSource.TranslatePoint(new Point(0, 0), this);
+        var currentTranslate = _dragTranslate.X;
+        var slotXNoTranslate = slotOriginInWindow.X - currentTranslate;
+
+        var desiredVisualX = cursorInWindow.X - _dragGrabOffsetX;
+        _dragTranslate.X = desiredVisualX - slotXNoTranslate;
     }
 
     private void Tab_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
@@ -260,34 +348,108 @@ public partial class MainWindow : Window
 
         bool wasDragging = _isDragging;
         var tab = _dragTab;
+        var source = _dragSource;
+        var translate = _dragTranslate;
 
-        CancelDrag();
+        // Reset state immediately so further events don't interfere; the snap animation runs on captured locals
+        _dragSource = null;
+        _dragTab = null;
+        _dragTranslate = null;
+        _isDragging = false;
 
-        // If it was a simple click (no drag), switch to the tab
-        if (!wasDragging && tab is not null)
+        try { source.ReleaseMouseCapture(); } catch { }
+        source.Cursor = Cursors.Hand;
+
+        if (wasDragging)
         {
+            AnimateSnapBack(source, translate);
+        }
+        else if (tab is not null)
+        {
+            // Simple click: switch to the tab
             ViewModel.SwitchToCommand.Execute(tab);
         }
+    }
+
+    private static void AnimateSnapBack(Border source, TranslateTransform? translate)
+    {
+        if (translate is null || Math.Abs(translate.X) < 0.5)
+        {
+            Panel.SetZIndex(source, 0);
+            if (translate is not null) translate.X = 0;
+            return;
+        }
+
+        var anim = new DoubleAnimation
+        {
+            To = 0,
+            Duration = TimeSpan.FromMilliseconds(180),
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+        };
+        anim.Completed += (_, _) =>
+        {
+            translate.BeginAnimation(TranslateTransform.XProperty, null);
+            translate.X = 0;
+            Panel.SetZIndex(source, 0);
+        };
+        translate.BeginAnimation(TranslateTransform.XProperty, anim);
     }
 
     private void CancelDrag()
     {
         var source = _dragSource;
+        var translate = _dragTranslate;
         _dragSource = null;
         _dragTab = null;
+        _dragTranslate = null;
         _isDragging = false;
 
         if (source is null) return;
-        try
+        try { source.ReleaseMouseCapture(); } catch { }
+        source.Cursor = Cursors.Hand;
+        AnimateSnapBack(source, translate);
+    }
+
+    private static TranslateTransform? GetTranslateTransform(Border border)
+    {
+        if (border.RenderTransform is TransformGroup group)
         {
-            source.ReleaseMouseCapture();
-            source.Opacity = 1.0;
-            source.Cursor = Cursors.Hand;
+            return GetTranslateInGroup(group);
         }
-        catch
+        return border.RenderTransform as TranslateTransform;
+    }
+
+    private static TranslateTransform? GetTranslateInGroup(TransformGroup group)
+    {
+        foreach (var t in group.Children)
         {
-            // Border may have been disconnected from visual tree during reorder
+            if (t is TranslateTransform tt) return tt;
         }
+        return null;
+    }
+
+    /// <summary>
+    /// Replaces the Border's RenderTransform with a fresh, writable TransformGroup
+    /// containing ScaleTransform + TranslateTransform. This prevents conflicts with
+    /// FluidMoveBehavior, which may freeze the existing transform during reorder animations.
+    /// </summary>
+    private static TranslateTransform EnsureWritableDragTransforms(Border border)
+    {
+        double scaleX = 1, scaleY = 1, tx = 0, ty = 0;
+        if (border.RenderTransform is TransformGroup existing)
+        {
+            foreach (var t in existing.Children)
+            {
+                if (t is ScaleTransform st) { scaleX = st.ScaleX; scaleY = st.ScaleY; }
+                else if (t is TranslateTransform tt) { tx = tt.X; ty = tt.Y; }
+            }
+        }
+        var group = new TransformGroup();
+        group.Children.Add(new ScaleTransform(scaleX, scaleY));
+        var translate = new TranslateTransform(tx, ty);
+        group.Children.Add(translate);
+        border.RenderTransform = group;
+        return translate;
     }
 
     private Border? FindTabBorderAtPosition(Point position)
@@ -330,9 +492,70 @@ public partial class MainWindow : Window
     {
         if (e.ChangedButton == MouseButton.Middle && sender is Border border && border.Tag is TabViewModel tab)
         {
-            ViewModel.CloseTabCommand.Execute(tab);
+            AnimateAndCloseTab(border, tab);
             e.Handled = true;
         }
+    }
+
+    private void TabClose_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button button || button.Tag is not TabViewModel tab) return;
+
+        var border = FindAncestorBorder(button);
+        if (border is null)
+        {
+            ViewModel.CloseTabCommand.Execute(tab);
+            return;
+        }
+
+        AnimateAndCloseTab(border, tab);
+    }
+
+    private void AnimateAndCloseTab(Border tabBorder, TabViewModel tab)
+    {
+        const int durationMs = 160;
+
+        var ease = new CubicEase { EasingMode = EasingMode.EaseIn };
+        var duration = TimeSpan.FromMilliseconds(durationMs);
+
+        var fade = new DoubleAnimation(1, 0, duration) { EasingFunction = ease };
+        var shrink = new DoubleAnimation(1, 0.6, duration) { EasingFunction = ease };
+
+        fade.Completed += (_, _) => ViewModel.CloseTabCommand.Execute(tab);
+
+        tabBorder.IsHitTestVisible = false;
+        tabBorder.BeginAnimation(UIElement.OpacityProperty, fade);
+
+        var scale = GetScaleTransform(tabBorder);
+        if (scale is not null)
+        {
+            scale.BeginAnimation(ScaleTransform.ScaleXProperty, shrink);
+            scale.BeginAnimation(ScaleTransform.ScaleYProperty, shrink);
+        }
+    }
+
+    private static ScaleTransform? GetScaleTransform(Border border)
+    {
+        if (border.RenderTransform is TransformGroup group)
+        {
+            foreach (var t in group.Children)
+            {
+                if (t is ScaleTransform st) return st;
+            }
+        }
+        return border.RenderTransform as ScaleTransform;
+    }
+
+    private static Border? FindAncestorBorder(DependencyObject child)
+    {
+        DependencyObject? current = child;
+        while (current is not null)
+        {
+            current = VisualTreeHelper.GetParent(current);
+            if (current is Border border && border.Tag is TabViewModel)
+                return border;
+        }
+        return null;
     }
 
     private void DragBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -449,6 +672,8 @@ public partial class MainWindow : Window
         var (left, top, right, _) = GetTargetScreenBoundsPx();
         MoveWindow(_hwnd, left, top, right - left, BarHeightPixels, true);
         Visibility = Visibility.Visible;
+
+        AnimateBarSlide(from: -BarHeightPixels, to: 0, durationMs: 180, EasingMode.EaseOut, onCompleted: null);
     }
 
     private void HideBar()
@@ -456,10 +681,35 @@ public partial class MainWindow : Window
         if (!_autoHideRevealed && Visibility == Visibility.Hidden) return;
         _autoHideRevealed = false;
 
-        // Park the window 1px tall offscreen-top so it stops painting yet keeps its handle alive.
         var (left, top, right, _) = GetTargetScreenBoundsPx();
-        MoveWindow(_hwnd, left, top - BarHeightPixels, right - left, BarHeightPixels, true);
-        Visibility = Visibility.Hidden;
+
+        AnimateBarSlide(
+            from: BarTranslate.Y,
+            to: -BarHeightPixels,
+            durationMs: 160,
+            easing: EasingMode.EaseIn,
+            onCompleted: () =>
+            {
+                MoveWindow(_hwnd, left, top - BarHeightPixels, right - left, BarHeightPixels, true);
+                Visibility = Visibility.Hidden;
+                BarTranslate.BeginAnimation(TranslateTransform.YProperty, null);
+                BarTranslate.Y = 0;
+            });
+    }
+
+    private void AnimateBarSlide(double from, double to, int durationMs, EasingMode easing, Action? onCompleted)
+    {
+        var anim = new DoubleAnimation(from, to, TimeSpan.FromMilliseconds(durationMs))
+        {
+            EasingFunction = new CubicEase { EasingMode = easing }
+        };
+
+        if (onCompleted is not null)
+        {
+            anim.Completed += (_, _) => onCompleted();
+        }
+
+        BarTranslate.BeginAnimation(TranslateTransform.YProperty, anim);
     }
 
     #endregion

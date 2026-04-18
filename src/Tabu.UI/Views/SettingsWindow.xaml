@@ -10,10 +10,16 @@
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen">
 
-    <Border Background="{DynamicResource PrimaryBackgroundBrush}"
+    <Border x:Name="SettingsRoot"
+            Background="{DynamicResource PrimaryBackgroundBrush}"
             CornerRadius="6"
             BorderBrush="{DynamicResource BorderBrush}"
-            BorderThickness="1">
+            BorderThickness="1"
+            Opacity="0"
+            RenderTransformOrigin="0.5,0.5">
+        <Border.RenderTransform>
+            <ScaleTransform ScaleX="0.94" ScaleY="0.94" />
+        </Border.RenderTransform>
         <Border.Effect>
             <DropShadowEffect BlurRadius="24" ShadowDepth="4" Opacity="0.5" Color="Black" />
         </Border.Effect>
