@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Tabu.Domain.Entities;
 using Tabu.UI.ViewModels;
 
@@ -15,9 +16,14 @@ public partial class MainWindow : Window
     private const long WS_EX_TOOLWINDOW = 0x00000080L;
     private const int BarHeightPixels = 36;
     private const double DragThreshold = 6.0;
+    private const int AutoHideRevealTriggerPixels = 2;
+    private const int AutoHidePollIntervalMs = 60;
 
     private IntPtr _hwnd;
     private bool _appBarRegistered;
+    private bool _autoHideEnabled;
+    private bool _autoHideRevealed;
+    private DispatcherTimer? _autoHideTimer;
 
     // Drag-and-drop state
     private bool _isDragging;
@@ -55,6 +61,12 @@ public partial class MainWindow : Window
         }
 
         ViewModel.SetOwnHandle(_hwnd);
+
+        ViewModel.AutoHideChangeRequested += ApplyAutoHide;
+        if (ViewModel.AutoHideBar)
+        {
+            ApplyAutoHide(true);
+        }
     }
 
     private static void SetToolWindowStyle(IntPtr hwnd)
@@ -193,6 +205,8 @@ public partial class MainWindow : Window
 
     private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
+        ViewModel.AutoHideChangeRequested -= ApplyAutoHide;
+        StopAutoHideTimer();
         UnregisterAppBar();
         ViewModel.Stop();
     }
@@ -334,4 +348,119 @@ public partial class MainWindow : Window
     }
 
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
+
+    #region Auto-Hide
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct POINT
+    {
+        public int X;
+        public int Y;
+    }
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetCursorPos(out POINT lpPoint);
+
+    private void ApplyAutoHide(bool enabled)
+    {
+        if (_autoHideEnabled == enabled) return;
+        _autoHideEnabled = enabled;
+
+        if (enabled)
+        {
+            // Release the AppBar reservation so the bar can disappear.
+            UnregisterAppBar();
+            HideBar();
+            StartAutoHideTimer();
+        }
+        else
+        {
+            StopAutoHideTimer();
+            RevealBar();
+            // Re-reserve workspace at the top of the screen.
+            RegisterAppBar();
+        }
+    }
+
+    private void StartAutoHideTimer()
+    {
+        if (_autoHideTimer is not null) return;
+        _autoHideTimer = new DispatcherTimer(DispatcherPriority.Background)
+        {
+            Interval = TimeSpan.FromMilliseconds(AutoHidePollIntervalMs)
+        };
+        _autoHideTimer.Tick += AutoHideTimer_Tick;
+        _autoHideTimer.Start();
+    }
+
+    private void StopAutoHideTimer()
+    {
+        if (_autoHideTimer is null) return;
+        _autoHideTimer.Stop();
+        _autoHideTimer.Tick -= AutoHideTimer_Tick;
+        _autoHideTimer = null;
+    }
+
+    private void AutoHideTimer_Tick(object? sender, EventArgs e)
+    {
+        if (!GetCursorPos(out POINT cursor)) return;
+
+        var (left, top, right, _) = GetTargetScreenBoundsPx();
+        bool inHotZone =
+            cursor.Y <= top + AutoHideRevealTriggerPixels &&
+            cursor.X >= left && cursor.X < right;
+
+        bool overBar = _autoHideRevealed &&
+                       cursor.Y >= top && cursor.Y < top + BarHeightPixels &&
+                       cursor.X >= left && cursor.X < right;
+
+        if (inHotZone || overBar)
+        {
+            RevealBar();
+        }
+        else if (_autoHideRevealed)
+        {
+            HideBar();
+        }
+    }
+
+    private (int left, int top, int right, int bottom) GetTargetScreenBoundsPx()
+    {
+        if (TargetScreen is not null)
+        {
+            return (TargetScreen.Left, TargetScreen.Top,
+                    TargetScreen.Left + TargetScreen.Width,
+                    TargetScreen.Top + TargetScreen.Height);
+        }
+
+        int width = GetSystemMetrics(SM_CXSCREEN);
+        int height = GetSystemMetrics(SM_CYSCREEN);
+        return (0, 0, width, height);
+    }
+
+    private const int SM_CYSCREEN = 1;
+
+    private void RevealBar()
+    {
+        if (_autoHideRevealed) return;
+        _autoHideRevealed = true;
+
+        var (left, top, right, _) = GetTargetScreenBoundsPx();
+        MoveWindow(_hwnd, left, top, right - left, BarHeightPixels, true);
+        Visibility = Visibility.Visible;
+    }
+
+    private void HideBar()
+    {
+        if (!_autoHideRevealed && Visibility == Visibility.Hidden) return;
+        _autoHideRevealed = false;
+
+        // Park the window 1px tall offscreen-top so it stops painting yet keeps its handle alive.
+        var (left, top, right, _) = GetTargetScreenBoundsPx();
+        MoveWindow(_hwnd, left, top - BarHeightPixels, right - left, BarHeightPixels, true);
+        Visibility = Visibility.Hidden;
+    }
+
+    #endregion
 }

@@ -10,4 +10,5 @@ public sealed class UserSettings
     public bool ShowBranding { get; set; } = true;
     public string Language { get; set; } = "en";
     public string AccentColor { get; set; } = "blue";
+    public bool AutoHideBar { get; set; }
 }

@@ -51,7 +51,8 @@ public partial class App : System.Windows.Application
             UseFixedTabWidth = saved.UseFixedTabWidth,
             ShowBranding = saved.ShowBranding,
             Language = saved.Language,
-            AccentColor = saved.AccentColor
+            AccentColor = saved.AccentColor,
+            AutoHideBar = saved.AutoHideBar
         };
 
         _primaryViewModel.BarPlacementChangeRequested += OnBarPlacementChangeRequested;
@@ -62,6 +63,7 @@ public partial class App : System.Windows.Application
         _primaryViewModel.BrandingChangeRequested += OnBrandingChangeRequested;
         _primaryViewModel.LanguageChangeRequested += OnLanguageChangeRequested;
         _primaryViewModel.AccentColorChangeRequested += OnAccentColorChangeRequested;
+        _primaryViewModel.AutoHideChangeRequested += OnAutoHideChangeRequested;
 
         var theme = Enum.TryParse<AppTheme>(saved.AppTheme, out var parsed) ? parsed : AppTheme.System;
         _primaryViewModel.AppTheme = theme;
@@ -175,6 +177,21 @@ public partial class App : System.Windows.Application
         PersistSettings();
     }
 
+    private void OnAutoHideChangeRequested(bool autoHide)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            foreach (var bar in _secondaryBars)
+            {
+                if (bar.DataContext is MainViewModel vm)
+                {
+                    vm.AutoHideBar = autoHide;
+                }
+            }
+        });
+        PersistSettings();
+    }
+
     private void ApplyDetectionMode(bool sameScreenOnly)
     {
         var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
@@ -222,7 +239,8 @@ public partial class App : System.Windows.Application
                 UseFixedTabWidth = _primaryViewModel?.UseFixedTabWidth ?? false,
                 ShowBranding = _primaryViewModel?.ShowBranding ?? true,
                 Language = _primaryViewModel?.Language ?? "en",
-                AccentColor = _primaryViewModel?.AccentColor ?? "purple"
+                AccentColor = _primaryViewModel?.AccentColor ?? "purple",
+                AutoHideBar = _primaryViewModel?.AutoHideBar ?? false
             };
 
             var bar = new MainWindow(vm) { TargetScreen = screen, IsPrimary = false };
@@ -274,7 +292,8 @@ public partial class App : System.Windows.Application
             UseFixedTabWidth = _primaryViewModel.UseFixedTabWidth,
             ShowBranding = _primaryViewModel.ShowBranding,
             Language = _primaryViewModel.Language,
-            AccentColor = _primaryViewModel.AccentColor
+            AccentColor = _primaryViewModel.AccentColor,
+            AutoHideBar = _primaryViewModel.AutoHideBar
         };
 
         Task.Run(() =>

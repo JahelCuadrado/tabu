@@ -22,6 +22,9 @@
     <sys:String x:Key="Settings_FixedWidth">固定幅</sys:String>
     <sys:String x:Key="Settings_Language">言語</sys:String>
     <sys:String x:Key="Settings_AccentColor">アクセントカラー</sys:String>
+    <sys:String x:Key="Settings_BarVisibility">バーの表示</sys:String>
+    <sys:String x:Key="Settings_AlwaysVisible">常に表示</sys:String>
+    <sys:String x:Key="Settings_AutoHide">自動的に隠す</sys:String>
     <sys:String x:Key="Settings_Done">完了</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">設定</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Tabuを閉じる</sys:String>

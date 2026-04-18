@@ -81,6 +81,15 @@ public partial class SettingsWindow : Window
             ?? AccentColorManager.AvailableColors[0];
         AccentColorCombo.SelectedItem = currentAccent;
 
+        if (_viewModel.AutoHideBar)
+        {
+            BarAutoHideRadio.IsChecked = true;
+        }
+        else
+        {
+            BarAlwaysVisibleRadio.IsChecked = true;
+        }
+
         _initialized = true;
     }
 
@@ -181,6 +190,18 @@ public partial class SettingsWindow : Window
         if (AccentColorCombo.SelectedItem is AccentColorOption selected && selected.Code != _viewModel.AccentColor)
         {
             _viewModel.AccentColor = selected.Code;
+        }
+    }
+
+    private void BarVisibility_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+
+        bool autoHide = BarAutoHideRadio.IsChecked == true;
+
+        if (autoHide != _viewModel.AutoHideBar)
+        {
+            _viewModel.AutoHideBar = autoHide;
         }
     }
 

@@ -22,6 +22,9 @@
     <sys:String x:Key="Settings_FixedWidth">Feste Breite</sys:String>
     <sys:String x:Key="Settings_Language">Sprache</sys:String>
     <sys:String x:Key="Settings_AccentColor">Akzentfarbe</sys:String>
+    <sys:String x:Key="Settings_BarVisibility">Sichtbarkeit der Leiste</sys:String>
+    <sys:String x:Key="Settings_AlwaysVisible">Immer sichtbar</sys:String>
+    <sys:String x:Key="Settings_AutoHide">Automatisch ausblenden</sys:String>
     <sys:String x:Key="Settings_Done">Fertig</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">Einstellungen</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Tabu schließen</sys:String>

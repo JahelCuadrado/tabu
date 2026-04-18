@@ -22,6 +22,9 @@
     <sys:String x:Key="Settings_FixedWidth">Larghezza fissa</sys:String>
     <sys:String x:Key="Settings_Language">Lingua</sys:String>
     <sys:String x:Key="Settings_AccentColor">Colore accento</sys:String>
+    <sys:String x:Key="Settings_BarVisibility">Visibilità della barra</sys:String>
+    <sys:String x:Key="Settings_AlwaysVisible">Sempre visibile</sys:String>
+    <sys:String x:Key="Settings_AutoHide">Nascondi automaticamente</sys:String>
     <sys:String x:Key="Settings_Done">Fatto</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">Impostazioni</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Chiudi Tabu</sys:String>
