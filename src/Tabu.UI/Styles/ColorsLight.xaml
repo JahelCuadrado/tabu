@@ -2,9 +2,9 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- Background -->
-    <Color x:Key="PrimaryBackgroundColor">#F5F5F7</Color>
-    <Color x:Key="SecondaryBackgroundColor">#EAEAEF</Color>
-    <Color x:Key="TertiaryBackgroundColor">#DDDDE3</Color>
+    <Color x:Key="PrimaryBackgroundColor">#F0F0F4</Color>
+    <Color x:Key="SecondaryBackgroundColor">#E4E4EA</Color>
+    <Color x:Key="TertiaryBackgroundColor">#D6D6DE</Color>
 
     <!-- Accent -->
     <Color x:Key="AccentColor">#6B4FA0</Color>
@@ -12,9 +12,9 @@
     <Color x:Key="AccentPressedColor">#5A3F8A</Color>
 
     <!-- Text -->
-    <Color x:Key="PrimaryTextColor">#1A1A2E</Color>
+    <Color x:Key="PrimaryTextColor">#2A2A3A</Color>
     <Color x:Key="SecondaryTextColor">#5A5A6E</Color>
-    <Color x:Key="MutedTextColor">#8A8A9E</Color>
+    <Color x:Key="MutedTextColor">#7A7A90</Color>
 
     <!-- Status -->
     <Color x:Key="DangerColor">#E74C3C</Color>
@@ -22,8 +22,8 @@
     <Color x:Key="SuccessColor">#2ECC71</Color>
 
     <!-- Borders -->
-    <Color x:Key="BorderColor">#D0D0DA</Color>
-    <Color x:Key="BorderHoverColor">#B8B8C8</Color>
+    <Color x:Key="BorderColor">#C8C8D4</Color>
+    <Color x:Key="BorderHoverColor">#B0B0C0</Color>
 
     <!-- Brushes -->
     <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="{StaticResource PrimaryBackgroundColor}" />

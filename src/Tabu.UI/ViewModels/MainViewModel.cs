@@ -16,6 +16,7 @@ public sealed class MainViewModel : ObservableObject
     private bool _isBarOnAllMonitors;
     private bool _isDetectSameScreenOnly;
     private AppTheme _appTheme = AppTheme.System;
+    private double _barOpacity = 1.0;
     private IntPtr? _monitorFilter;
 
     public ObservableCollection<TabViewModel> Tabs { get; } = new();
@@ -62,6 +63,12 @@ public sealed class MainViewModel : ObservableObject
                 ThemeChangeRequested?.Invoke(value);
             }
         }
+    }
+
+    public double BarOpacity
+    {
+        get => _barOpacity;
+        set => SetProperty(ref _barOpacity, Math.Clamp(value, 0.3, 1.0));
     }
 
     public ICommand SwitchToCommand { get; }

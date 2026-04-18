@@ -27,16 +27,18 @@
     </Window.InputBindings>
 
     <!-- Main bar container -->
-    <Border x:Name="BarBorder"
-            Background="{DynamicResource SecondaryBackgroundBrush}"
-            CornerRadius="0,0,8,8"
-            Height="36"
-            VerticalAlignment="Top">
+    <Grid x:Name="BarContainer" Height="36" VerticalAlignment="Top">
+        <!-- Background layer (opacity-controlled) -->
+        <Border x:Name="BarBackground"
+                Background="{DynamicResource SecondaryBackgroundBrush}"
+                Opacity="{Binding BarOpacity}"
+                CornerRadius="0,0,8,8">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.35" Color="Black" Direction="270" />
+            </Border.Effect>
+        </Border>
 
-        <Border.Effect>
-            <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.35" Color="Black" Direction="270" />
-        </Border.Effect>
-
+        <!-- Content layer (always fully opaque) -->
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
@@ -125,5 +127,5 @@
                     ToolTip="Close Tabu"
                     Width="36" Height="36" />
         </Grid>
-    </Border>
+    </Grid>
 </Window>

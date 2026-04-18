@@ -46,6 +46,9 @@ public partial class SettingsWindow : Window
                 break;
         }
 
+        OpacitySlider.Value = _viewModel.BarOpacity * 100;
+        OpacityValueText.Text = $"{(int)(_viewModel.BarOpacity * 100)}%";
+
         _initialized = true;
     }
 
@@ -94,6 +97,15 @@ public partial class SettingsWindow : Window
     private void Close_Click(object sender, RoutedEventArgs e)
     {
         Close();
+    }
+
+    private void Opacity_Changed(object sender, RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (!_initialized) return;
+
+        double opacity = e.NewValue / 100.0;
+        _viewModel.BarOpacity = opacity;
+        OpacityValueText.Text = $"{(int)e.NewValue}%";
     }
 
     private void Header_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
