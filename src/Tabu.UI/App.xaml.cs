@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Tabu.Application;
 using Tabu.Application.Services;
+using Tabu.Domain.Entities;
+using Tabu.Domain.Interfaces;
 using Tabu.Infrastructure;
 using Tabu.UI.Services;
 using Tabu.UI.ViewModels;
@@ -17,6 +19,7 @@ public partial class App : System.Windows.Application
     private MainViewModel? _primaryViewModel;
     private readonly List<MainWindow> _secondaryBars = new();
     private readonly ThemeManager _themeManager = new();
+    private ISettingsRepository _settingsRepository = null!;
 
     public App()
     {
@@ -34,8 +37,19 @@ public partial class App : System.Windows.Application
         await _host.StartAsync();
 
         var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
+        _settingsRepository = _host.Services.GetRequiredService<ISettingsRepository>();
 
-        _primaryViewModel = new MainViewModel(switcher);
+        var saved = _settingsRepository.Load();
+
+        _primaryViewModel = new MainViewModel(switcher)
+        {
+            IsBarOnAllMonitors = saved.IsBarOnAllMonitors,
+            IsDetectSameScreenOnly = saved.IsDetectSameScreenOnly,
+            BarOpacity = saved.BarOpacity,
+            UseFixedTabWidth = saved.UseFixedTabWidth,
+            ShowBranding = saved.ShowBranding
+        };
+
         _primaryViewModel.BarPlacementChangeRequested += OnBarPlacementChangeRequested;
         _primaryViewModel.DetectionModeChangeRequested += OnDetectionModeChangeRequested;
         _primaryViewModel.ThemeChangeRequested += OnThemeChangeRequested;
@@ -43,7 +57,18 @@ public partial class App : System.Windows.Application
         _primaryViewModel.TabWidthChangeRequested += OnTabWidthChangeRequested;
         _primaryViewModel.BrandingChangeRequested += OnBrandingChangeRequested;
 
-        _themeManager.Apply(AppTheme.System);
+        var theme = Enum.TryParse<AppTheme>(saved.AppTheme, out var parsed) ? parsed : AppTheme.System;
+        _primaryViewModel.AppTheme = theme;
+        _themeManager.Apply(theme);
+
+        if (saved.IsBarOnAllMonitors)
+        {
+            ActivateAllMonitorBars();
+            if (saved.IsDetectSameScreenOnly)
+            {
+                ApplyDetectionMode(true);
+            }
+        }
 
         _primaryBar = new MainWindow(_primaryViewModel);
         _primaryBar.Show();
@@ -60,16 +85,19 @@ public partial class App : System.Windows.Application
             else
                 DeactivateSecondaryBars();
         });
+        PersistSettings();
     }
 
     private void OnDetectionModeChangeRequested(bool sameScreenOnly)
     {
         Dispatcher.BeginInvoke(() => ApplyDetectionMode(sameScreenOnly));
+        PersistSettings();
     }
 
     private void OnThemeChangeRequested(AppTheme theme)
     {
         Dispatcher.BeginInvoke(() => _themeManager.Apply(theme));
+        PersistSettings();
     }
 
     private void OnOpacityChangeRequested(double opacity)
@@ -84,6 +112,7 @@ public partial class App : System.Windows.Application
                 }
             }
         });
+        PersistSettings();
     }
 
     private void OnTabWidthChangeRequested(bool useFixed)
@@ -98,6 +127,7 @@ public partial class App : System.Windows.Application
                 }
             }
         });
+        PersistSettings();
     }
 
     private void OnBrandingChangeRequested(bool show)
@@ -112,6 +142,7 @@ public partial class App : System.Windows.Application
                 }
             }
         });
+        PersistSettings();
     }
 
     private void ApplyDetectionMode(bool sameScreenOnly)
@@ -184,9 +215,31 @@ public partial class App : System.Windows.Application
 
     protected override async void OnExit(ExitEventArgs e)
     {
+        PersistSettings();
         DeactivateSecondaryBars();
         await _host.StopAsync();
         _host.Dispose();
         base.OnExit(e);
+    }
+
+    private void PersistSettings()
+    {
+        if (_primaryViewModel is null) return;
+
+        var settings = new UserSettings
+        {
+            IsBarOnAllMonitors = _primaryViewModel.IsBarOnAllMonitors,
+            IsDetectSameScreenOnly = _primaryViewModel.IsDetectSameScreenOnly,
+            AppTheme = _primaryViewModel.AppTheme.ToString(),
+            BarOpacity = _primaryViewModel.BarOpacity,
+            UseFixedTabWidth = _primaryViewModel.UseFixedTabWidth,
+            ShowBranding = _primaryViewModel.ShowBranding
+        };
+
+        Task.Run(() =>
+        {
+            try { _settingsRepository.Save(settings); }
+            catch { /* Silently ignore file write failures */ }
+        });
     }
 }

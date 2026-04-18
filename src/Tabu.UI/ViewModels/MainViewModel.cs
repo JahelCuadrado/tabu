@@ -17,7 +17,7 @@ public sealed class MainViewModel : ObservableObject
     private bool _isDetectSameScreenOnly;
     private AppTheme _appTheme = AppTheme.System;
     private double _barOpacity = 1.0;
-    private bool _useFixedTabWidth;
+    private bool _useFixedTabWidth = true;
     private bool _showBranding = true;
     private IntPtr? _monitorFilter;
 
