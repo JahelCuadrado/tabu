@@ -28,6 +28,12 @@
     <sys:String x:Key="Settings_Startup">Mit Windows starten</sys:String>
     <sys:String x:Key="Settings_StartAtLogin">Aktiviert</sys:String>
     <sys:String x:Key="Settings_DontStartAtLogin">Deaktiviert</sys:String>
+    <sys:String x:Key="Update_AvailableTitle">Update verfügbar</sys:String>
+    <sys:String x:Key="Update_AvailableBody">Eine neue Version von Tabu ist verfügbar.&#x0a;&#x0a;Aktuell: {0}&#x0a;Neueste: {1}&#x0a;&#x0a;Jetzt herunterladen und installieren?</sys:String>
+    <sys:String x:Key="Update_DownloadFailedTitle">Update fehlgeschlagen</sys:String>
+    <sys:String x:Key="Update_DownloadFailedBody">Tabu konnte das Installationsprogramm nicht herunterladen. Bitte später erneut versuchen.</sys:String>
+    <sys:String x:Key="Update_LaunchFailedTitle">Update fehlgeschlagen</sys:String>
+    <sys:String x:Key="Update_LaunchFailedBody">Tabu konnte das Installationsprogramm nicht starten.</sys:String>
     <sys:String x:Key="Settings_Done">Fertig</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">Einstellungen</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Tabu schließen</sys:String>

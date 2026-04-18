@@ -28,6 +28,12 @@
     <sys:String x:Key="Settings_Startup">Windows起動時に実行</sys:String>
     <sys:String x:Key="Settings_StartAtLogin">有効</sys:String>
     <sys:String x:Key="Settings_DontStartAtLogin">無効</sys:String>
+    <sys:String x:Key="Update_AvailableTitle">アップデートがあります</sys:String>
+    <sys:String x:Key="Update_AvailableBody">Tabu の新しいバージョンが利用可能です。&#x0a;&#x0a;現在: {0}&#x0a;最新: {1}&#x0a;&#x0a;今すぐダウンロードしてインストールしますか？</sys:String>
+    <sys:String x:Key="Update_DownloadFailedTitle">アップデートに失敗しました</sys:String>
+    <sys:String x:Key="Update_DownloadFailedBody">インストーラーをダウンロードできませんでした。後でもう一度お試しください。</sys:String>
+    <sys:String x:Key="Update_LaunchFailedTitle">アップデートに失敗しました</sys:String>
+    <sys:String x:Key="Update_LaunchFailedBody">インストーラーを起動できませんでした。</sys:String>
     <sys:String x:Key="Settings_Done">完了</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">設定</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Tabuを閉じる</sys:String>

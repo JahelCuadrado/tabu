@@ -91,6 +91,10 @@ public partial class App : System.Windows.Application
         _primaryBar = new MainWindow(_primaryViewModel);
         _primaryBar.Show();
 
+        // Fire-and-forget update check; never blocks startup.
+        var updater = new UpdateOrchestrator(_host.Services.GetRequiredService<IUpdateService>());
+        updater.RunInBackground();
+
         base.OnStartup(e);
     }
 

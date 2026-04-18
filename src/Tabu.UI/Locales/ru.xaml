@@ -28,6 +28,12 @@
     <sys:String x:Key="Settings_Startup">Запускать вместе с Windows</sys:String>
     <sys:String x:Key="Settings_StartAtLogin">Включено</sys:String>
     <sys:String x:Key="Settings_DontStartAtLogin">Выключено</sys:String>
+    <sys:String x:Key="Update_AvailableTitle">Доступно обновление</sys:String>
+    <sys:String x:Key="Update_AvailableBody">Доступна новая версия Tabu.&#x0a;&#x0a;Текущая: {0}&#x0a;Новая: {1}&#x0a;&#x0a;Скачать и установить сейчас?</sys:String>
+    <sys:String x:Key="Update_DownloadFailedTitle">Не удалось обновить</sys:String>
+    <sys:String x:Key="Update_DownloadFailedBody">Tabu не смог загрузить установщик. Повторите попытку позже.</sys:String>
+    <sys:String x:Key="Update_LaunchFailedTitle">Не удалось обновить</sys:String>
+    <sys:String x:Key="Update_LaunchFailedBody">Tabu не смог запустить установщик.</sys:String>
     <sys:String x:Key="Settings_Done">Готово</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">Настройки</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Закрыть Tabu</sys:String>

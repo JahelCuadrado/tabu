@@ -28,6 +28,12 @@
     <sys:String x:Key="Settings_Startup">Launch at Windows startup</sys:String>
     <sys:String x:Key="Settings_StartAtLogin">Enabled</sys:String>
     <sys:String x:Key="Settings_DontStartAtLogin">Disabled</sys:String>
+    <sys:String x:Key="Update_AvailableTitle">Update available</sys:String>
+    <sys:String x:Key="Update_AvailableBody">A new version of Tabu is available.&#x0a;&#x0a;Current: {0}&#x0a;Latest: {1}&#x0a;&#x0a;Download and install now?</sys:String>
+    <sys:String x:Key="Update_DownloadFailedTitle">Update failed</sys:String>
+    <sys:String x:Key="Update_DownloadFailedBody">Tabu could not download the latest installer. Please try again later.</sys:String>
+    <sys:String x:Key="Update_LaunchFailedTitle">Update failed</sys:String>
+    <sys:String x:Key="Update_LaunchFailedBody">Tabu could not launch the installer.</sys:String>
     <sys:String x:Key="Settings_Done">Done</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">Settings</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Close Tabu</sys:String>
