@@ -21,6 +21,7 @@
     <sys:String x:Key="Settings_FullWidth">全宽</sys:String>
     <sys:String x:Key="Settings_FixedWidth">固定宽度</sys:String>
     <sys:String x:Key="Settings_Language">语言</sys:String>
+    <sys:String x:Key="Settings_AccentColor">强调色</sys:String>
     <sys:String x:Key="Settings_Done">完成</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">设置</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">关闭 Tabu</sys:String>

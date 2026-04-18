@@ -21,6 +21,7 @@
     <sys:String x:Key="Settings_FullWidth">Volle Breite</sys:String>
     <sys:String x:Key="Settings_FixedWidth">Feste Breite</sys:String>
     <sys:String x:Key="Settings_Language">Sprache</sys:String>
+    <sys:String x:Key="Settings_AccentColor">Akzentfarbe</sys:String>
     <sys:String x:Key="Settings_Done">Fertig</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">Einstellungen</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Tabu schließen</sys:String>

@@ -74,6 +74,13 @@ public partial class SettingsWindow : Window
             ?? LocalizationManager.AvailableLanguages[0];
         LanguageCombo.SelectedItem = currentLang;
 
+        // Accent color combo
+        AccentColorCombo.ItemsSource = AccentColorManager.AvailableColors;
+        var currentAccent = AccentColorManager.AvailableColors
+            .FirstOrDefault(c => c.Code == _viewModel.AccentColor)
+            ?? AccentColorManager.AvailableColors[0];
+        AccentColorCombo.SelectedItem = currentAccent;
+
         _initialized = true;
     }
 
@@ -164,6 +171,16 @@ public partial class SettingsWindow : Window
         if (LanguageCombo.SelectedItem is LanguageOption selected && selected.Code != _viewModel.Language)
         {
             _viewModel.Language = selected.Code;
+        }
+    }
+
+    private void AccentColor_Changed(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (!_initialized) return;
+
+        if (AccentColorCombo.SelectedItem is AccentColorOption selected && selected.Code != _viewModel.AccentColor)
+        {
+            _viewModel.AccentColor = selected.Code;
         }
     }
 

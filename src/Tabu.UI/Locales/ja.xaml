@@ -21,6 +21,7 @@
     <sys:String x:Key="Settings_FullWidth">全幅</sys:String>
     <sys:String x:Key="Settings_FixedWidth">固定幅</sys:String>
     <sys:String x:Key="Settings_Language">言語</sys:String>
+    <sys:String x:Key="Settings_AccentColor">アクセントカラー</sys:String>
     <sys:String x:Key="Settings_Done">完了</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">設定</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Tabuを閉じる</sys:String>

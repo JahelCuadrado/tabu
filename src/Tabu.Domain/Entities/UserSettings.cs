@@ -9,4 +9,5 @@ public sealed class UserSettings
     public bool UseFixedTabWidth { get; set; } = true;
     public bool ShowBranding { get; set; } = true;
     public string Language { get; set; } = "en";
+    public string AccentColor { get; set; } = "purple";
 }

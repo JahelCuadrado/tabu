@@ -20,6 +20,7 @@ public sealed class MainViewModel : ObservableObject
     private bool _useFixedTabWidth = true;
     private bool _showBranding = true;
     private string _language = "en";
+    private string _accentColor = "purple";
     private IntPtr? _monitorFilter;
 
     public ObservableCollection<TabViewModel> Tabs { get; } = new();
@@ -116,6 +117,18 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
+    public string AccentColor
+    {
+        get => _accentColor;
+        set
+        {
+            if (SetProperty(ref _accentColor, value))
+            {
+                AccentColorChangeRequested?.Invoke(value);
+            }
+        }
+    }
+
     public ICommand SwitchToCommand { get; }
     public ICommand NextTabCommand { get; }
     public ICommand PrevTabCommand { get; }
@@ -129,6 +142,7 @@ public sealed class MainViewModel : ObservableObject
     public event Action<bool>? TabWidthChangeRequested;
     public event Action<bool>? BrandingChangeRequested;
     public event Action<string>? LanguageChangeRequested;
+    public event Action<string>? AccentColorChangeRequested;
 
     public MainViewModel(WindowSwitcher switcher, bool startPolling = true)
     {

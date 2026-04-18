@@ -21,6 +21,7 @@
     <sys:String x:Key="Settings_FullWidth">Pleine largeur</sys:String>
     <sys:String x:Key="Settings_FixedWidth">Largeur fixe</sys:String>
     <sys:String x:Key="Settings_Language">Langue</sys:String>
+    <sys:String x:Key="Settings_AccentColor">Couleur d'accent</sys:String>
     <sys:String x:Key="Settings_Done">Terminé</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">Paramètres</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Fermer Tabu</sys:String>

@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Tabu Settings"
-        Width="340" Height="580"
+        Width="340" Height="630"
         WindowStyle="None" AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
@@ -52,6 +52,7 @@
             <!-- Content -->
             <Grid Grid.Row="1" Margin="20,16,20,20">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -247,7 +248,7 @@
             </StackPanel>
 
             <!-- Language -->
-            <StackPanel Grid.Row="6" Margin="0,0,0,12">
+            <StackPanel Grid.Row="6" Margin="0,0,0,16">
                 <TextBlock Text="{DynamicResource Settings_Language}" FontSize="12" FontWeight="Medium"
                            Foreground="{DynamicResource SecondaryTextBrush}"
                            Margin="0,0,0,8" />
@@ -258,8 +259,34 @@
                           Padding="8,4" />
             </StackPanel>
 
+            <!-- Accent Color -->
+            <StackPanel Grid.Row="7" Margin="0,0,0,12">
+                <TextBlock Text="{DynamicResource Settings_AccentColor}" FontSize="12" FontWeight="Medium"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           Margin="0,0,0,8" />
+                <ComboBox x:Name="AccentColorCombo"
+                          SelectionChanged="AccentColor_Changed"
+                          FontSize="11"
+                          Height="28"
+                          Padding="8,4">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="12" Height="12" Margin="0,0,8,0">
+                                    <Ellipse.Fill>
+                                        <SolidColorBrush Color="{Binding Hex}" />
+                                    </Ellipse.Fill>
+                                </Ellipse>
+                                <TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center"
+                                           Foreground="{DynamicResource PrimaryTextBrush}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+
             <!-- Done button -->
-            <Button Grid.Row="8"
+            <Button Grid.Row="9"
                     Content="{DynamicResource Settings_Done}"
                     Style="{DynamicResource PrimaryButtonStyle}"
                     Click="Close_Click"

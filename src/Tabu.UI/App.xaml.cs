@@ -20,6 +20,7 @@ public partial class App : System.Windows.Application
     private readonly List<MainWindow> _secondaryBars = new();
     private readonly ThemeManager _themeManager = new();
     private readonly LocalizationManager _localizationManager = new();
+    private readonly AccentColorManager _accentColorManager = new();
     private ISettingsRepository _settingsRepository = null!;
 
     public App()
@@ -49,7 +50,8 @@ public partial class App : System.Windows.Application
             BarOpacity = saved.BarOpacity,
             UseFixedTabWidth = saved.UseFixedTabWidth,
             ShowBranding = saved.ShowBranding,
-            Language = saved.Language
+            Language = saved.Language,
+            AccentColor = saved.AccentColor
         };
 
         _primaryViewModel.BarPlacementChangeRequested += OnBarPlacementChangeRequested;
@@ -59,12 +61,15 @@ public partial class App : System.Windows.Application
         _primaryViewModel.TabWidthChangeRequested += OnTabWidthChangeRequested;
         _primaryViewModel.BrandingChangeRequested += OnBrandingChangeRequested;
         _primaryViewModel.LanguageChangeRequested += OnLanguageChangeRequested;
+        _primaryViewModel.AccentColorChangeRequested += OnAccentColorChangeRequested;
 
         var theme = Enum.TryParse<AppTheme>(saved.AppTheme, out var parsed) ? parsed : AppTheme.System;
         _primaryViewModel.AppTheme = theme;
         _themeManager.Apply(theme);
 
         _localizationManager.Apply(saved.Language);
+
+        _accentColorManager.Apply(saved.AccentColor, IsDarkTheme(theme));
 
         if (saved.IsBarOnAllMonitors)
         {
@@ -101,7 +106,11 @@ public partial class App : System.Windows.Application
 
     private void OnThemeChangeRequested(AppTheme theme)
     {
-        Dispatcher.BeginInvoke(() => _themeManager.Apply(theme));
+        Dispatcher.BeginInvoke(() =>
+        {
+            _themeManager.Apply(theme);
+            _accentColorManager.ReapplyForTheme(IsDarkTheme(theme));
+        });
         PersistSettings();
     }
 
@@ -156,6 +165,16 @@ public partial class App : System.Windows.Application
         PersistSettings();
     }
 
+    private void OnAccentColorChangeRequested(string colorCode)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            var theme = _primaryViewModel?.AppTheme ?? AppTheme.System;
+            _accentColorManager.Apply(colorCode, IsDarkTheme(theme));
+        });
+        PersistSettings();
+    }
+
     private void ApplyDetectionMode(bool sameScreenOnly)
     {
         var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
@@ -202,7 +221,8 @@ public partial class App : System.Windows.Application
                 BarOpacity = _primaryViewModel?.BarOpacity ?? 1.0,
                 UseFixedTabWidth = _primaryViewModel?.UseFixedTabWidth ?? false,
                 ShowBranding = _primaryViewModel?.ShowBranding ?? true,
-                Language = _primaryViewModel?.Language ?? "en"
+                Language = _primaryViewModel?.Language ?? "en",
+                AccentColor = _primaryViewModel?.AccentColor ?? "purple"
             };
 
             var bar = new MainWindow(vm) { TargetScreen = screen, IsPrimary = false };
@@ -234,6 +254,13 @@ public partial class App : System.Windows.Application
         base.OnExit(e);
     }
 
+    private static bool IsDarkTheme(AppTheme theme) => theme switch
+    {
+        AppTheme.Light => false,
+        AppTheme.Dark => true,
+        _ => ThemeManager.IsSystemDarkMode()
+    };
+
     private void PersistSettings()
     {
         if (_primaryViewModel is null) return;
@@ -246,7 +273,8 @@ public partial class App : System.Windows.Application
             BarOpacity = _primaryViewModel.BarOpacity,
             UseFixedTabWidth = _primaryViewModel.UseFixedTabWidth,
             ShowBranding = _primaryViewModel.ShowBranding,
-            Language = _primaryViewModel.Language
+            Language = _primaryViewModel.Language,
+            AccentColor = _primaryViewModel.AccentColor
         };
 
         Task.Run(() =>

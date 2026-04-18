@@ -21,6 +21,7 @@
     <sys:String x:Key="Settings_FullWidth">전체 너비</sys:String>
     <sys:String x:Key="Settings_FixedWidth">고정 너비</sys:String>
     <sys:String x:Key="Settings_Language">언어</sys:String>
+    <sys:String x:Key="Settings_AccentColor">강조 색상</sys:String>
     <sys:String x:Key="Settings_Done">완료</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">설정</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Tabu 닫기</sys:String>

@@ -21,6 +21,7 @@
     <sys:String x:Key="Settings_FullWidth">Полная ширина</sys:String>
     <sys:String x:Key="Settings_FixedWidth">Фиксированная ширина</sys:String>
     <sys:String x:Key="Settings_Language">Язык</sys:String>
+    <sys:String x:Key="Settings_AccentColor">Цвет акцента</sys:String>
     <sys:String x:Key="Settings_Done">Готово</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">Настройки</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Закрыть Tabu</sys:String>
