@@ -23,7 +23,7 @@ public sealed class AccentColorManager
         new("rose", "Rose", "#E11D48", "#F43F5E")
     };
 
-    private string _currentCode = "purple";
+    private string _currentCode = "blue";
 
     public string CurrentCode => _currentCode;
 

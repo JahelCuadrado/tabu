@@ -20,7 +20,7 @@ public sealed class MainViewModel : ObservableObject
     private bool _useFixedTabWidth = true;
     private bool _showBranding = true;
     private string _language = "en";
-    private string _accentColor = "purple";
+    private string _accentColor = "blue";
     private IntPtr? _monitorFilter;
 
     public ObservableCollection<TabViewModel> Tabs { get; } = new();
