@@ -1,0 +1,133 @@
+<Window x:Class="Tabu.UI.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:Tabu.UI.ViewModels"
+        Title="Tabu"
+        Height="36" Width="800"
+        WindowStyle="None" AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        WindowStartupLocation="Manual"
+        Left="0" Top="0">
+
+    <Window.InputBindings>
+        <KeyBinding Gesture="Ctrl+Tab" Command="{Binding NextTabCommand}" />
+        <KeyBinding Gesture="Ctrl+Shift+Tab" Command="{Binding PrevTabCommand}" />
+        <KeyBinding Gesture="Ctrl+1" Command="{Binding GoToTabCommand}" CommandParameter="1" />
+        <KeyBinding Gesture="Ctrl+2" Command="{Binding GoToTabCommand}" CommandParameter="2" />
+        <KeyBinding Gesture="Ctrl+3" Command="{Binding GoToTabCommand}" CommandParameter="3" />
+        <KeyBinding Gesture="Ctrl+4" Command="{Binding GoToTabCommand}" CommandParameter="4" />
+        <KeyBinding Gesture="Ctrl+5" Command="{Binding GoToTabCommand}" CommandParameter="5" />
+        <KeyBinding Gesture="Ctrl+6" Command="{Binding GoToTabCommand}" CommandParameter="6" />
+        <KeyBinding Gesture="Ctrl+7" Command="{Binding GoToTabCommand}" CommandParameter="7" />
+        <KeyBinding Gesture="Ctrl+8" Command="{Binding GoToTabCommand}" CommandParameter="8" />
+        <KeyBinding Gesture="Ctrl+9" Command="{Binding GoToTabCommand}" CommandParameter="9" />
+    </Window.InputBindings>
+
+    <!-- Main bar container -->
+    <Border x:Name="BarBorder"
+            Background="{StaticResource SecondaryBackgroundBrush}"
+            CornerRadius="0,0,8,8"
+            Height="36"
+            VerticalAlignment="Top">
+
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.35" Color="Black" Direction="270" />
+        </Border.Effect>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Logo -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="12,0,8,0" VerticalAlignment="Center"
+                        MouseLeftButtonDown="DragBar_MouseLeftButtonDown">
+                <TextBlock Text="⊞" FontSize="14" Foreground="{StaticResource AccentBrush}"
+                           VerticalAlignment="Center" Margin="0,0,5,0" />
+                <TextBlock Text="Tabu" FontSize="11" FontWeight="SemiBold"
+                           Foreground="{StaticResource MutedTextBrush}"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Tabs -->
+            <ItemsControl Grid.Column="1" ItemsSource="{Binding Tabs}" Margin="0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Rows="1" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type vm:TabViewModel}">
+                        <Border x:Name="TabBorder"
+                                Background="Transparent"
+                                CornerRadius="6"
+                                Padding="6,4" Margin="1,4"
+                                Cursor="Hand"
+                                MouseLeftButtonDown="Tab_MouseLeftButtonDown"
+                                MouseDown="Tab_MouseDown"
+                                Tag="{Binding}"
+                                MinWidth="32">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Image Grid.Column="0" Source="{Binding Icon}" Width="16" Height="16"
+                                       Margin="0,0,6,0"
+                                       RenderOptions.BitmapScalingMode="HighQuality"
+                                       VerticalAlignment="Center"
+                                       Visibility="{Binding Icon, Converter={StaticResource NullToCollapsedConverter}}" />
+                                <TextBlock Grid.Column="1" Text="{Binding DisplayName}" FontSize="11"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"
+                                           Foreground="{StaticResource SecondaryTextBrush}" />
+                                <Button x:Name="CloseBtn" Grid.Column="2"
+                                        Style="{StaticResource TabCloseButtonStyle}"
+                                        Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"
+                                        Margin="4,0,0,0"
+                                        Visibility="Collapsed" />
+                            </Grid>
+                        </Border>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="{StaticResource TertiaryBackgroundBrush}" />
+                                <Setter TargetName="TabBorder" Property="TextBlock.Foreground" Value="{StaticResource PrimaryTextBrush}" />
+                                <Setter TargetName="CloseBtn" Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                            <Trigger SourceName="TabBorder" Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CloseBtn" Property="Visibility" Value="Visible" />
+                            </Trigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Monitor mode toggle -->
+            <Button Grid.Column="2"
+                    Command="{Binding ToggleMonitorModeCommand}"
+                    ToolTip="{Binding MonitorModeTooltip}"
+                    Background="Transparent" BorderThickness="0"
+                    Cursor="Hand" Height="36" Padding="10,0">
+                <TextBlock Text="{Binding MonitorModeLabel}" FontSize="10"
+                           FontFamily="Segoe UI"
+                           VerticalAlignment="Center"
+                           Foreground="{StaticResource MutedTextBrush}" />
+            </Button>
+
+            <!-- Close button -->
+            <Button Grid.Column="3"
+                    Style="{StaticResource CloseWindowButtonStyle}"
+                    Content="&#xE8BB;" Click="Close_Click"
+                    ToolTip="Close Tabu"
+                    Width="36" Height="36" />
+        </Grid>
+    </Border>
+</Window>
