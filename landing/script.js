@@ -41,7 +41,7 @@
       "hero.title1": "A faster way to switch",
       "hero.title2": "windows on Windows.",
       "hero.subtitle":
-        "Tabu docks a clean tab bar at the top of every monitor so you can flip between apps like browser tabs. Multi-monitor, multilingual, super simple and completely free.",
+        "Tabu docks a clean tab bar at the top of every monitor so you can flip between apps like browser tabs. Multi-monitor, multilingual and completely free.",
       "hero.cta": "Download for Windows",
       "hero.requirements":
         "Windows 10/11 · 64-bit · No .NET install required · Free & open source",
@@ -108,7 +108,7 @@
       "hero.title1": "Una forma más rápida de",
       "hero.title2": "cambiar entre ventanas.",
       "hero.subtitle":
-        "Tabu ancla una barra de pestañas en la parte superior de cada monitor para que cambies entre apps como si fueran pestañas. Multi-monitor, multilingüe y super sencillo, completamente gratis.",
+        "Tabu ancla una barra de pestañas en la parte superior de cada monitor para que cambies entre apps como si fueran pestañas. Multi-monitor, multilingüe y completamente gratis.",
       "hero.cta": "Descargar para Windows",
       "hero.requirements":
         "Windows 10/11 · 64-bit · Sin instalar .NET · Gratis y de código abierto",
