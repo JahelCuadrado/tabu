@@ -36,3 +36,6 @@ Desktop.ini
 **/appsettings.Development.json
 tools/
 publish-output/
+
+## Local editor configuration (must not be tracked)
+.github/copilot-instructions.md
