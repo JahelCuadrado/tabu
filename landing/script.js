@@ -41,7 +41,7 @@
       "hero.title1": "A faster way to switch",
       "hero.title2": "windows on Windows.",
       "hero.subtitle":
-        "Tabu docks a clean tab bar at the top of every monitor so you can flip between apps like browser tabs. Multi-monitor, multilingual and instantly out of the way.",
+        "Tabu docks a clean tab bar at the top of every monitor so you can flip between apps like browser tabs. Multi-monitor, multilingual, and disappears the moment you don't need it.",
       "hero.cta": "Download for Windows",
       "hero.requirements":
         "Windows 10/11 · 64-bit · No .NET install required · Free & open source",
@@ -86,7 +86,7 @@
       "faq.title": "Frequently asked questions",
       "faq.q1": "Is Tabu really free?",
       "faq.a1":
-        "Yes. Tabu is open source under the MIT license. No ads, no telemetry, no premium tier.",
+        "Yes. Tabu is open source under the GPL-3.0 license. No ads, no telemetry, no premium tier.",
       "faq.q2": "Does it work on Windows 11?",
       "faq.a2": "Yes. Tabu requires Windows 10 1809 (build 17763) or newer, on x64.",
       "faq.q3": "Why does Windows show a SmartScreen warning?",
@@ -108,7 +108,7 @@
       "hero.title1": "Una forma más rápida de",
       "hero.title2": "cambiar entre ventanas.",
       "hero.subtitle":
-        "Tabu ancla una barra de pestañas en la parte superior de cada monitor para que cambies entre apps como si fueran pestañas. Multi-monitor, multilingüe y siempre fuera del camino.",
+        "Tabu ancla una barra de pestañas en la parte superior de cada monitor para que cambies entre apps como si fueran pestañas. Multi-monitor, multilingüe y se aparta sola cuando no la necesitas.",
       "hero.cta": "Descargar para Windows",
       "hero.requirements":
         "Windows 10/11 · 64-bit · Sin instalar .NET · Gratis y de código abierto",
@@ -155,7 +155,7 @@
       "faq.title": "Preguntas frecuentes",
       "faq.q1": "¿Tabu es realmente gratis?",
       "faq.a1":
-        "Sí. Tabu es open source bajo licencia MIT. Sin anuncios, sin telemetría, sin versiones premium.",
+        "Sí. Tabu es open source bajo licencia GPL-3.0. Sin anuncios, sin telemetría, sin versiones premium.",
       "faq.q2": "¿Funciona en Windows 11?",
       "faq.a2": "Sí. Requiere Windows 10 1809 (build 17763) o superior, en x64.",
       "faq.q3": "¿Por qué Windows muestra una advertencia de SmartScreen?",
