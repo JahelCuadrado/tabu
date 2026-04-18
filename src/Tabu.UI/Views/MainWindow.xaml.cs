@@ -93,6 +93,19 @@ public partial class MainWindow : Window
     private const int ABM_SETPOS = 0x03;
     private const int ABE_TOP = 1;
 
+    // AppBar notifications delivered via uCallbackMessage (wParam value).
+    private const int ABN_STATECHANGE = 0x0;
+    private const int ABN_POSCHANGED = 0x1;
+    private const int ABN_FULLSCREENAPP = 0x2;
+    private const int ABN_WINDOWARRANGE = 0x3;
+
+    // System-level Win32 messages we observe to keep the reservation fresh.
+    private const int WM_DPICHANGED = 0x02E0;
+    private const int WM_DISPLAYCHANGE = 0x007E;
+    private const int WM_SETTINGCHANGE = 0x001A;
+
+    private uint _appBarCallbackMessage;
+
     [StructLayout(LayoutKind.Sequential)]
     private struct APPBARDATA
     {
@@ -113,6 +126,9 @@ public partial class MainWindow : Window
     [DllImport("shell32.dll")]
     private static extern uint SHAppBarMessage(int dwMessage, ref APPBARDATA pData);
 
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern uint RegisterWindowMessage(string lpString);
+
     [DllImport("user32.dll")]
     private static extern bool MoveWindow(IntPtr hWnd, int x, int y, int cx, int cy, bool bRepaint);
 
@@ -123,10 +139,19 @@ public partial class MainWindow : Window
 
     private void RegisterAppBar()
     {
+        // Lazily allocate a per-process unique message id so the shell can
+        // notify us about reservation changes (taskbar reloc, FS app, etc.).
+        if (_appBarCallbackMessage == 0)
+        {
+            _appBarCallbackMessage = RegisterWindowMessage("TabuAppBarMessage");
+        }
+
         var abd = NewAppBarData();
-        abd.uCallbackMessage = 0; // We don't need callback messages
+        abd.uCallbackMessage = _appBarCallbackMessage;
         SHAppBarMessage(ABM_NEW, ref abd);
         _appBarRegistered = true;
+
+        AttachMessageHookIfNeeded();
         SetAppBarPosition();
     }
 
@@ -182,6 +207,51 @@ public partial class MainWindow : Window
             cbSize = Marshal.SizeOf<APPBARDATA>(),
             hWnd = _hwnd
         };
+    }
+
+    private bool _messageHookAttached;
+
+    /// <summary>
+    /// Subscribes to the Win32 message pump so we can keep the AppBar
+    /// reservation in sync with system-wide changes (taskbar relocation,
+    /// monitor hot-plug, DPI changes, full-screen apps, theme changes).
+    /// Without this, maximized windows can occasionally cover our bar
+    /// because Windows holds a stale work-area for that monitor.
+    /// </summary>
+    private void AttachMessageHookIfNeeded()
+    {
+        if (_messageHookAttached) return;
+        if (HwndSource.FromHwnd(_hwnd) is not HwndSource source) return;
+        source.AddHook(WndProc);
+        _messageHookAttached = true;
+    }
+
+    private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+    {
+        // AppBar shell notification — wParam holds the ABN_* code.
+        if (_appBarCallbackMessage != 0 && msg == (int)_appBarCallbackMessage)
+        {
+            int notification = wParam.ToInt32();
+            if (notification == ABN_POSCHANGED ||
+                notification == ABN_WINDOWARRANGE ||
+                notification == ABN_STATECHANGE)
+            {
+                // Re-issue the reservation so Windows picks our top edge again.
+                Dispatcher.BeginInvoke(new Action(SetAppBarPosition), DispatcherPriority.Background);
+            }
+            return IntPtr.Zero;
+        }
+
+        switch (msg)
+        {
+            case WM_DPICHANGED:
+            case WM_DISPLAYCHANGE:
+            case WM_SETTINGCHANGE:
+                Dispatcher.BeginInvoke(new Action(SetAppBarPosition), DispatcherPriority.Background);
+                break;
+        }
+
+        return IntPtr.Zero;
     }
 
     #endregion

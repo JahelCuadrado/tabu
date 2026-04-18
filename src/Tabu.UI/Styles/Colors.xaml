@@ -5,7 +5,7 @@
     <Color x:Key="PrimaryBackgroundColor">#1A1A2E</Color>
     <Color x:Key="SecondaryBackgroundColor">#16213E</Color>
     <Color x:Key="TertiaryBackgroundColor">#0F3460</Color>
-    <Color x:Key="ActiveTabBackgroundColor">#163E72</Color>
+    <Color x:Key="ActiveTabBackgroundColor">#36365e</Color>
 
     <!-- Accent -->
     <Color x:Key="AccentColor">#533483</Color>
