@@ -1,4 +1,5 @@
 using System.Windows;
+using Tabu.UI.Services;
 using Tabu.UI.ViewModels;
 
 namespace Tabu.UI.Views;
@@ -32,6 +33,19 @@ public partial class SettingsWindow : Window
             DetectAllRadio.IsChecked = true;
         }
 
+        switch (_viewModel.AppTheme)
+        {
+            case AppTheme.Dark:
+                ThemeDarkRadio.IsChecked = true;
+                break;
+            case AppTheme.Light:
+                ThemeLightRadio.IsChecked = true;
+                break;
+            default:
+                ThemeSystemRadio.IsChecked = true;
+                break;
+        }
+
         _initialized = true;
     }
 
@@ -56,6 +70,24 @@ public partial class SettingsWindow : Window
         if (sameScreen != _viewModel.IsDetectSameScreenOnly)
         {
             _viewModel.IsDetectSameScreenOnly = sameScreen;
+        }
+    }
+
+    private void Theme_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+
+        AppTheme theme;
+        if (ThemeDarkRadio.IsChecked == true)
+            theme = AppTheme.Dark;
+        else if (ThemeLightRadio.IsChecked == true)
+            theme = AppTheme.Light;
+        else
+            theme = AppTheme.System;
+
+        if (theme != _viewModel.AppTheme)
+        {
+            _viewModel.AppTheme = theme;
         }
     }
 

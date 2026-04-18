@@ -5,6 +5,7 @@ using System.Windows.Threading;
 using Tabu.Application.Services;
 using Tabu.Domain.Entities;
 using Tabu.UI.Helpers;
+using Tabu.UI.Services;
 
 namespace Tabu.UI.ViewModels;
 
@@ -14,6 +15,7 @@ public sealed class MainViewModel : ObservableObject
     private readonly DispatcherTimer? _pollTimer;
     private bool _isBarOnAllMonitors;
     private bool _isDetectSameScreenOnly;
+    private AppTheme _appTheme = AppTheme.System;
     private IntPtr? _monitorFilter;
 
     public ObservableCollection<TabViewModel> Tabs { get; } = new();
@@ -50,6 +52,18 @@ public sealed class MainViewModel : ObservableObject
         set => SetProperty(ref _monitorFilter, value);
     }
 
+    public AppTheme AppTheme
+    {
+        get => _appTheme;
+        set
+        {
+            if (SetProperty(ref _appTheme, value))
+            {
+                ThemeChangeRequested?.Invoke(value);
+            }
+        }
+    }
+
     public ICommand SwitchToCommand { get; }
     public ICommand NextTabCommand { get; }
     public ICommand PrevTabCommand { get; }
@@ -58,6 +72,7 @@ public sealed class MainViewModel : ObservableObject
 
     public event Action<bool>? BarPlacementChangeRequested;
     public event Action<bool>? DetectionModeChangeRequested;
+    public event Action<AppTheme>? ThemeChangeRequested;
 
     public MainViewModel(WindowSwitcher switcher, bool startPolling = true)
     {

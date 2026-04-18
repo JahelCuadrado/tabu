@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Tabu.Application;
 using Tabu.Application.Services;
 using Tabu.Infrastructure;
+using Tabu.UI.Services;
 using Tabu.UI.ViewModels;
 using Tabu.UI.Views;
 
@@ -15,6 +16,7 @@ public partial class App : System.Windows.Application
     private MainWindow? _primaryBar;
     private MainViewModel? _primaryViewModel;
     private readonly List<MainWindow> _secondaryBars = new();
+    private readonly ThemeManager _themeManager = new();
 
     public App()
     {
@@ -36,6 +38,9 @@ public partial class App : System.Windows.Application
         _primaryViewModel = new MainViewModel(switcher);
         _primaryViewModel.BarPlacementChangeRequested += OnBarPlacementChangeRequested;
         _primaryViewModel.DetectionModeChangeRequested += OnDetectionModeChangeRequested;
+        _primaryViewModel.ThemeChangeRequested += OnThemeChangeRequested;
+
+        _themeManager.Apply(AppTheme.System);
 
         _primaryBar = new MainWindow(_primaryViewModel);
         _primaryBar.Show();
@@ -57,6 +62,11 @@ public partial class App : System.Windows.Application
     private void OnDetectionModeChangeRequested(bool sameScreenOnly)
     {
         Dispatcher.BeginInvoke(() => ApplyDetectionMode(sameScreenOnly));
+    }
+
+    private void OnThemeChangeRequested(AppTheme theme)
+    {
+        Dispatcher.BeginInvoke(() => _themeManager.Apply(theme));
     }
 
     private void ApplyDetectionMode(bool sameScreenOnly)

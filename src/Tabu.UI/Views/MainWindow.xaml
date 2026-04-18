@@ -28,7 +28,7 @@
 
     <!-- Main bar container -->
     <Border x:Name="BarBorder"
-            Background="{StaticResource SecondaryBackgroundBrush}"
+            Background="{DynamicResource SecondaryBackgroundBrush}"
             CornerRadius="0,0,8,8"
             Height="36"
             VerticalAlignment="Top">
@@ -48,10 +48,10 @@
             <!-- Logo -->
             <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="12,0,8,0" VerticalAlignment="Center"
                         MouseLeftButtonDown="DragBar_MouseLeftButtonDown">
-                <TextBlock Text="⊞" FontSize="14" Foreground="{StaticResource AccentBrush}"
+                <TextBlock Text="⊞" FontSize="14" Foreground="{DynamicResource AccentBrush}"
                            VerticalAlignment="Center" Margin="0,0,5,0" />
                 <TextBlock Text="Tabu" FontSize="11" FontWeight="SemiBold"
-                           Foreground="{StaticResource MutedTextBrush}"
+                           Foreground="{DynamicResource MutedTextBrush}"
                            VerticalAlignment="Center" />
             </StackPanel>
 
@@ -87,9 +87,9 @@
                                 <TextBlock Grid.Column="1" Text="{Binding DisplayName}" FontSize="11"
                                            VerticalAlignment="Center"
                                            TextTrimming="CharacterEllipsis"
-                                           Foreground="{StaticResource SecondaryTextBrush}" />
+                                           Foreground="{DynamicResource SecondaryTextBrush}" />
                                 <Button x:Name="CloseBtn" Grid.Column="2"
-                                        Style="{StaticResource TabCloseButtonStyle}"
+                                        Style="{DynamicResource TabCloseButtonStyle}"
                                         Command="{Binding DataContext.CloseTabCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                         CommandParameter="{Binding}"
                                         Margin="4,0,0,0"
@@ -98,8 +98,8 @@
                         </Border>
                         <DataTemplate.Triggers>
                             <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                <Setter TargetName="TabBorder" Property="Background" Value="{StaticResource TertiaryBackgroundBrush}" />
-                                <Setter TargetName="TabBorder" Property="TextBlock.Foreground" Value="{StaticResource PrimaryTextBrush}" />
+                                <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource TertiaryBackgroundBrush}" />
+                                <Setter TargetName="TabBorder" Property="TextBlock.Foreground" Value="{DynamicResource PrimaryTextBrush}" />
                                 <Setter TargetName="CloseBtn" Property="Visibility" Value="Visible" />
                             </DataTrigger>
                             <Trigger SourceName="TabBorder" Property="IsMouseOver" Value="True">
@@ -114,13 +114,13 @@
             <Button x:Name="SettingsButton" Grid.Column="2"
                     Click="Settings_Click"
                     ToolTip="Settings"
-                    Style="{StaticResource TitleBarButtonStyle}"
+                    Style="{DynamicResource TitleBarButtonStyle}"
                     Content="&#xE713;"
                     Width="36" Height="36" />
 
             <!-- Close button -->
             <Button x:Name="CloseButton" Grid.Column="3"
-                    Style="{StaticResource CloseWindowButtonStyle}"
+                    Style="{DynamicResource CloseWindowButtonStyle}"
                     Content="&#xE8BB;" Click="Close_Click"
                     ToolTip="Close Tabu"
                     Width="36" Height="36" />
