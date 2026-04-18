@@ -1,4 +1,5 @@
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -10,6 +11,10 @@ namespace Tabu.UI.ViewModels;
 
 public sealed class TabViewModel : ObservableObject
 {
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool DestroyIcon(IntPtr handle);
+
     private string _displayName = string.Empty;
     private bool _isActive;
     private ImageSource? _icon;
@@ -51,15 +56,30 @@ public sealed class TabViewModel : ObservableObject
 
     private void LoadIcon(string executablePath)
     {
+        // The HICON returned by ExtractAssociatedIcon owns an unmanaged GDI
+        // handle that WPF's CreateBitmapSourceFromHIcon does NOT take
+        // ownership of, so we must explicitly dispose the managed wrapper
+        // and call DestroyIcon afterwards. Failing to do so leaks one GDI
+        // handle per tracked window and eventually crashes the process
+        // (default per-process limit is 10,000).
         try
         {
             if (string.IsNullOrEmpty(executablePath) || !File.Exists(executablePath)) return;
-            var icon = System.Drawing.Icon.ExtractAssociatedIcon(executablePath);
+
+            using var icon = System.Drawing.Icon.ExtractAssociatedIcon(executablePath);
             if (icon is null) return;
-            Icon = Imaging.CreateBitmapSourceFromHIcon(
+
+            var bitmap = Imaging.CreateBitmapSourceFromHIcon(
                 icon.Handle, Int32Rect.Empty, BitmapSizeOptions.FromEmptyOptions());
+            bitmap.Freeze();
+            Icon = bitmap;
+
+            DestroyIcon(icon.Handle);
         }
-        catch { }
+        catch
+        {
+            // Icon extraction is best-effort and must never break tab tracking.
+        }
     }
 
     private static string Truncate(string text, int maxLength)

@@ -24,10 +24,21 @@ public sealed class WindowDetector : IWindowDetector
         "MicrosoftEdgeUpdate"
     };
 
+    /// <summary>
+    /// Per-process metadata cache. Process name and executable path do not
+    /// change for the lifetime of a PID, so we resolve them once instead of
+    /// re-spawning a <see cref="Process"/> wrapper on every poll. Cache is
+    /// pruned lazily when entries become stale (the PID no longer exists).
+    /// </summary>
+    private readonly Dictionary<int, ProcessMetadata> _processCache = new();
+
+    private readonly record struct ProcessMetadata(string Name, string ExecutablePath, bool Excluded);
+
     public List<TrackedWindow> GetVisibleWindows()
     {
         var windows = new List<TrackedWindow>();
         var currentPid = Environment.ProcessId;
+        var seenPids = new HashSet<int>();
 
         NativeMethods.EnumWindows((hWnd, _) =>
         {
@@ -39,27 +50,16 @@ public sealed class WindowDetector : IWindowDetector
             var title = NativeMethods.GetWindowText(hWnd);
             if (string.IsNullOrWhiteSpace(title)) return true;
 
-            string processName = string.Empty;
-            string executablePath = string.Empty;
-            try
-            {
-                var proc = Process.GetProcessById(pid);
-                processName = proc.ProcessName;
-                executablePath = proc.MainModule?.FileName ?? string.Empty;
-            }
-            catch
-            {
-                // Access denied for some system processes
-            }
-
-            if (ExcludedProcessNames.Contains(processName)) return true;
+            seenPids.Add(pid);
+            var metadata = ResolveMetadata(pid);
+            if (metadata.Excluded) return true;
 
             windows.Add(new TrackedWindow
             {
                 Handle = hWnd,
                 ProcessId = pid,
-                ProcessName = processName,
-                ExecutablePath = executablePath,
+                ProcessName = metadata.Name,
+                ExecutablePath = metadata.ExecutablePath,
                 Title = title,
                 MonitorHandle = NativeMethods.MonitorFromWindow(hWnd, NativeMethods.MONITOR_DEFAULTTONEAREST)
             });
@@ -67,7 +67,45 @@ public sealed class WindowDetector : IWindowDetector
             return true;
         }, IntPtr.Zero);
 
+        PruneCache(seenPids);
         return windows;
+    }
+
+    private ProcessMetadata ResolveMetadata(int pid)
+    {
+        if (_processCache.TryGetValue(pid, out var cached))
+        {
+            return cached;
+        }
+
+        string name = string.Empty;
+        string path = string.Empty;
+        try
+        {
+            // Process implements IDisposable (SafeProcessHandle). Failing to
+            // dispose leaks one kernel handle per call; with a 500ms poll
+            // timer that compounds quickly into a process-wide handle
+            // exhaustion crash.
+            using var proc = Process.GetProcessById(pid);
+            name = proc.ProcessName;
+            try { path = proc.MainModule?.FileName ?? string.Empty; }
+            catch { /* MainModule is denied for protected processes */ }
+        }
+        catch
+        {
+            // The PID may have died between EnumWindows and the lookup.
+        }
+
+        var metadata = new ProcessMetadata(name, path, ExcludedProcessNames.Contains(name));
+        _processCache[pid] = metadata;
+        return metadata;
+    }
+
+    private void PruneCache(HashSet<int> seenPids)
+    {
+        if (_processCache.Count <= seenPids.Count) return;
+        var stale = _processCache.Keys.Where(k => !seenPids.Contains(k)).ToList();
+        foreach (var pid in stale) _processCache.Remove(pid);
     }
 
     public TrackedWindow? GetForegroundWindow()

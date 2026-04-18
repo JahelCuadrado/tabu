@@ -36,6 +36,8 @@ public partial class App : System.Windows.Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        CrashLogger.Attach();
+
         await _host.StartAsync();
 
         var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
