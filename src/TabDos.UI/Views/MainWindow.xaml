@@ -110,17 +110,13 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <!-- Monitor mode toggle -->
+            <!-- Settings button -->
             <Button Grid.Column="2"
-                    Command="{Binding ToggleMonitorModeCommand}"
-                    ToolTip="{Binding MonitorModeTooltip}"
-                    Background="Transparent" BorderThickness="0"
-                    Cursor="Hand" Height="36" Padding="10,0">
-                <TextBlock Text="{Binding MonitorModeLabel}" FontSize="10"
-                           FontFamily="Segoe UI"
-                           VerticalAlignment="Center"
-                           Foreground="{StaticResource MutedTextBrush}" />
-            </Button>
+                    Click="Settings_Click"
+                    ToolTip="Settings"
+                    Style="{StaticResource TitleBarButtonStyle}"
+                    Content="&#xE713;"
+                    Width="36" Height="36" />
 
             <!-- Close button -->
             <Button Grid.Column="3"

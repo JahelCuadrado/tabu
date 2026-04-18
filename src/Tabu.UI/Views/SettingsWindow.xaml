@@ -1,0 +1,85 @@
+<Window x:Class="Tabu.UI.Views.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Tabu Settings"
+        Width="340" Height="220"
+        WindowStyle="None" AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen">
+
+    <Border Background="{StaticResource PrimaryBackgroundBrush}"
+            CornerRadius="12"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1"
+            Padding="20">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="24" ShadowDepth="4" Opacity="0.5" Color="Black" />
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="16" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Settings" FontSize="16" FontWeight="SemiBold"
+                           Foreground="{StaticResource PrimaryTextBrush}"
+                           VerticalAlignment="Center" />
+                <Button Grid.Column="1"
+                        Style="{StaticResource TabCloseButtonStyle}"
+                        Click="Close_Click" Width="24" Height="24" />
+            </Grid>
+
+            <!-- Monitor mode -->
+            <StackPanel Grid.Row="2" Margin="0,0,0,12">
+                <TextBlock Text="Monitor Mode" FontSize="12" FontWeight="Medium"
+                           Foreground="{StaticResource SecondaryTextBrush}"
+                           Margin="0,0,0,8" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <RadioButton x:Name="PrimaryOnlyRadio"
+                                 Grid.Column="0"
+                                 GroupName="MonitorMode"
+                                 IsChecked="True"
+                                 Checked="MonitorMode_Changed"
+                                 Foreground="{StaticResource PrimaryTextBrush}"
+                                 Margin="0,0,8,0">
+                        <TextBlock Text="Primary only" FontSize="11"
+                                   Foreground="{StaticResource PrimaryTextBrush}" />
+                    </RadioButton>
+                    <RadioButton x:Name="AllMonitorsRadio"
+                                 Grid.Column="1"
+                                 GroupName="MonitorMode"
+                                 Checked="MonitorMode_Changed"
+                                 Foreground="{StaticResource PrimaryTextBrush}">
+                        <TextBlock Text="All monitors" FontSize="11"
+                                   Foreground="{StaticResource PrimaryTextBrush}" />
+                    </RadioButton>
+                </Grid>
+            </StackPanel>
+
+            <!-- Close settings button -->
+            <Button Grid.Row="4"
+                    Content="Done"
+                    Style="{StaticResource PrimaryButtonStyle}"
+                    Click="Close_Click"
+                    HorizontalAlignment="Right"
+                    Padding="20,6" />
+        </Grid>
+    </Border>
+</Window>
