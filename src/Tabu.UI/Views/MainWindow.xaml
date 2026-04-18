@@ -136,7 +136,7 @@
             <!-- Settings button -->
             <Button x:Name="SettingsButton" Grid.Column="2"
                     Click="Settings_Click"
-                    ToolTip="Settings"
+                    ToolTip="{DynamicResource MainBar_SettingsTooltip}"
                     Style="{DynamicResource TitleBarButtonStyle}"
                     Content="&#xE713;"
                     Width="36" Height="36" />
@@ -145,7 +145,7 @@
             <Button x:Name="CloseButton" Grid.Column="3"
                     Style="{DynamicResource CloseWindowButtonStyle}"
                     Content="&#xE8BB;" Click="Close_Click"
-                    ToolTip="Close Tabu"
+                    ToolTip="{DynamicResource MainBar_CloseTooltip}"
                     Width="36" Height="36" />
         </Grid>
     </Grid>

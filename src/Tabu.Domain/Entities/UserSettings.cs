@@ -8,4 +8,5 @@ public sealed class UserSettings
     public double BarOpacity { get; set; } = 1.0;
     public bool UseFixedTabWidth { get; set; } = true;
     public bool ShowBranding { get; set; } = true;
+    public string Language { get; set; } = "en";
 }

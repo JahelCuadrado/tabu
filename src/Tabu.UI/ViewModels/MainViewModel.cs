@@ -19,6 +19,7 @@ public sealed class MainViewModel : ObservableObject
     private double _barOpacity = 1.0;
     private bool _useFixedTabWidth = true;
     private bool _showBranding = true;
+    private string _language = "en";
     private IntPtr? _monitorFilter;
 
     public ObservableCollection<TabViewModel> Tabs { get; } = new();
@@ -103,6 +104,18 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
+    public string Language
+    {
+        get => _language;
+        set
+        {
+            if (SetProperty(ref _language, value))
+            {
+                LanguageChangeRequested?.Invoke(value);
+            }
+        }
+    }
+
     public ICommand SwitchToCommand { get; }
     public ICommand NextTabCommand { get; }
     public ICommand PrevTabCommand { get; }
@@ -115,6 +128,7 @@ public sealed class MainViewModel : ObservableObject
     public event Action<double>? OpacityChangeRequested;
     public event Action<bool>? TabWidthChangeRequested;
     public event Action<bool>? BrandingChangeRequested;
+    public event Action<string>? LanguageChangeRequested;
 
     public MainViewModel(WindowSwitcher switcher, bool startPolling = true)
     {

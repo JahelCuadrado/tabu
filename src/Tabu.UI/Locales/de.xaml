@@ -1,0 +1,28 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <sys:String x:Key="Settings_Title">Einstellungen</sys:String>
+    <sys:String x:Key="Settings_BarDisplay">Leistenanzeige</sys:String>
+    <sys:String x:Key="Settings_PrimaryOnly">Nur Hauptmonitor</sys:String>
+    <sys:String x:Key="Settings_AllMonitors">Alle Monitore</sys:String>
+    <sys:String x:Key="Settings_WindowDetection">Fenstererkennung</sys:String>
+    <sys:String x:Key="Settings_AllWindows">Alle Fenster</sys:String>
+    <sys:String x:Key="Settings_SameScreen">Gleicher Bildschirm</sys:String>
+    <sys:String x:Key="Settings_Theme">Design</sys:String>
+    <sys:String x:Key="Settings_ThemeSystem">System</sys:String>
+    <sys:String x:Key="Settings_ThemeDark">Dunkel</sys:String>
+    <sys:String x:Key="Settings_ThemeLight">Hell</sys:String>
+    <sys:String x:Key="Settings_BarOpacity">Leistendeckkraft</sys:String>
+    <sys:String x:Key="Settings_Branding">Branding</sys:String>
+    <sys:String x:Key="Settings_ShowLogo">Logo anzeigen</sys:String>
+    <sys:String x:Key="Settings_HideLogo">Logo ausblenden</sys:String>
+    <sys:String x:Key="Settings_TabWidth">Tab-Breite</sys:String>
+    <sys:String x:Key="Settings_FullWidth">Volle Breite</sys:String>
+    <sys:String x:Key="Settings_FixedWidth">Feste Breite</sys:String>
+    <sys:String x:Key="Settings_Language">Sprache</sys:String>
+    <sys:String x:Key="Settings_Done">Fertig</sys:String>
+    <sys:String x:Key="MainBar_SettingsTooltip">Einstellungen</sys:String>
+    <sys:String x:Key="MainBar_CloseTooltip">Tabu schließen</sys:String>
+
+</ResourceDictionary>

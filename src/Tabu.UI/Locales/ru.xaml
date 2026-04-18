@@ -1,0 +1,28 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <sys:String x:Key="Settings_Title">Настройки</sys:String>
+    <sys:String x:Key="Settings_BarDisplay">Отображение панели</sys:String>
+    <sys:String x:Key="Settings_PrimaryOnly">Только основной</sys:String>
+    <sys:String x:Key="Settings_AllMonitors">Все мониторы</sys:String>
+    <sys:String x:Key="Settings_WindowDetection">Обнаружение окон</sys:String>
+    <sys:String x:Key="Settings_AllWindows">Все окна</sys:String>
+    <sys:String x:Key="Settings_SameScreen">Тот же экран</sys:String>
+    <sys:String x:Key="Settings_Theme">Тема</sys:String>
+    <sys:String x:Key="Settings_ThemeSystem">Системная</sys:String>
+    <sys:String x:Key="Settings_ThemeDark">Тёмная</sys:String>
+    <sys:String x:Key="Settings_ThemeLight">Светлая</sys:String>
+    <sys:String x:Key="Settings_BarOpacity">Прозрачность панели</sys:String>
+    <sys:String x:Key="Settings_Branding">Брендинг</sys:String>
+    <sys:String x:Key="Settings_ShowLogo">Показать логотип</sys:String>
+    <sys:String x:Key="Settings_HideLogo">Скрыть логотип</sys:String>
+    <sys:String x:Key="Settings_TabWidth">Ширина вкладок</sys:String>
+    <sys:String x:Key="Settings_FullWidth">Полная ширина</sys:String>
+    <sys:String x:Key="Settings_FixedWidth">Фиксированная ширина</sys:String>
+    <sys:String x:Key="Settings_Language">Язык</sys:String>
+    <sys:String x:Key="Settings_Done">Готово</sys:String>
+    <sys:String x:Key="MainBar_SettingsTooltip">Настройки</sys:String>
+    <sys:String x:Key="MainBar_CloseTooltip">Закрыть Tabu</sys:String>
+
+</ResourceDictionary>

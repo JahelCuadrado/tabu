@@ -1,0 +1,28 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <sys:String x:Key="Settings_Title">설정</sys:String>
+    <sys:String x:Key="Settings_BarDisplay">바 표시</sys:String>
+    <sys:String x:Key="Settings_PrimaryOnly">주 모니터만</sys:String>
+    <sys:String x:Key="Settings_AllMonitors">모든 모니터</sys:String>
+    <sys:String x:Key="Settings_WindowDetection">창 감지</sys:String>
+    <sys:String x:Key="Settings_AllWindows">모든 창</sys:String>
+    <sys:String x:Key="Settings_SameScreen">같은 화면</sys:String>
+    <sys:String x:Key="Settings_Theme">테마</sys:String>
+    <sys:String x:Key="Settings_ThemeSystem">시스템</sys:String>
+    <sys:String x:Key="Settings_ThemeDark">다크</sys:String>
+    <sys:String x:Key="Settings_ThemeLight">라이트</sys:String>
+    <sys:String x:Key="Settings_BarOpacity">바 불투명도</sys:String>
+    <sys:String x:Key="Settings_Branding">브랜딩</sys:String>
+    <sys:String x:Key="Settings_ShowLogo">로고 표시</sys:String>
+    <sys:String x:Key="Settings_HideLogo">로고 숨기기</sys:String>
+    <sys:String x:Key="Settings_TabWidth">탭 너비</sys:String>
+    <sys:String x:Key="Settings_FullWidth">전체 너비</sys:String>
+    <sys:String x:Key="Settings_FixedWidth">고정 너비</sys:String>
+    <sys:String x:Key="Settings_Language">언어</sys:String>
+    <sys:String x:Key="Settings_Done">완료</sys:String>
+    <sys:String x:Key="MainBar_SettingsTooltip">설정</sys:String>
+    <sys:String x:Key="MainBar_CloseTooltip">Tabu 닫기</sys:String>
+
+</ResourceDictionary>

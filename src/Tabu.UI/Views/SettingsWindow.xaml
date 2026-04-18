@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Tabu Settings"
-        Width="340" Height="530"
+        Width="340" Height="580"
         WindowStyle="None" AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
@@ -39,7 +39,7 @@
                     <TextBlock Grid.Column="0" Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="12"
                                Foreground="{DynamicResource MutedTextBrush}"
                                VerticalAlignment="Center" Margin="12,0,8,0" />
-                    <TextBlock Grid.Column="1" Text="Settings" FontSize="12" FontWeight="Medium"
+                    <TextBlock Grid.Column="1" Text="{DynamicResource Settings_Title}" FontSize="12" FontWeight="Medium"
                                Foreground="{DynamicResource PrimaryTextBrush}"
                                VerticalAlignment="Center" />
                     <Button Grid.Column="2"
@@ -58,13 +58,14 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
             <!-- Bar placement -->
             <StackPanel Grid.Row="0" Margin="0,0,0,16">
-                <TextBlock Text="Bar Display" FontSize="12" FontWeight="Medium"
+                <TextBlock Text="{DynamicResource Settings_BarDisplay}" FontSize="12" FontWeight="Medium"
                            Foreground="{DynamicResource SecondaryTextBrush}"
                            Margin="0,0,0,8" />
                 <Grid>
@@ -79,7 +80,7 @@
                                  Checked="BarPlacement_Changed"
                                  Foreground="{DynamicResource PrimaryTextBrush}"
                                  Margin="0,0,8,0">
-                        <TextBlock Text="Primary only" FontSize="11"
+                        <TextBlock Text="{DynamicResource Settings_PrimaryOnly}" FontSize="11"
                                    Foreground="{DynamicResource PrimaryTextBrush}" />
                     </RadioButton>
                     <RadioButton x:Name="AllBarsRadio"
@@ -87,7 +88,7 @@
                                  GroupName="BarPlacement"
                                  Checked="BarPlacement_Changed"
                                  Foreground="{DynamicResource PrimaryTextBrush}">
-                        <TextBlock Text="All monitors" FontSize="11"
+                        <TextBlock Text="{DynamicResource Settings_AllMonitors}" FontSize="11"
                                    Foreground="{DynamicResource PrimaryTextBrush}" />
                     </RadioButton>
                 </Grid>
@@ -95,7 +96,7 @@
 
             <!-- Window detection -->
             <StackPanel Grid.Row="1" Margin="0,0,0,16">
-                <TextBlock Text="Window Detection" FontSize="12" FontWeight="Medium"
+                <TextBlock Text="{DynamicResource Settings_WindowDetection}" FontSize="12" FontWeight="Medium"
                            Foreground="{DynamicResource SecondaryTextBrush}"
                            Margin="0,0,0,8" />
                 <Grid>
@@ -110,7 +111,7 @@
                                  Checked="DetectionMode_Changed"
                                  Foreground="{DynamicResource PrimaryTextBrush}"
                                  Margin="0,0,8,0">
-                        <TextBlock Text="All windows" FontSize="11"
+                        <TextBlock Text="{DynamicResource Settings_AllWindows}" FontSize="11"
                                    Foreground="{DynamicResource PrimaryTextBrush}" />
                     </RadioButton>
                     <RadioButton x:Name="DetectSameScreenRadio"
@@ -118,7 +119,7 @@
                                  GroupName="DetectionMode"
                                  Checked="DetectionMode_Changed"
                                  Foreground="{DynamicResource PrimaryTextBrush}">
-                        <TextBlock Text="Same screen" FontSize="11"
+                        <TextBlock Text="{DynamicResource Settings_SameScreen}" FontSize="11"
                                    Foreground="{DynamicResource PrimaryTextBrush}" />
                     </RadioButton>
                 </Grid>
@@ -126,7 +127,7 @@
 
             <!-- Theme -->
             <StackPanel Grid.Row="2" Margin="0,0,0,12">
-                <TextBlock Text="Theme" FontSize="12" FontWeight="Medium"
+                <TextBlock Text="{DynamicResource Settings_Theme}" FontSize="12" FontWeight="Medium"
                            Foreground="{DynamicResource SecondaryTextBrush}"
                            Margin="0,0,0,8" />
                 <Grid>
@@ -142,7 +143,7 @@
                                  Checked="Theme_Changed"
                                  Foreground="{DynamicResource PrimaryTextBrush}"
                                  Margin="0,0,8,0">
-                        <TextBlock Text="System" FontSize="11"
+                        <TextBlock Text="{DynamicResource Settings_ThemeSystem}" FontSize="11"
                                    Foreground="{DynamicResource PrimaryTextBrush}" />
                     </RadioButton>
                     <RadioButton x:Name="ThemeDarkRadio"
@@ -151,7 +152,7 @@
                                  Checked="Theme_Changed"
                                  Foreground="{DynamicResource PrimaryTextBrush}"
                                  Margin="0,0,8,0">
-                        <TextBlock Text="Dark" FontSize="11"
+                        <TextBlock Text="{DynamicResource Settings_ThemeDark}" FontSize="11"
                                    Foreground="{DynamicResource PrimaryTextBrush}" />
                     </RadioButton>
                     <RadioButton x:Name="ThemeLightRadio"
@@ -159,7 +160,7 @@
                                  GroupName="Theme"
                                  Checked="Theme_Changed"
                                  Foreground="{DynamicResource PrimaryTextBrush}">
-                        <TextBlock Text="Light" FontSize="11"
+                        <TextBlock Text="{DynamicResource Settings_ThemeLight}" FontSize="11"
                                    Foreground="{DynamicResource PrimaryTextBrush}" />
                     </RadioButton>
                 </Grid>
@@ -172,7 +173,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Bar Opacity" FontSize="12" FontWeight="Medium"
+                    <TextBlock Text="{DynamicResource Settings_BarOpacity}" FontSize="12" FontWeight="Medium"
                                Foreground="{DynamicResource SecondaryTextBrush}" />
                     <TextBlock x:Name="OpacityValueText" Grid.Column="1" FontSize="11"
                                Foreground="{DynamicResource MutedTextBrush}" Text="100%" />
@@ -185,7 +186,7 @@
 
             <!-- Branding -->
             <StackPanel Grid.Row="4" Margin="0,0,0,16">
-                <TextBlock Text="Branding" FontSize="12" FontWeight="Medium"
+                <TextBlock Text="{DynamicResource Settings_Branding}" FontSize="12" FontWeight="Medium"
                            Foreground="{DynamicResource SecondaryTextBrush}"
                            Margin="0,0,0,8" />
                 <Grid>
@@ -200,7 +201,7 @@
                                  Checked="Branding_Changed"
                                  Foreground="{DynamicResource PrimaryTextBrush}"
                                  Margin="0,0,8,0">
-                        <TextBlock Text="Show logo" FontSize="11"
+                        <TextBlock Text="{DynamicResource Settings_ShowLogo}" FontSize="11"
                                    Foreground="{DynamicResource PrimaryTextBrush}" />
                     </RadioButton>
                     <RadioButton x:Name="BrandingHiddenRadio"
@@ -208,15 +209,15 @@
                                  GroupName="Branding"
                                  Checked="Branding_Changed"
                                  Foreground="{DynamicResource PrimaryTextBrush}">
-                        <TextBlock Text="Hide logo" FontSize="11"
+                        <TextBlock Text="{DynamicResource Settings_HideLogo}" FontSize="11"
                                    Foreground="{DynamicResource PrimaryTextBrush}" />
                     </RadioButton>
                 </Grid>
             </StackPanel>
 
             <!-- Tab Width -->
-            <StackPanel Grid.Row="5" Margin="0,0,0,12">
-                <TextBlock Text="Tab Width" FontSize="12" FontWeight="Medium"
+            <StackPanel Grid.Row="5" Margin="0,0,0,16">
+                <TextBlock Text="{DynamicResource Settings_TabWidth}" FontSize="12" FontWeight="Medium"
                            Foreground="{DynamicResource SecondaryTextBrush}"
                            Margin="0,0,0,8" />
                 <Grid>
@@ -231,7 +232,7 @@
                                  Checked="TabWidth_Changed"
                                  Foreground="{DynamicResource PrimaryTextBrush}"
                                  Margin="0,0,8,0">
-                        <TextBlock Text="Full width" FontSize="11"
+                        <TextBlock Text="{DynamicResource Settings_FullWidth}" FontSize="11"
                                    Foreground="{DynamicResource PrimaryTextBrush}" />
                     </RadioButton>
                     <RadioButton x:Name="TabFixedWidthRadio"
@@ -239,15 +240,27 @@
                                  GroupName="TabWidth"
                                  Checked="TabWidth_Changed"
                                  Foreground="{DynamicResource PrimaryTextBrush}">
-                        <TextBlock Text="Fixed width" FontSize="11"
+                        <TextBlock Text="{DynamicResource Settings_FixedWidth}" FontSize="11"
                                    Foreground="{DynamicResource PrimaryTextBrush}" />
                     </RadioButton>
                 </Grid>
             </StackPanel>
 
+            <!-- Language -->
+            <StackPanel Grid.Row="6" Margin="0,0,0,12">
+                <TextBlock Text="{DynamicResource Settings_Language}" FontSize="12" FontWeight="Medium"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           Margin="0,0,0,8" />
+                <ComboBox x:Name="LanguageCombo"
+                          SelectionChanged="Language_Changed"
+                          FontSize="11"
+                          Height="28"
+                          Padding="8,4" />
+            </StackPanel>
+
             <!-- Done button -->
-            <Button Grid.Row="7"
-                    Content="Done"
+            <Button Grid.Row="8"
+                    Content="{DynamicResource Settings_Done}"
                     Style="{DynamicResource PrimaryButtonStyle}"
                     Click="Close_Click"
                     HorizontalAlignment="Right"

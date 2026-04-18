@@ -67,6 +67,13 @@ public partial class SettingsWindow : Window
             BrandingHiddenRadio.IsChecked = true;
         }
 
+        // Language combo
+        LanguageCombo.ItemsSource = LocalizationManager.AvailableLanguages;
+        var currentLang = LocalizationManager.AvailableLanguages
+            .FirstOrDefault(l => l.Code == _viewModel.Language)
+            ?? LocalizationManager.AvailableLanguages[0];
+        LanguageCombo.SelectedItem = currentLang;
+
         _initialized = true;
     }
 
@@ -147,6 +154,16 @@ public partial class SettingsWindow : Window
         if (show != _viewModel.ShowBranding)
         {
             _viewModel.ShowBranding = show;
+        }
+    }
+
+    private void Language_Changed(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (!_initialized) return;
+
+        if (LanguageCombo.SelectedItem is LanguageOption selected && selected.Code != _viewModel.Language)
+        {
+            _viewModel.Language = selected.Code;
         }
     }
 

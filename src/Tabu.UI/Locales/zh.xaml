@@ -1,0 +1,28 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <sys:String x:Key="Settings_Title">设置</sys:String>
+    <sys:String x:Key="Settings_BarDisplay">栏显示</sys:String>
+    <sys:String x:Key="Settings_PrimaryOnly">仅主屏幕</sys:String>
+    <sys:String x:Key="Settings_AllMonitors">所有显示器</sys:String>
+    <sys:String x:Key="Settings_WindowDetection">窗口检测</sys:String>
+    <sys:String x:Key="Settings_AllWindows">所有窗口</sys:String>
+    <sys:String x:Key="Settings_SameScreen">同一屏幕</sys:String>
+    <sys:String x:Key="Settings_Theme">主题</sys:String>
+    <sys:String x:Key="Settings_ThemeSystem">系统</sys:String>
+    <sys:String x:Key="Settings_ThemeDark">深色</sys:String>
+    <sys:String x:Key="Settings_ThemeLight">浅色</sys:String>
+    <sys:String x:Key="Settings_BarOpacity">栏透明度</sys:String>
+    <sys:String x:Key="Settings_Branding">品牌</sys:String>
+    <sys:String x:Key="Settings_ShowLogo">显示标志</sys:String>
+    <sys:String x:Key="Settings_HideLogo">隐藏标志</sys:String>
+    <sys:String x:Key="Settings_TabWidth">标签宽度</sys:String>
+    <sys:String x:Key="Settings_FullWidth">全宽</sys:String>
+    <sys:String x:Key="Settings_FixedWidth">固定宽度</sys:String>
+    <sys:String x:Key="Settings_Language">语言</sys:String>
+    <sys:String x:Key="Settings_Done">完成</sys:String>
+    <sys:String x:Key="MainBar_SettingsTooltip">设置</sys:String>
+    <sys:String x:Key="MainBar_CloseTooltip">关闭 Tabu</sys:String>
+
+</ResourceDictionary>

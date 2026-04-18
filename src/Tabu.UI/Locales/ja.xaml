@@ -1,0 +1,28 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <sys:String x:Key="Settings_Title">設定</sys:String>
+    <sys:String x:Key="Settings_BarDisplay">バー表示</sys:String>
+    <sys:String x:Key="Settings_PrimaryOnly">メインのみ</sys:String>
+    <sys:String x:Key="Settings_AllMonitors">全モニター</sys:String>
+    <sys:String x:Key="Settings_WindowDetection">ウィンドウ検出</sys:String>
+    <sys:String x:Key="Settings_AllWindows">すべてのウィンドウ</sys:String>
+    <sys:String x:Key="Settings_SameScreen">同じ画面</sys:String>
+    <sys:String x:Key="Settings_Theme">テーマ</sys:String>
+    <sys:String x:Key="Settings_ThemeSystem">システム</sys:String>
+    <sys:String x:Key="Settings_ThemeDark">ダーク</sys:String>
+    <sys:String x:Key="Settings_ThemeLight">ライト</sys:String>
+    <sys:String x:Key="Settings_BarOpacity">バーの不透明度</sys:String>
+    <sys:String x:Key="Settings_Branding">ブランディング</sys:String>
+    <sys:String x:Key="Settings_ShowLogo">ロゴを表示</sys:String>
+    <sys:String x:Key="Settings_HideLogo">ロゴを非表示</sys:String>
+    <sys:String x:Key="Settings_TabWidth">タブ幅</sys:String>
+    <sys:String x:Key="Settings_FullWidth">全幅</sys:String>
+    <sys:String x:Key="Settings_FixedWidth">固定幅</sys:String>
+    <sys:String x:Key="Settings_Language">言語</sys:String>
+    <sys:String x:Key="Settings_Done">完了</sys:String>
+    <sys:String x:Key="MainBar_SettingsTooltip">設定</sys:String>
+    <sys:String x:Key="MainBar_CloseTooltip">Tabuを閉じる</sys:String>
+
+</ResourceDictionary>

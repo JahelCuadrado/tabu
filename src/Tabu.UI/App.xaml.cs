@@ -19,6 +19,7 @@ public partial class App : System.Windows.Application
     private MainViewModel? _primaryViewModel;
     private readonly List<MainWindow> _secondaryBars = new();
     private readonly ThemeManager _themeManager = new();
+    private readonly LocalizationManager _localizationManager = new();
     private ISettingsRepository _settingsRepository = null!;
 
     public App()
@@ -47,7 +48,8 @@ public partial class App : System.Windows.Application
             IsDetectSameScreenOnly = saved.IsDetectSameScreenOnly,
             BarOpacity = saved.BarOpacity,
             UseFixedTabWidth = saved.UseFixedTabWidth,
-            ShowBranding = saved.ShowBranding
+            ShowBranding = saved.ShowBranding,
+            Language = saved.Language
         };
 
         _primaryViewModel.BarPlacementChangeRequested += OnBarPlacementChangeRequested;
@@ -56,10 +58,13 @@ public partial class App : System.Windows.Application
         _primaryViewModel.OpacityChangeRequested += OnOpacityChangeRequested;
         _primaryViewModel.TabWidthChangeRequested += OnTabWidthChangeRequested;
         _primaryViewModel.BrandingChangeRequested += OnBrandingChangeRequested;
+        _primaryViewModel.LanguageChangeRequested += OnLanguageChangeRequested;
 
         var theme = Enum.TryParse<AppTheme>(saved.AppTheme, out var parsed) ? parsed : AppTheme.System;
         _primaryViewModel.AppTheme = theme;
         _themeManager.Apply(theme);
+
+        _localizationManager.Apply(saved.Language);
 
         if (saved.IsBarOnAllMonitors)
         {
@@ -145,6 +150,12 @@ public partial class App : System.Windows.Application
         PersistSettings();
     }
 
+    private void OnLanguageChangeRequested(string language)
+    {
+        Dispatcher.BeginInvoke(() => _localizationManager.Apply(language));
+        PersistSettings();
+    }
+
     private void ApplyDetectionMode(bool sameScreenOnly)
     {
         var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
@@ -190,7 +201,8 @@ public partial class App : System.Windows.Application
                 IsDetectSameScreenOnly = sameScreen,
                 BarOpacity = _primaryViewModel?.BarOpacity ?? 1.0,
                 UseFixedTabWidth = _primaryViewModel?.UseFixedTabWidth ?? false,
-                ShowBranding = _primaryViewModel?.ShowBranding ?? true
+                ShowBranding = _primaryViewModel?.ShowBranding ?? true,
+                Language = _primaryViewModel?.Language ?? "en"
             };
 
             var bar = new MainWindow(vm) { TargetScreen = screen, IsPrimary = false };
@@ -233,7 +245,8 @@ public partial class App : System.Windows.Application
             AppTheme = _primaryViewModel.AppTheme.ToString(),
             BarOpacity = _primaryViewModel.BarOpacity,
             UseFixedTabWidth = _primaryViewModel.UseFixedTabWidth,
-            ShowBranding = _primaryViewModel.ShowBranding
+            ShowBranding = _primaryViewModel.ShowBranding,
+            Language = _primaryViewModel.Language
         };
 
         Task.Run(() =>
