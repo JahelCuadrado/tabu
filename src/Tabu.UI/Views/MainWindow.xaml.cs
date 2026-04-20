@@ -640,7 +640,16 @@ public partial class MainWindow : Window
         settingsWindow.ShowDialog();
     }
 
-    private void Close_Click(object sender, RoutedEventArgs e) => Close();
+    /// <summary>
+    /// The Close button on the primary bar is the user's intent to quit Tabu
+    /// entirely. Shutting down the <see cref="System.Windows.Application"/>
+    /// guarantees every secondary bar (one per non-primary monitor) is closed
+    /// and its AppBar reservation released through <c>App.OnExit</c>.
+    /// Closing only this window would leave orphaned bars on other monitors
+    /// because WPF's default <c>ShutdownMode</c> is <c>OnLastWindowClose</c>.
+    /// </summary>
+    private void Close_Click(object sender, RoutedEventArgs e)
+        => System.Windows.Application.Current.Shutdown();
 
     #region Auto-Hide
 
