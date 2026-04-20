@@ -45,4 +45,16 @@
     <sys:String x:Key="MainBar_SettingsTooltip">Настройки</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Закрыть Tabu</sys:String>
 
+    <sys:String x:Key="Settings_Blur">Размытие фона</sys:String>
+    <sys:String x:Key="Settings_BlurEnable">Включено</sys:String>
+    <sys:String x:Key="Settings_BlurDisable">Отключено</sys:String>
+    <sys:String x:Key="Settings_Updates">Обновления</sys:String>
+    <sys:String x:Key="Settings_AutoUpdates">Автоматическая проверка обновлений</sys:String>
+    <sys:String x:Key="Settings_AutoUpdatesEnable">Включено</sys:String>
+    <sys:String x:Key="Settings_AutoUpdatesDisable">Отключено</sys:String>
+    <sys:String x:Key="Settings_CheckUpdatesNow">Проверить обновления</sys:String>
+    <sys:String x:Key="Update_UpToDateTitle">Актуальная версия</sys:String>
+    <sys:String x:Key="Update_UpToDateBody">Установлена последняя версия Tabu (v{0}).</sys:String>
+    <sys:String x:Key="Update_CheckFailedTitle">Ошибка проверки</sys:String>
+    <sys:String x:Key="Update_CheckFailedBody">Не удалось связаться с сервером обновлений.</sys:String>
 </ResourceDictionary>

@@ -14,4 +14,6 @@ public sealed class UserSettings
     public bool LaunchAtStartup { get; set; }
     public bool ShowClock { get; set; } = true;
     public string BarSize { get; set; } = "Small";
+    public bool UseBlurEffect { get; set; }
+    public bool AutoCheckUpdates { get; set; } = true;
 }

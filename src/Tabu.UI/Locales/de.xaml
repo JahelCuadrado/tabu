@@ -45,4 +45,16 @@
     <sys:String x:Key="MainBar_SettingsTooltip">Einstellungen</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Tabu schließen</sys:String>
 
+    <sys:String x:Key="Settings_Blur">Hintergrund-Unschärfe</sys:String>
+    <sys:String x:Key="Settings_BlurEnable">Aktiviert</sys:String>
+    <sys:String x:Key="Settings_BlurDisable">Deaktiviert</sys:String>
+    <sys:String x:Key="Settings_Updates">Updates</sys:String>
+    <sys:String x:Key="Settings_AutoUpdates">Automatische Update-Prüfung</sys:String>
+    <sys:String x:Key="Settings_AutoUpdatesEnable">Aktiviert</sys:String>
+    <sys:String x:Key="Settings_AutoUpdatesDisable">Deaktiviert</sys:String>
+    <sys:String x:Key="Settings_CheckUpdatesNow">Jetzt nach Updates suchen</sys:String>
+    <sys:String x:Key="Update_UpToDateTitle">Auf dem neuesten Stand</sys:String>
+    <sys:String x:Key="Update_UpToDateBody">Sie verwenden die neueste Version von Tabu (v{0}).</sys:String>
+    <sys:String x:Key="Update_CheckFailedTitle">Update-Prüfung fehlgeschlagen</sys:String>
+    <sys:String x:Key="Update_CheckFailedBody">Tabu konnte den Update-Server nicht erreichen. Bitte prüfen Sie Ihre Verbindung.</sys:String>
 </ResourceDictionary>

@@ -124,6 +124,26 @@ public partial class SettingsWindow : Window
                 break;
         }
 
+        if (_viewModel.UseBlurEffect)
+        {
+            BlurEnabledRadio.IsChecked = true;
+        }
+        else
+        {
+            BlurDisabledRadio.IsChecked = true;
+        }
+
+        UpdateThemeLockState();
+
+        if (_viewModel.AutoCheckUpdates)
+        {
+            AutoUpdatesEnabledRadio.IsChecked = true;
+        }
+        else
+        {
+            AutoUpdatesDisabledRadio.IsChecked = true;
+        }
+
         _initialized = true;
     }
 
@@ -278,6 +298,60 @@ public partial class SettingsWindow : Window
         if (size != _viewModel.BarSize)
         {
             _viewModel.BarSize = size;
+        }
+    }
+
+    private void Blur_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+
+        bool enabled = BlurEnabledRadio.IsChecked == true;
+        if (enabled != _viewModel.UseBlurEffect)
+        {
+            _viewModel.UseBlurEffect = enabled;
+        }
+
+        // App.xaml.cs forces the theme to Dark when blur turns on; mirror
+        // that change in the settings UI and grey out the radios so the
+        // user cannot pick an incompatible combination.
+        if (enabled)
+        {
+            ThemeDarkRadio.IsChecked = true;
+        }
+        UpdateThemeLockState();
+    }
+
+    /// <summary>
+    /// Disables the theme radios when blur is on (acrylic requires the
+    /// dark palette to remain legible) and re-enables them otherwise.
+    /// </summary>
+    private void UpdateThemeLockState()
+    {
+        bool unlocked = !_viewModel.UseBlurEffect;
+        ThemeSystemRadio.IsEnabled = unlocked;
+        ThemeDarkRadio.IsEnabled = unlocked;
+        ThemeLightRadio.IsEnabled = unlocked;
+    }
+
+    private void AutoUpdates_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+
+        bool enabled = AutoUpdatesEnabledRadio.IsChecked == true;
+        if (enabled != _viewModel.AutoCheckUpdates)
+        {
+            _viewModel.AutoCheckUpdates = enabled;
+        }
+    }
+
+    private void CheckUpdatesNow_Click(object sender, RoutedEventArgs e)
+    {
+        // Forwards to the VM command which raises ManualUpdateCheckRequested
+        // — App.xaml.cs handles the actual orchestration so this view
+        // remains free of update domain knowledge.
+        if (_viewModel.CheckForUpdatesCommand.CanExecute(null))
+        {
+            _viewModel.CheckForUpdatesCommand.Execute(null);
         }
     }
 

@@ -57,7 +57,9 @@ public partial class App : System.Windows.Application
             AutoHideBar = saved.AutoHideBar,
             LaunchAtStartup = saved.LaunchAtStartup,
             ShowClock = saved.ShowClock,
-            BarSize = Enum.TryParse<BarSize>(saved.BarSize, out var size) ? size : BarSize.Small
+            BarSize = Enum.TryParse<BarSize>(saved.BarSize, out var size) ? size : BarSize.Small,
+            UseBlurEffect = saved.UseBlurEffect,
+            AutoCheckUpdates = saved.AutoCheckUpdates
         };
 
         _primaryViewModel.BarPlacementChangeRequested += OnBarPlacementChangeRequested;
@@ -72,6 +74,9 @@ public partial class App : System.Windows.Application
         _primaryViewModel.LaunchAtStartupChangeRequested += OnLaunchAtStartupChangeRequested;
         _primaryViewModel.ClockVisibilityChangeRequested += OnClockVisibilityChangeRequested;
         _primaryViewModel.BarSizeChangeRequested += OnBarSizeChangeRequested;
+        _primaryViewModel.BlurEffectChangeRequested += OnBlurEffectChangeRequested;
+        _primaryViewModel.AutoCheckUpdatesChangeRequested += OnAutoCheckUpdatesChangeRequested;
+        _primaryViewModel.ManualUpdateCheckRequested += OnManualUpdateCheckRequested;
 
         // Reconcile the Run registry value with the persisted preference so that
         // moving/renaming the executable still keeps autostart consistent.
@@ -97,9 +102,14 @@ public partial class App : System.Windows.Application
         _primaryBar = new MainWindow(_primaryViewModel);
         _primaryBar.Show();
 
-        // Fire-and-forget update check; never blocks startup.
-        var updater = new UpdateOrchestrator(_host.Services.GetRequiredService<IUpdateService>());
-        updater.RunInBackground();
+        // Fire-and-forget update check; never blocks startup. Gated by
+        // the user preference so opting out fully disables network I/O
+        // until the user explicitly invokes a manual check.
+        if (saved.AutoCheckUpdates)
+        {
+            var updater = new UpdateOrchestrator(_host.Services.GetRequiredService<IUpdateService>());
+            updater.RunInBackground();
+        }
 
         base.OnStartup(e);
     }
@@ -244,6 +254,46 @@ public partial class App : System.Windows.Application
         PersistSettings();
     }
 
+    private void OnBlurEffectChangeRequested(bool enabled)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            // Acrylic only renders correctly over the dark palette; light
+            // colors disappear into the blurred backdrop. Force-switch
+            // and lock the theme to Dark while blur is on so the bar
+            // stays legible regardless of the user's previous choice.
+            if (enabled && _primaryViewModel is not null && _primaryViewModel.AppTheme != AppTheme.Dark)
+            {
+                _primaryViewModel.AppTheme = AppTheme.Dark;
+            }
+
+            foreach (var bar in _secondaryBars)
+            {
+                if (bar.DataContext is MainViewModel vm)
+                {
+                    vm.UseBlurEffect = enabled;
+                }
+            }
+        });
+        PersistSettings();
+    }
+
+    private void OnAutoCheckUpdatesChangeRequested(bool enabled)
+    {
+        // No live propagation needed — the toggle only affects the next
+        // startup. We just persist so the change survives restarts.
+        _ = enabled;
+        PersistSettings();
+    }
+
+    private void OnManualUpdateCheckRequested()
+    {
+        // Always honor a manual check regardless of the auto-update flag;
+        // this is the user's explicit intent to look for a new release.
+        var updater = new UpdateOrchestrator(_host.Services.GetRequiredService<IUpdateService>());
+        updater.RunManualCheck();
+    }
+
     private void ApplyDetectionMode(bool sameScreenOnly)
     {
         var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
@@ -294,7 +344,9 @@ public partial class App : System.Windows.Application
                 AccentColor = _primaryViewModel?.AccentColor ?? "purple",
                 AutoHideBar = _primaryViewModel?.AutoHideBar ?? false,
                 ShowClock = _primaryViewModel?.ShowClock ?? true,
-                BarSize = _primaryViewModel?.BarSize ?? BarSize.Small
+                BarSize = _primaryViewModel?.BarSize ?? BarSize.Small,
+                UseBlurEffect = _primaryViewModel?.UseBlurEffect ?? false,
+                AutoCheckUpdates = _primaryViewModel?.AutoCheckUpdates ?? true
             };
 
             var bar = new MainWindow(vm) { TargetScreen = screen, IsPrimary = false };
@@ -350,7 +402,9 @@ public partial class App : System.Windows.Application
             AutoHideBar = _primaryViewModel.AutoHideBar,
             LaunchAtStartup = _primaryViewModel.LaunchAtStartup,
             ShowClock = _primaryViewModel.ShowClock,
-            BarSize = _primaryViewModel.BarSize.ToString()
+            BarSize = _primaryViewModel.BarSize.ToString(),
+            UseBlurEffect = _primaryViewModel.UseBlurEffect,
+            AutoCheckUpdates = _primaryViewModel.AutoCheckUpdates
         };
 
         Task.Run(() =>

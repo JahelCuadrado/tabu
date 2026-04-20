@@ -134,6 +134,16 @@
                                 <Setter TargetName="TabBorder" Property="TextBlock.Foreground" Value="{DynamicResource PrimaryTextBrush}" />
                                 <Setter TargetName="CloseBtn" Property="Visibility" Value="Visible" />
                             </DataTrigger>
+                            <!-- Override the active background with a high-contrast brush when the
+                                 acrylic blur is on so the selected tab is clearly distinguishable
+                                 against the blurred desktop. -->
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsActive}" Value="True" />
+                                    <Condition Binding="{Binding DataContext.UseBlurEffect, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True" />
+                                </MultiDataTrigger.Conditions>
+                                <Setter TargetName="TabBorder" Property="Background" Value="{DynamicResource ActiveTabBackgroundBlurBrush}" />
+                            </MultiDataTrigger>
                             <Trigger SourceName="TabBorder" Property="IsMouseOver" Value="True">
                                 <Setter TargetName="CloseBtn" Property="Visibility" Value="Visible" />
                             </Trigger>

@@ -29,6 +29,8 @@ public sealed class MainViewModel : ObservableObject
     private string _currentTime = string.Empty;
     private BarSize _barSize = BarSize.Small;
     private IntPtr? _monitorFilter;
+    private bool _useBlurEffect;
+    private bool _autoCheckUpdates = true;
 
     public ObservableCollection<TabViewModel> Tabs { get; } = new();
 
@@ -197,6 +199,40 @@ public sealed class MainViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Enables a system-rendered acrylic blur behind the bar background
+    /// (Windows 10 1809+ via SetWindowCompositionAttribute). When off,
+    /// the bar uses the regular themed solid background.
+    /// </summary>
+    public bool UseBlurEffect
+    {
+        get => _useBlurEffect;
+        set
+        {
+            if (SetProperty(ref _useBlurEffect, value))
+            {
+                BlurEffectChangeRequested?.Invoke(value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Controls whether the app silently checks for new releases at
+    /// startup. The user can still trigger a manual check via
+    /// <see cref="CheckForUpdatesCommand"/> regardless of this flag.
+    /// </summary>
+    public bool AutoCheckUpdates
+    {
+        get => _autoCheckUpdates;
+        set
+        {
+            if (SetProperty(ref _autoCheckUpdates, value))
+            {
+                AutoCheckUpdatesChangeRequested?.Invoke(value);
+            }
+        }
+    }
+
+    /// <summary>
     /// Pixel/DIP height the bar must occupy for the current
     /// <see cref="BarSize"/>. Bound by the view to keep layout in sync
     /// when the user picks a new size.
@@ -217,6 +253,7 @@ public sealed class MainViewModel : ObservableObject
     public ICommand PrevTabCommand { get; }
     public ICommand GoToTabCommand { get; }
     public ICommand CloseTabCommand { get; }
+    public ICommand CheckForUpdatesCommand { get; }
 
     /// <summary>
     /// Moves the source tab to the position of the target tab.
@@ -241,6 +278,10 @@ public sealed class MainViewModel : ObservableObject
     public event Action<bool>? LaunchAtStartupChangeRequested;
     public event Action<bool>? ClockVisibilityChangeRequested;
     public event Action<BarSize>? BarSizeChangeRequested;
+    public event Action<bool>? BlurEffectChangeRequested;
+    public event Action<bool>? AutoCheckUpdatesChangeRequested;
+    /// <summary>Raised when the user explicitly asks to check for a new release.</summary>
+    public event Action? ManualUpdateCheckRequested;
 
     public MainViewModel(WindowSwitcher switcher, bool startPolling = true)
     {
@@ -251,6 +292,7 @@ public sealed class MainViewModel : ObservableObject
         PrevTabCommand = new RelayCommand(PrevTab);
         GoToTabCommand = new RelayCommand(p => GoToTab(p));
         CloseTabCommand = new RelayCommand(p => CloseTab(p as TabViewModel));
+        CheckForUpdatesCommand = new RelayCommand(_ => ManualUpdateCheckRequested?.Invoke());
 
         _switcher.WindowsChanged += OnWindowsChanged;
 

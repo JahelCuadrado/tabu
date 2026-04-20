@@ -45,4 +45,16 @@
     <sys:String x:Key="MainBar_SettingsTooltip">設定</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Tabuを閉じる</sys:String>
 
+    <sys:String x:Key="Settings_Blur">背景のぼかし</sys:String>
+    <sys:String x:Key="Settings_BlurEnable">有効</sys:String>
+    <sys:String x:Key="Settings_BlurDisable">無効</sys:String>
+    <sys:String x:Key="Settings_Updates">アップデート</sys:String>
+    <sys:String x:Key="Settings_AutoUpdates">自動アップデート確認</sys:String>
+    <sys:String x:Key="Settings_AutoUpdatesEnable">有効</sys:String>
+    <sys:String x:Key="Settings_AutoUpdatesDisable">無効</sys:String>
+    <sys:String x:Key="Settings_CheckUpdatesNow">今すぐアップデートを確認</sys:String>
+    <sys:String x:Key="Update_UpToDateTitle">最新です</sys:String>
+    <sys:String x:Key="Update_UpToDateBody">最新バージョンの Tabu (v{0}) を使用しています。</sys:String>
+    <sys:String x:Key="Update_CheckFailedTitle">アップデート確認に失敗</sys:String>
+    <sys:String x:Key="Update_CheckFailedBody">アップデートサーバーに接続できませんでした。</sys:String>
 </ResourceDictionary>

@@ -45,4 +45,16 @@
     <sys:String x:Key="MainBar_SettingsTooltip">Settings</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Close Tabu</sys:String>
 
+    <sys:String x:Key="Settings_Blur">Background blur</sys:String>
+    <sys:String x:Key="Settings_BlurEnable">Enabled</sys:String>
+    <sys:String x:Key="Settings_BlurDisable">Disabled</sys:String>
+    <sys:String x:Key="Settings_Updates">Updates</sys:String>
+    <sys:String x:Key="Settings_AutoUpdates">Automatic update check</sys:String>
+    <sys:String x:Key="Settings_AutoUpdatesEnable">Enabled</sys:String>
+    <sys:String x:Key="Settings_AutoUpdatesDisable">Disabled</sys:String>
+    <sys:String x:Key="Settings_CheckUpdatesNow">Check for updates now</sys:String>
+    <sys:String x:Key="Update_UpToDateTitle">Up to date</sys:String>
+    <sys:String x:Key="Update_UpToDateBody">You are running the latest version of Tabu (v{0}).</sys:String>
+    <sys:String x:Key="Update_CheckFailedTitle">Update check failed</sys:String>
+    <sys:String x:Key="Update_CheckFailedBody">Tabu could not reach the update server. Please check your connection and try again.</sys:String>
 </ResourceDictionary>

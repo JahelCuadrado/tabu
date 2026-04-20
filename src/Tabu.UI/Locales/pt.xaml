@@ -45,4 +45,16 @@
     <sys:String x:Key="MainBar_SettingsTooltip">Configurações</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Fechar Tabu</sys:String>
 
+    <sys:String x:Key="Settings_Blur">Desfoque de fundo</sys:String>
+    <sys:String x:Key="Settings_BlurEnable">Ativado</sys:String>
+    <sys:String x:Key="Settings_BlurDisable">Desativado</sys:String>
+    <sys:String x:Key="Settings_Updates">Atualizações</sys:String>
+    <sys:String x:Key="Settings_AutoUpdates">Verificação automática de atualizações</sys:String>
+    <sys:String x:Key="Settings_AutoUpdatesEnable">Ativado</sys:String>
+    <sys:String x:Key="Settings_AutoUpdatesDisable">Desativado</sys:String>
+    <sys:String x:Key="Settings_CheckUpdatesNow">Verificar atualizações agora</sys:String>
+    <sys:String x:Key="Update_UpToDateTitle">Atualizado</sys:String>
+    <sys:String x:Key="Update_UpToDateBody">Você está usando a versão mais recente do Tabu (v{0}).</sys:String>
+    <sys:String x:Key="Update_CheckFailedTitle">Falha na verificação</sys:String>
+    <sys:String x:Key="Update_CheckFailedBody">Tabu não conseguiu conectar ao servidor. Verifique sua conexão.</sys:String>
 </ResourceDictionary>

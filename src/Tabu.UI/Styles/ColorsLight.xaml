@@ -31,6 +31,8 @@
     <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="{StaticResource SecondaryBackgroundColor}" />
     <SolidColorBrush x:Key="TertiaryBackgroundBrush" Color="{StaticResource TertiaryBackgroundColor}" />
     <SolidColorBrush x:Key="ActiveTabBackgroundBrush" Color="{StaticResource ActiveTabBackgroundColor}" />
+    <!-- Higher-contrast active tab brush used when acrylic blur is on, since the blurred backdrop washes out the regular shade. -->
+    <SolidColorBrush x:Key="ActiveTabBackgroundBlurBrush" Color="#66000000" />
     <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
     <SolidColorBrush x:Key="AccentHoverBrush" Color="{StaticResource AccentHoverColor}" />
     <SolidColorBrush x:Key="PrimaryTextBrush" Color="{StaticResource PrimaryTextColor}" />

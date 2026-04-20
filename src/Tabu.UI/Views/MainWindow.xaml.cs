@@ -7,6 +7,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Tabu.Domain.Entities;
+using Tabu.UI.Services;
 using Tabu.UI.ViewModels;
 
 namespace Tabu.UI.Views;
@@ -32,6 +33,8 @@ public partial class MainWindow : Window
     private bool _autoHideEnabled;
     private bool _autoHideRevealed;
     private DispatcherTimer? _autoHideTimer;
+    private DispatcherTimer? _fullscreenWatchTimer;
+    private bool _hiddenByFullscreen;
 
     // Drag-and-drop state
     private bool _isDragging;
@@ -75,10 +78,14 @@ public partial class MainWindow : Window
 
         ViewModel.AutoHideChangeRequested += ApplyAutoHide;
         ViewModel.BarSizeChangeRequested += OnBarSizeChanged;
+        ViewModel.BlurEffectChangeRequested += ApplyBlurEffect;
+        ApplyBlurEffect(ViewModel.UseBlurEffect);
         if (ViewModel.AutoHideBar)
         {
             ApplyAutoHide(true);
         }
+
+        StartFullscreenWatcher();
     }
 
     /// <summary>
@@ -300,6 +307,8 @@ public partial class MainWindow : Window
     {
         ViewModel.AutoHideChangeRequested -= ApplyAutoHide;
         ViewModel.BarSizeChangeRequested -= OnBarSizeChanged;
+        ViewModel.BlurEffectChangeRequested -= ApplyBlurEffect;
+        StopFullscreenWatcher();
         StopAutoHideTimer();
         UnregisterAppBar();
         ViewModel.Stop();
@@ -810,6 +819,174 @@ public partial class MainWindow : Window
 
         BarTranslate.BeginAnimation(TranslateTransform.YProperty, anim);
     }
+
+    #endregion
+
+    #region Acrylic Blur Effect
+
+    /// <summary>
+    /// Toggles the system-rendered acrylic backdrop on the bar window.
+    /// When enabled the inner background is replaced with a near-zero
+    /// alpha brush so the blurred desktop shows through while WPF still
+    /// considers every pixel hit-testable; otherwise the transparent
+    /// regions between tabs would let mouse clicks pass through to the
+    /// desktop and the bar would feel "dead". When disabled we restore
+    /// the user-selected <see cref="MainViewModel.BarOpacity"/> binding.
+    /// </summary>
+    private void ApplyBlurEffect(bool enabled)
+    {
+        AcrylicWindowEffect.Apply(this, enabled);
+        if (BarBackground is null) return;
+
+        if (enabled)
+        {
+            // Alpha = 1/255 is invisible to the human eye but enough for
+            // WPF's hit-test pipeline to treat the brush as opaque, so
+            // every click on the bar is captured and forwarded to the
+            // tab borders / buttons above. Pure transparent or null
+            // brushes let clicks fall through to the underlying window.
+            var hitTestBrush = new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromArgb(1, 0, 0, 0));
+            hitTestBrush.Freeze();
+            BarBackground.SetCurrentValue(System.Windows.Controls.Border.BackgroundProperty, hitTestBrush);
+            BarBackground.SetCurrentValue(System.Windows.UIElement.OpacityProperty, 1.0);
+        }
+        else
+        {
+            // Restore the original DataBindings (Background + Opacity).
+            BarBackground.InvalidateProperty(System.Windows.Controls.Border.BackgroundProperty);
+            BarBackground.InvalidateProperty(System.Windows.UIElement.OpacityProperty);
+        }
+    }
+
+    #endregion
+
+    #region Fullscreen Detection
+
+    private const int FullscreenPollIntervalMs = 400;
+
+    /// <summary>
+    /// Starts a low-frequency poll that hides the bar whenever the
+    /// foreground window covers the entire monitor (classic fullscreen
+    /// games, video players, browsers in F11). Polling is preferred
+    /// over <c>SetWinEventHook</c> because it keeps every Win32 callback
+    /// on the UI thread and the cost (one GetForegroundWindow + one
+    /// rect comparison every 400 ms) is negligible.
+    /// </summary>
+    private void StartFullscreenWatcher()
+    {
+        if (_fullscreenWatchTimer is not null) return;
+        _fullscreenWatchTimer = new DispatcherTimer(DispatcherPriority.Background)
+        {
+            Interval = TimeSpan.FromMilliseconds(FullscreenPollIntervalMs)
+        };
+        _fullscreenWatchTimer.Tick += FullscreenWatcher_Tick;
+        _fullscreenWatchTimer.Start();
+    }
+
+    private void StopFullscreenWatcher()
+    {
+        if (_fullscreenWatchTimer is null) return;
+        _fullscreenWatchTimer.Stop();
+        _fullscreenWatchTimer.Tick -= FullscreenWatcher_Tick;
+        _fullscreenWatchTimer = null;
+    }
+
+    private void FullscreenWatcher_Tick(object? sender, EventArgs e)
+    {
+        bool fullscreen = IsForegroundFullscreen();
+
+        if (fullscreen && !_hiddenByFullscreen)
+        {
+            _hiddenByFullscreen = true;
+            // Visibility.Hidden keeps the AppBar reservation intact;
+            // Collapsed would trigger Windows to reflow maximized
+            // windows. We only want to disappear visually and stop
+            // intercepting clicks.
+            Visibility = Visibility.Hidden;
+        }
+        else if (!fullscreen && _hiddenByFullscreen)
+        {
+            _hiddenByFullscreen = false;
+            // Skip restoration if auto-hide currently wants the bar
+            // hidden — it owns the visibility in that mode.
+            if (!_autoHideEnabled || _autoHideRevealed)
+            {
+                Visibility = Visibility.Visible;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Returns <c>true</c> when the active foreground window matches the
+    /// monitor bounds it lives on AND that monitor is the same one this
+    /// bar instance is anchored to. Filtering by monitor is essential
+    /// in multi-monitor setups: a fullscreen game on monitor #1 must
+    /// never hide the bar reserved on monitor #2.
+    /// </summary>
+    private bool IsForegroundFullscreen()
+    {
+        IntPtr fg = GetForegroundWindow();
+        if (fg == IntPtr.Zero || fg == _hwnd) return false;
+
+        // Ignore the shell desktop/taskbar; otherwise we'd hide on the desktop.
+        IntPtr shell = GetShellWindow();
+        IntPtr desktop = GetDesktopWindow();
+        if (fg == shell || fg == desktop) return false;
+
+        if (!GetWindowRect(fg, out var winRect)) return false;
+
+        IntPtr fgMonitor = MonitorFromWindow(fg, MONITOR_DEFAULTTONEAREST);
+        if (fgMonitor == IntPtr.Zero) return false;
+
+        // Restrict the hide action to the bar that lives on the same
+        // monitor as the fullscreen window. Other bars stay visible.
+        IntPtr ownMonitor = MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
+        if (ownMonitor != IntPtr.Zero && ownMonitor != fgMonitor) return false;
+
+        var monInfo = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
+        if (!GetMonitorInfo(fgMonitor, ref monInfo)) return false;
+
+        // Use full monitor bounds (rcMonitor), not the work area: a
+        // fullscreen app covers the whole screen including any AppBar.
+        var mr = monInfo.rcMonitor;
+        return winRect.Left <= mr.Left && winRect.Top <= mr.Top &&
+               winRect.Right >= mr.Right && winRect.Bottom >= mr.Bottom;
+    }
+
+    private const int MONITOR_DEFAULTTONEAREST = 2;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct MONITORINFO
+    {
+        public int cbSize;
+        public RECTL rcMonitor;
+        public RECTL rcWork;
+        public uint dwFlags;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct RECTL { public int Left, Top, Right, Bottom; }
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetForegroundWindow();
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetShellWindow();
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetDesktopWindow();
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetWindowRect(IntPtr hWnd, out RECTL lpRect);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, int dwFlags);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
 
     #endregion
 }

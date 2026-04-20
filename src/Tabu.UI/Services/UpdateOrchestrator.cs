@@ -42,6 +42,44 @@ public sealed class UpdateOrchestrator
         });
     }
 
+    /// <summary>
+    /// User-initiated update check that always reports a result back to the
+    /// user — either the standard "update available" prompt, an
+    /// "you're up to date" notice, or a localized error dialog. Unlike
+    /// <see cref="RunInBackground"/>, this method never silently swallows
+    /// failures because the user explicitly asked for feedback.
+    /// </summary>
+    public void RunManualCheck()
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                var current = GetCurrentVersion();
+                var update = await _updateService.CheckForUpdateAsync(current).ConfigureAwait(false);
+                if (update is null)
+                {
+                    await ShowMessageAsync(
+                        LocalizedString("Update_UpToDateTitle", "Up to date"),
+                        string.Format(
+                            LocalizedString("Update_UpToDateBody", "You are running the latest version of Tabu (v{0})."),
+                            current.ToString(3)),
+                        MessageBoxImage.Information).ConfigureAwait(false);
+                    return;
+                }
+
+                await ContinueWithUpdateAsync(current, update).ConfigureAwait(false);
+            }
+            catch
+            {
+                await ShowMessageAsync(
+                    LocalizedString("Update_CheckFailedTitle", "Update check failed"),
+                    LocalizedString("Update_CheckFailedBody", "Tabu could not reach the update server. Please check your connection and try again."),
+                    MessageBoxImage.Warning).ConfigureAwait(false);
+            }
+        });
+    }
+
     private async Task CheckAndPromptAsync()
     {
         var current = GetCurrentVersion();
@@ -51,6 +89,11 @@ public sealed class UpdateOrchestrator
             return;
         }
 
+        await ContinueWithUpdateAsync(current, update).ConfigureAwait(false);
+    }
+
+    private async Task ContinueWithUpdateAsync(Version current, UpdateInfo update)
+    {
         var accepted = await PromptUserAsync(current, update).ConfigureAwait(false);
         if (!accepted)
         {

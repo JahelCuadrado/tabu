@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Tabu Settings"
         Icon="pack://application:,,,/Assets/tabu.ico"
-        Width="340" Height="900"
+        Width="340" Height="1080"
         WindowStyle="None" AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
@@ -59,6 +59,8 @@
             <!-- Content -->
             <Grid Grid.Row="1" Margin="20,16,20,20">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -430,8 +432,76 @@
                 </Grid>
             </StackPanel>
 
+            <!-- Background Blur -->
+            <StackPanel Grid.Row="12" Margin="0,0,0,12">
+                <TextBlock Text="{DynamicResource Settings_Blur}" FontSize="12" FontWeight="Medium"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           Margin="0,0,0,8" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <RadioButton x:Name="BlurDisabledRadio"
+                                 Grid.Column="0"
+                                 GroupName="Blur"
+                                 IsChecked="True"
+                                 Checked="Blur_Changed"
+                                 Foreground="{DynamicResource PrimaryTextBrush}"
+                                 Margin="0,0,8,0">
+                        <TextBlock Text="{DynamicResource Settings_BlurDisable}" FontSize="11"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </RadioButton>
+                    <RadioButton x:Name="BlurEnabledRadio"
+                                 Grid.Column="1"
+                                 GroupName="Blur"
+                                 Checked="Blur_Changed"
+                                 Foreground="{DynamicResource PrimaryTextBrush}">
+                        <TextBlock Text="{DynamicResource Settings_BlurEnable}" FontSize="11"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </RadioButton>
+                </Grid>
+            </StackPanel>
+
+            <!-- Updates -->
+            <StackPanel Grid.Row="13" Margin="0,0,0,12">
+                <TextBlock Text="{DynamicResource Settings_Updates}" FontSize="12" FontWeight="Medium"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           Margin="0,0,0,8" />
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <RadioButton x:Name="AutoUpdatesEnabledRadio"
+                                 Grid.Column="0"
+                                 GroupName="AutoUpdates"
+                                 IsChecked="True"
+                                 Checked="AutoUpdates_Changed"
+                                 Foreground="{DynamicResource PrimaryTextBrush}"
+                                 Margin="0,0,8,0">
+                        <TextBlock Text="{DynamicResource Settings_AutoUpdatesEnable}" FontSize="11"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </RadioButton>
+                    <RadioButton x:Name="AutoUpdatesDisabledRadio"
+                                 Grid.Column="1"
+                                 GroupName="AutoUpdates"
+                                 Checked="AutoUpdates_Changed"
+                                 Foreground="{DynamicResource PrimaryTextBrush}">
+                        <TextBlock Text="{DynamicResource Settings_AutoUpdatesDisable}" FontSize="11"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </RadioButton>
+                </Grid>
+                <Button x:Name="CheckUpdatesNowButton"
+                        Content="{DynamicResource Settings_CheckUpdatesNow}"
+                        Style="{DynamicResource SecondaryButtonStyle}"
+                        Click="CheckUpdatesNow_Click"
+                        HorizontalAlignment="Stretch"
+                        Padding="12,6" />
+            </StackPanel>
+
             <!-- Done button -->
-            <Button Grid.Row="13"
+            <Button Grid.Row="15"
                     Content="{DynamicResource Settings_Done}"
                     Style="{DynamicResource PrimaryButtonStyle}"
                     Click="Close_Click"

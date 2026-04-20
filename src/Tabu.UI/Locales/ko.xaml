@@ -45,4 +45,16 @@
     <sys:String x:Key="MainBar_SettingsTooltip">설정</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Tabu 닫기</sys:String>
 
+    <sys:String x:Key="Settings_Blur">배경 흐림</sys:String>
+    <sys:String x:Key="Settings_BlurEnable">활성화</sys:String>
+    <sys:String x:Key="Settings_BlurDisable">비활성화</sys:String>
+    <sys:String x:Key="Settings_Updates">업데이트</sys:String>
+    <sys:String x:Key="Settings_AutoUpdates">자동 업데이트 확인</sys:String>
+    <sys:String x:Key="Settings_AutoUpdatesEnable">활성화</sys:String>
+    <sys:String x:Key="Settings_AutoUpdatesDisable">비활성화</sys:String>
+    <sys:String x:Key="Settings_CheckUpdatesNow">지금 업데이트 확인</sys:String>
+    <sys:String x:Key="Update_UpToDateTitle">최신 버전</sys:String>
+    <sys:String x:Key="Update_UpToDateBody">최신 버전의 Tabu (v{0})를 사용 중입니다.</sys:String>
+    <sys:String x:Key="Update_CheckFailedTitle">업데이트 확인 실패</sys:String>
+    <sys:String x:Key="Update_CheckFailedBody">업데이트 서버에 연결할 수 없습니다.</sys:String>
 </ResourceDictionary>
