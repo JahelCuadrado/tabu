@@ -57,4 +57,10 @@
     <sys:String x:Key="Update_UpToDateBody">Stai utilizzando l'ultima versione di Tabu (v{0}).</sys:String>
     <sys:String x:Key="Update_CheckFailedTitle">Controllo aggiornamenti non riuscito</sys:String>
     <sys:String x:Key="Update_CheckFailedBody">Tabu non è riuscito a contattare il server. Controlla la connessione.</sys:String>
+
+    <sys:String x:Key="Settings_Group_BarLayout">LAYOUT DELLA BARRA</sys:String>
+    <sys:String x:Key="Settings_Group_Appearance">ASPETTO</sys:String>
+    <sys:String x:Key="Settings_Group_Tabs">SCHEDE</sys:String>
+    <sys:String x:Key="Settings_Group_System">SISTEMA</sys:String>
+    <sys:String x:Key="Settings_BlurLockedHint">Questa opzione è disabilitata mentre la sfocatura dello sfondo è attiva.</sys:String>
 </ResourceDictionary>

@@ -57,4 +57,10 @@
     <sys:String x:Key="Update_UpToDateBody">Você está usando a versão mais recente do Tabu (v{0}).</sys:String>
     <sys:String x:Key="Update_CheckFailedTitle">Falha na verificação</sys:String>
     <sys:String x:Key="Update_CheckFailedBody">Tabu não conseguiu conectar ao servidor. Verifique sua conexão.</sys:String>
+
+    <sys:String x:Key="Settings_Group_BarLayout">LAYOUT DA BARRA</sys:String>
+    <sys:String x:Key="Settings_Group_Appearance">APARÊNCIA</sys:String>
+    <sys:String x:Key="Settings_Group_Tabs">ABAS</sys:String>
+    <sys:String x:Key="Settings_Group_System">SISTEMA</sys:String>
+    <sys:String x:Key="Settings_BlurLockedHint">Esta opção está desativada enquanto o desfoque de fundo está ativo.</sys:String>
 </ResourceDictionary>

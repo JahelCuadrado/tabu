@@ -57,4 +57,10 @@
     <sys:String x:Key="Update_UpToDateBody">Estás usando la última versión de Tabu (v{0}).</sys:String>
     <sys:String x:Key="Update_CheckFailedTitle">Error al buscar actualizaciones</sys:String>
     <sys:String x:Key="Update_CheckFailedBody">Tabu no pudo conectar con el servidor de actualizaciones. Comprueba tu conexión e inténtalo de nuevo.</sys:String>
+
+    <sys:String x:Key="Settings_Group_BarLayout">DISEÑO DE LA BARRA</sys:String>
+    <sys:String x:Key="Settings_Group_Appearance">APARIENCIA</sys:String>
+    <sys:String x:Key="Settings_Group_Tabs">PESTAÑAS</sys:String>
+    <sys:String x:Key="Settings_Group_System">SISTEMA</sys:String>
+    <sys:String x:Key="Settings_BlurLockedHint">Esta opción está deshabilitada mientras el desenfoque está activo.</sys:String>
 </ResourceDictionary>

@@ -57,4 +57,10 @@
     <sys:String x:Key="Update_UpToDateBody">You are running the latest version of Tabu (v{0}).</sys:String>
     <sys:String x:Key="Update_CheckFailedTitle">Update check failed</sys:String>
     <sys:String x:Key="Update_CheckFailedBody">Tabu could not reach the update server. Please check your connection and try again.</sys:String>
+
+    <sys:String x:Key="Settings_Group_BarLayout">BAR LAYOUT</sys:String>
+    <sys:String x:Key="Settings_Group_Appearance">APPEARANCE</sys:String>
+    <sys:String x:Key="Settings_Group_Tabs">TABS</sys:String>
+    <sys:String x:Key="Settings_Group_System">SYSTEM</sys:String>
+    <sys:String x:Key="Settings_BlurLockedHint">This option is disabled while background blur is on.</sys:String>
 </ResourceDictionary>

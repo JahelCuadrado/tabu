@@ -57,4 +57,10 @@
     <sys:String x:Key="Update_UpToDateBody">最新バージョンの Tabu (v{0}) を使用しています。</sys:String>
     <sys:String x:Key="Update_CheckFailedTitle">アップデート確認に失敗</sys:String>
     <sys:String x:Key="Update_CheckFailedBody">アップデートサーバーに接続できませんでした。</sys:String>
+
+    <sys:String x:Key="Settings_Group_BarLayout">バーレイアウト</sys:String>
+    <sys:String x:Key="Settings_Group_Appearance">外観</sys:String>
+    <sys:String x:Key="Settings_Group_Tabs">タブ</sys:String>
+    <sys:String x:Key="Settings_Group_System">システム</sys:String>
+    <sys:String x:Key="Settings_BlurLockedHint">背景ぼかしが有効な間、このオプションは無効です。</sys:String>
 </ResourceDictionary>

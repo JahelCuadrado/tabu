@@ -322,15 +322,82 @@ public partial class SettingsWindow : Window
     }
 
     /// <summary>
-    /// Disables the theme radios when blur is on (acrylic requires the
-    /// dark palette to remain legible) and re-enables them otherwise.
+    /// Soft-locks the theme & opacity controls when blur is on. The
+    /// underlying inputs stay enabled (so the bound values still display
+    /// correctly), but a transparent overlay intercepts clicks and the
+    /// section is faded to communicate the disabled state. Attempting
+    /// to interact triggers a toast explaining why.
     /// </summary>
     private void UpdateThemeLockState()
     {
-        bool unlocked = !_viewModel.UseBlurEffect;
-        ThemeSystemRadio.IsEnabled = unlocked;
-        ThemeDarkRadio.IsEnabled = unlocked;
-        ThemeLightRadio.IsEnabled = unlocked;
+        bool locked = _viewModel.UseBlurEffect;
+        double targetOpacity = locked ? 0.4 : 1.0;
+        Visibility overlayVisibility = locked ? Visibility.Visible : Visibility.Collapsed;
+
+        ThemeContent.Opacity = targetOpacity;
+        ThemeLockOverlay.Visibility = overlayVisibility;
+
+        OpacityContent.Opacity = targetOpacity;
+        OpacityLockOverlay.Visibility = overlayVisibility;
+    }
+
+    private void LockedSection_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        // The overlay only exists while blur is active, so we can show
+        // the toast unconditionally. Mark handled to prevent the click
+        // from reaching the underlying control.
+        e.Handled = true;
+        ShowToast(TryFindResource("Settings_BlurLockedHint") as string
+            ?? "This option is disabled while background blur is active.");
+    }
+
+    private System.Windows.Threading.DispatcherTimer? _toastDismissTimer;
+
+    /// <summary>
+    /// Slides a small banner up from the bottom of the settings window
+    /// and fades it out after a short delay. Reusing the same banner
+    /// keeps the UI snappy if the user repeatedly clicks a locked area.
+    /// </summary>
+    private void ShowToast(string message)
+    {
+        ToastText.Text = message;
+
+        // Reset any in-flight animation/timer so consecutive clicks restart
+        // the toast cleanly rather than fighting an ongoing fade-out.
+        ToastBanner.BeginAnimation(OpacityProperty, null);
+        if (ToastBanner.RenderTransform is TranslateTransform tt)
+        {
+            tt.BeginAnimation(TranslateTransform.YProperty, null);
+            tt.Y = 20;
+        }
+        _toastDismissTimer?.Stop();
+
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        var duration = System.TimeSpan.FromMilliseconds(200);
+
+        ToastBanner.BeginAnimation(OpacityProperty,
+            new DoubleAnimation(0, 1, duration) { EasingFunction = ease });
+
+        if (ToastBanner.RenderTransform is TranslateTransform translate)
+        {
+            translate.BeginAnimation(TranslateTransform.YProperty,
+                new DoubleAnimation(20, 0, duration) { EasingFunction = ease });
+        }
+
+        _toastDismissTimer = new System.Windows.Threading.DispatcherTimer
+        {
+            Interval = System.TimeSpan.FromMilliseconds(2200)
+        };
+        _toastDismissTimer.Tick += (_, _) =>
+        {
+            _toastDismissTimer?.Stop();
+            var fadeOut = new DoubleAnimation(1, 0, System.TimeSpan.FromMilliseconds(260))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+            };
+            ToastBanner.BeginAnimation(OpacityProperty, fadeOut);
+        };
+        _toastDismissTimer.Start();
     }
 
     private void AutoUpdates_Changed(object sender, RoutedEventArgs e)

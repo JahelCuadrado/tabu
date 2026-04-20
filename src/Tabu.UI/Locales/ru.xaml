@@ -57,4 +57,10 @@
     <sys:String x:Key="Update_UpToDateBody">Установлена последняя версия Tabu (v{0}).</sys:String>
     <sys:String x:Key="Update_CheckFailedTitle">Ошибка проверки</sys:String>
     <sys:String x:Key="Update_CheckFailedBody">Не удалось связаться с сервером обновлений.</sys:String>
+
+    <sys:String x:Key="Settings_Group_BarLayout">МАКЕТ ПАНЕЛИ</sys:String>
+    <sys:String x:Key="Settings_Group_Appearance">ВНЕШНИЙ ВИД</sys:String>
+    <sys:String x:Key="Settings_Group_Tabs">ВКЛАДКИ</sys:String>
+    <sys:String x:Key="Settings_Group_System">СИСТЕМА</sys:String>
+    <sys:String x:Key="Settings_BlurLockedHint">Эта опция отключена, пока включено размытие фона.</sys:String>
 </ResourceDictionary>

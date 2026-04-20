@@ -346,4 +346,143 @@
         </Setter>
     </Style>
 
+    <!-- Settings card: groups a section of settings into a visually
+         distinct rounded surface, similar to native Windows 11 settings.
+         Designed to be wrapped around any section content via:
+           <Border Style="{StaticResource SettingsCardStyle}">...</Border> -->
+    <Style x:Key="SettingsCardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="16,16" />
+        <Setter Property="Margin" Value="0,0,0,14" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+    </Style>
+
+    <!-- Toast notification: thin floating banner anchored at the bottom
+         of the settings window. Shown by SettingsWindow when the user
+         tries to interact with a control that is locked by another
+         setting (e.g. theme/opacity while acrylic blur is on). -->
+    <Style x:Key="ToastBannerStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource TertiaryBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="16" ShadowDepth="2" Opacity="0.45" Color="Black" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============================================================
+         Slim ScrollBar (Edge/macOS-style)
+         A minimalist 6px track that thickens to 10px on hover. The
+         track itself is invisible to keep the surface clean; only the
+         rounded thumb is visible. Designed to live inside
+         SettingsCardStyle scroll containers without competing with
+         them visually.
+         ============================================================ -->
+    <Style x:Key="ScrollBarThumbStyle" TargetType="Thumb">
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Thumb">
+                    <Border x:Name="ThumbBorder"
+                            Background="{DynamicResource MutedTextBrush}"
+                            CornerRadius="3"
+                            Opacity="0.45"
+                            SnapsToDevicePixels="True" />
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ThumbBorder" Property="Opacity" Value="0.85" />
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                            <Setter TargetName="ThumbBorder" Property="Opacity" Value="1.0" />
+                            <Setter TargetName="ThumbBorder" Property="Background" Value="{DynamicResource AccentBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="ScrollBar">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Width" Value="10" />
+        <Setter Property="MinWidth" Value="10" />
+        <Setter Property="SnapsToDevicePixels" Value="True" />
+        <Setter Property="OverridesDefaultStyle" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ScrollBar">
+                    <Grid Background="Transparent">
+                        <Track x:Name="PART_Track"
+                               IsDirectionReversed="True"
+                               Focusable="False">
+                            <Track.DecreaseRepeatButton>
+                                <RepeatButton Command="ScrollBar.PageUpCommand"
+                                              Background="Transparent"
+                                              BorderThickness="0"
+                                              Focusable="False"
+                                              Opacity="0" />
+                            </Track.DecreaseRepeatButton>
+                            <Track.IncreaseRepeatButton>
+                                <RepeatButton Command="ScrollBar.PageDownCommand"
+                                              Background="Transparent"
+                                              BorderThickness="0"
+                                              Focusable="False"
+                                              Opacity="0" />
+                            </Track.IncreaseRepeatButton>
+                            <Track.Thumb>
+                                <Thumb Style="{StaticResource ScrollBarThumbStyle}"
+                                       Margin="2,0,2,0"
+                                       MinHeight="24" />
+                            </Track.Thumb>
+                        </Track>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="Orientation" Value="Horizontal">
+                <Setter Property="Width" Value="Auto" />
+                <Setter Property="MinWidth" Value="0" />
+                <Setter Property="Height" Value="10" />
+                <Setter Property="MinHeight" Value="10" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ScrollBar">
+                            <Grid Background="Transparent">
+                                <Track x:Name="PART_Track" Focusable="False">
+                                    <Track.DecreaseRepeatButton>
+                                        <RepeatButton Command="ScrollBar.PageLeftCommand"
+                                                      Background="Transparent"
+                                                      BorderThickness="0"
+                                                      Focusable="False"
+                                                      Opacity="0" />
+                                    </Track.DecreaseRepeatButton>
+                                    <Track.IncreaseRepeatButton>
+                                        <RepeatButton Command="ScrollBar.PageRightCommand"
+                                                      Background="Transparent"
+                                                      BorderThickness="0"
+                                                      Focusable="False"
+                                                      Opacity="0" />
+                                    </Track.IncreaseRepeatButton>
+                                    <Track.Thumb>
+                                        <Thumb Style="{StaticResource ScrollBarThumbStyle}"
+                                               Margin="0,2,0,2"
+                                               MinWidth="24" />
+                                    </Track.Thumb>
+                                </Track>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
 </ResourceDictionary>

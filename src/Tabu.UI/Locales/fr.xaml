@@ -57,4 +57,10 @@
     <sys:String x:Key="Update_UpToDateBody">Vous utilisez la dernière version de Tabu (v{0}).</sys:String>
     <sys:String x:Key="Update_CheckFailedTitle">Échec de la vérification</sys:String>
     <sys:String x:Key="Update_CheckFailedBody">Tabu n'a pas pu joindre le serveur de mises à jour. Vérifiez votre connexion.</sys:String>
+
+    <sys:String x:Key="Settings_Group_BarLayout">DISPOSITION DE LA BARRE</sys:String>
+    <sys:String x:Key="Settings_Group_Appearance">APPARENCE</sys:String>
+    <sys:String x:Key="Settings_Group_Tabs">ONGLETS</sys:String>
+    <sys:String x:Key="Settings_Group_System">SYSTÈME</sys:String>
+    <sys:String x:Key="Settings_BlurLockedHint">Cette option est désactivée lorsque le flou d'arrière-plan est actif.</sys:String>
 </ResourceDictionary>

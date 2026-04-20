@@ -57,4 +57,10 @@
     <sys:String x:Key="Update_UpToDateBody">您正在使用最新版本的 Tabu (v{0})。</sys:String>
     <sys:String x:Key="Update_CheckFailedTitle">检查更新失败</sys:String>
     <sys:String x:Key="Update_CheckFailedBody">无法连接到更新服务器。</sys:String>
+
+    <sys:String x:Key="Settings_Group_BarLayout">栏布局</sys:String>
+    <sys:String x:Key="Settings_Group_Appearance">外观</sys:String>
+    <sys:String x:Key="Settings_Group_Tabs">标签页</sys:String>
+    <sys:String x:Key="Settings_Group_System">系统</sys:String>
+    <sys:String x:Key="Settings_BlurLockedHint">启用背景模糊时此选项不可用。</sys:String>
 </ResourceDictionary>

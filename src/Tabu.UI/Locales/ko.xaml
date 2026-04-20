@@ -57,4 +57,10 @@
     <sys:String x:Key="Update_UpToDateBody">최신 버전의 Tabu (v{0})를 사용 중입니다.</sys:String>
     <sys:String x:Key="Update_CheckFailedTitle">업데이트 확인 실패</sys:String>
     <sys:String x:Key="Update_CheckFailedBody">업데이트 서버에 연결할 수 없습니다.</sys:String>
+
+    <sys:String x:Key="Settings_Group_BarLayout">막대 레이아웃</sys:String>
+    <sys:String x:Key="Settings_Group_Appearance">모양</sys:String>
+    <sys:String x:Key="Settings_Group_Tabs">탭</sys:String>
+    <sys:String x:Key="Settings_Group_System">시스템</sys:String>
+    <sys:String x:Key="Settings_BlurLockedHint">배경 흐림이 켜져 있는 동안 이 옵션은 비활성화됩니다.</sys:String>
 </ResourceDictionary>
