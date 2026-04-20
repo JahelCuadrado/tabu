@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Tabu.Domain.Entities;
 using Tabu.UI.Helpers;
+using Tabu.UI.Services;
 
 namespace Tabu.UI.ViewModels;
 
@@ -71,7 +72,7 @@ public sealed class TabViewModel : ObservableObject
         Model = model;
         _displayName = Truncate(model.Title, 28);
         _isActive = model.IsActive;
-        LoadIcon(model.Handle, model.ExecutablePath);
+        LoadIcon(model.Handle, model.CoreWindowHandle, model.ExecutablePath);
     }
 
     public void UpdateFrom(TrackedWindow updated)
@@ -82,23 +83,45 @@ public sealed class TabViewModel : ObservableObject
 
     /// <summary>
     /// Resolves the tab icon using a layered strategy that gracefully
-    /// degrades when the source process is protected or elevated:
-    ///   1. <c>WM_GETICON</c> (small / big / small2) — asks the window
-    ///      itself; works regardless of process access rights.
-    ///   2. <c>GetClassLongPtr</c> with <c>GCLP_HICONSM</c> / <c>GCLP_HICON</c>
-    ///      — falls back to the class-registered icon.
-    ///   3. <c>ExtractAssociatedIcon</c> on the executable path — last
-    ///      resort when the previous calls returned nothing and the path
-    ///      is known.
+    /// degrades depending on the kind of source window:
+    /// <list type="bullet">
+    ///   <item>UWP / WinUI windows (CoreWindow handle present): Shell
+    ///         lookup via AppUserModelID is the only reliable path
+    ///         because <c>WM_GETICON</c> against ApplicationFrameHost
+    ///         returns nothing meaningful. We fall back to HICON / exe
+    ///         only if the Shell call fails (e.g. unsigned dev apps).</item>
+    ///   <item>Classic Win32 windows: <c>WM_GETICON</c> /
+    ///         <c>GetClassLongPtr</c> first, then
+    ///         <c>ExtractAssociatedIcon</c> over the executable path,
+    ///         and Shell-by-AUMID only as a last resort.</item>
+    /// </list>
     /// Every successful HICON is converted into a frozen
     /// <see cref="BitmapSource"/> and the GDI handle is released
     /// immediately to avoid leaking handles (see DestroyIcon comment
     /// further down).
     /// </summary>
-    private void LoadIcon(IntPtr windowHandle, string executablePath)
+    private void LoadIcon(IntPtr windowHandle, IntPtr coreWindowHandle, string executablePath)
     {
         try
         {
+            bool isUwp = coreWindowHandle != IntPtr.Zero;
+
+            if (isUwp)
+            {
+                var fromShell = UwpIconResolver.TryResolve(windowHandle);
+                if (fromShell is not null)
+                {
+                    Icon = fromShell;
+                    return;
+                }
+                // Some UWP windows still publish a class icon — try it.
+                if (TryLoadFromWindow(coreWindowHandle, out var fromCore))
+                {
+                    Icon = fromCore;
+                    return;
+                }
+            }
+
             if (TryLoadFromWindow(windowHandle, out var fromWindow))
             {
                 Icon = fromWindow;
@@ -108,6 +131,18 @@ public sealed class TabViewModel : ObservableObject
             if (TryLoadFromExecutable(executablePath, out var fromExe))
             {
                 Icon = fromExe;
+                return;
+            }
+
+            // Final safety net for non-UWP windows that happen to have an
+            // AUMID (e.g. WinUI 3 shells launched from packaged identity).
+            if (!isUwp)
+            {
+                var fromShell = UwpIconResolver.TryResolve(windowHandle);
+                if (fromShell is not null)
+                {
+                    Icon = fromShell;
+                }
             }
         }
         catch

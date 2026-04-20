@@ -19,7 +19,7 @@ public sealed class MainViewModel : ObservableObject
     private bool _isDetectSameScreenOnly;
     private AppTheme _appTheme = AppTheme.System;
     private double _barOpacity = 1.0;
-    private bool _useFixedTabWidth = true;
+    private bool _useFixedTabWidth = false;
     private bool _showBranding = true;
     private string _language = "en";
     private string _accentColor = "blue";

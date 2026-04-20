@@ -15,7 +15,6 @@ public sealed class WindowDetector : IWindowDetector
         "StartMenuExperienceHost",
         "LockApp",
         "SystemSettings",
-        "ApplicationFrameHost",
         "ScreenClippingHost",
         "WindowsInternal.ComposableShell.Experiences.TextInput.InputApp",
         "CompactOverlay",
@@ -23,6 +22,16 @@ public sealed class WindowDetector : IWindowDetector
         "People",
         "MicrosoftEdgeUpdate"
     };
+
+    /// <summary>
+    /// Process name of the system host that owns every UWP / WinUI top-level
+    /// window (Calculator, Settings, Photos, Sticky Notes, etc.). It is NOT
+    /// excluded because doing so would hide every UWP app from Tabu; instead
+    /// we resolve the real owning process by looking up the hosted
+    /// <c>Windows.UI.Core.CoreWindow</c> child.
+    /// </summary>
+    private const string UwpHostProcessName = "ApplicationFrameHost";
+    private const string UwpCoreWindowClass = "Windows.UI.Core.CoreWindow";
 
     /// <summary>
     /// Per-process metadata cache. Process name and executable path do not
@@ -50,8 +59,25 @@ public sealed class WindowDetector : IWindowDetector
             var title = NativeMethods.GetWindowText(hWnd);
             if (string.IsNullOrWhiteSpace(title)) return true;
 
-            seenPids.Add(pid);
             var metadata = ResolveMetadata(pid);
+            IntPtr coreWindowHandle = IntPtr.Zero;
+
+            // UWP / WinUI apps are hosted by ApplicationFrameHost; the real
+            // app process lives behind a CoreWindow child. Swap the PID and
+            // metadata for the actual app so the user sees "Calculator"
+            // instead of "ApplicationFrameHost" and tab grouping works.
+            if (metadata.Name.Equals(UwpHostProcessName, StringComparison.OrdinalIgnoreCase))
+            {
+                var (realPid, coreHwnd) = ResolveUwpAppPid(hWnd, pid);
+                if (realPid != pid)
+                {
+                    pid = realPid;
+                    metadata = ResolveMetadata(pid);
+                    coreWindowHandle = coreHwnd;
+                }
+            }
+
+            seenPids.Add(pid);
             if (metadata.Excluded) return true;
 
             windows.Add(new TrackedWindow
@@ -61,7 +87,8 @@ public sealed class WindowDetector : IWindowDetector
                 ProcessName = metadata.Name,
                 ExecutablePath = metadata.ExecutablePath,
                 Title = title,
-                MonitorHandle = NativeMethods.MonitorFromWindow(hWnd, NativeMethods.MONITOR_DEFAULTTONEAREST)
+                MonitorHandle = NativeMethods.MonitorFromWindow(hWnd, NativeMethods.MONITOR_DEFAULTTONEAREST),
+                CoreWindowHandle = coreWindowHandle
             });
 
             return true;
@@ -69,6 +96,42 @@ public sealed class WindowDetector : IWindowDetector
 
         PruneCache(seenPids);
         return windows;
+    }
+
+    /// <summary>
+    /// Walks the children of an <c>ApplicationFrameHost</c> top-level window
+    /// looking for the hosted <c>Windows.UI.Core.CoreWindow</c>. The PID of
+    /// that child belongs to the actual UWP / WinUI app (e.g. Calculator),
+    /// which is what users expect to see, and the handle itself is the one
+    /// that exposes app-level resources such as the window icon.
+    /// </summary>
+    /// <returns>
+    ///   The real app PID and CoreWindow HWND, or <paramref name="hostPid"/>
+    ///   plus <see cref="IntPtr.Zero"/> when no CoreWindow child is found.
+    /// </returns>
+    private static (int Pid, IntPtr CoreWindowHandle) ResolveUwpAppPid(IntPtr frameHwnd, int hostPid)
+    {
+        int realPid = hostPid;
+        IntPtr coreHwnd = IntPtr.Zero;
+
+        NativeMethods.EnumChildWindows(frameHwnd, (childHwnd, _) =>
+        {
+            if (!NativeMethods.GetClassName(childHwnd).Equals(UwpCoreWindowClass, StringComparison.Ordinal))
+            {
+                return true; // keep enumerating
+            }
+
+            NativeMethods.GetWindowThreadProcessId(childHwnd, out int childPid);
+            if (childPid != 0 && childPid != hostPid)
+            {
+                realPid = childPid;
+                coreHwnd = childHwnd;
+                return false; // stop enumeration
+            }
+            return true;
+        }, IntPtr.Zero);
+
+        return (realPid, coreHwnd);
     }
 
     private ProcessMetadata ResolveMetadata(int pid)
@@ -212,6 +275,14 @@ public sealed class WindowDetector : IWindowDetector
     private static bool IsTopLevelAppWindow(IntPtr hWnd)
     {
         if (!NativeMethods.IsWindowVisible(hWnd)) return false;
+
+        // DWM-cloaked windows are technically "visible" per the GDI flag
+        // but invisible to the user. UWP / WinUI apps keep their inner
+        // CoreWindow cloaked while the ApplicationFrameWindow is shown,
+        // so without this filter we would track each UWP app twice (and
+        // the duplicate would resurface when the app is minimized,
+        // because cloaking state changes).
+        if (NativeMethods.IsCloaked(hWnd)) return false;
 
         // Must have no owner (top-level)
         var owner = NativeMethods.GetWindow(hWnd, NativeMethods.GW_OWNER);

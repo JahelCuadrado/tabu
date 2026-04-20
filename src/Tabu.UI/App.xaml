@@ -15,6 +15,7 @@
             <converters:NullToCollapsedConverter x:Key="NullToCollapsedConverter" />
             <converters:NotNullToBoolConverter x:Key="NotNullToBoolConverter" />
             <converters:BoolToTabWidthConverter x:Key="BoolToTabWidthConverter" />
+            <converters:BoolToFixedTabWidthConverter x:Key="BoolToFixedTabWidthConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

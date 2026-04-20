@@ -110,6 +110,40 @@ internal static partial class NativeMethods
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool GetMonitorInfoW(IntPtr hMonitor, ref MONITORINFO lpmi);
 
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool EnumChildWindows(IntPtr hWndParent, EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
+    [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    public static partial int GetClassNameW(IntPtr hWnd, char[] lpClassName, int nMaxCount);
+
+    [LibraryImport("dwmapi.dll")]
+    public static partial int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out int pvAttribute, int cbAttribute);
+
+    public const int DWMWA_CLOAKED = 14;
+
+    public static bool IsCloaked(IntPtr hwnd)
+    {
+        // dwmapi.dll is only available on Vista+. The call is wrapped in
+        // try/catch because it returns S_FALSE / E_INVALIDARG for windows
+        // that the DWM does not know about (which we treat as not cloaked).
+        try
+        {
+            return DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, out int cloaked, sizeof(int)) == 0 && cloaked != 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static string GetClassName(IntPtr hWnd)
+    {
+        var buffer = new char[256];
+        int length = GetClassNameW(hWnd, buffer, buffer.Length);
+        return length > 0 ? new string(buffer, 0, length) : string.Empty;
+    }
+
     public static string GetWindowText(IntPtr hWnd)
     {
         int length = GetWindowTextLengthW(hWnd);

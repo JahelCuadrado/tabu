@@ -10,6 +10,15 @@ public sealed class TrackedWindow
     public bool IsActive { get; set; }
     public IntPtr MonitorHandle { get; set; }
 
+    /// <summary>
+    /// For UWP / WinUI windows hosted by ApplicationFrameHost, this is the
+    /// HWND of the inner <c>Windows.UI.Core.CoreWindow</c> owned by the
+    /// real app process. Non-zero only for UWP windows; consumers (icon
+    /// loaders, etc.) should prefer this handle when querying app-level
+    /// resources because the host frame does not expose them.
+    /// </summary>
+    public IntPtr CoreWindowHandle { get; init; }
+
     public override bool Equals(object? obj)
         => obj is TrackedWindow other && Handle == other.Handle;
 
