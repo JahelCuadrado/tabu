@@ -17,6 +17,9 @@
     <sys:String x:Key="Settings_Branding">Branding</sys:String>
     <sys:String x:Key="Settings_ShowLogo">Show logo</sys:String>
     <sys:String x:Key="Settings_HideLogo">Hide logo</sys:String>
+    <sys:String x:Key="Settings_Clock">Clock</sys:String>
+    <sys:String x:Key="Settings_ShowClock">Show clock</sys:String>
+    <sys:String x:Key="Settings_HideClock">Hide clock</sys:String>
     <sys:String x:Key="Settings_TabWidth">Tab Width</sys:String>
     <sys:String x:Key="Settings_FullWidth">Full width</sys:String>
     <sys:String x:Key="Settings_FixedWidth">Fixed width</sys:String>

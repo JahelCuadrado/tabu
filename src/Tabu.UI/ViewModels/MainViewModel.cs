@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -13,6 +14,7 @@ public sealed class MainViewModel : ObservableObject
 {
     private readonly WindowSwitcher _switcher;
     private readonly DispatcherTimer? _pollTimer;
+    private readonly DispatcherTimer _clockTimer;
     private bool _isBarOnAllMonitors;
     private bool _isDetectSameScreenOnly;
     private AppTheme _appTheme = AppTheme.System;
@@ -23,6 +25,8 @@ public sealed class MainViewModel : ObservableObject
     private string _accentColor = "blue";
     private bool _autoHideBar;
     private bool _launchAtStartup;
+    private bool _showClock = true;
+    private string _currentTime = string.Empty;
     private IntPtr? _monitorFilter;
 
     public ObservableCollection<TabViewModel> Tabs { get; } = new();
@@ -155,6 +159,28 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
+    public bool ShowClock
+    {
+        get => _showClock;
+        set
+        {
+            if (SetProperty(ref _showClock, value))
+            {
+                ClockVisibilityChangeRequested?.Invoke(value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Current wall-clock time formatted in the user's short-time pattern.
+    /// Updated every minute by <see cref="_clockTimer"/>.
+    /// </summary>
+    public string CurrentTime
+    {
+        get => _currentTime;
+        private set => SetProperty(ref _currentTime, value);
+    }
+
     public ICommand SwitchToCommand { get; }
     public ICommand NextTabCommand { get; }
     public ICommand PrevTabCommand { get; }
@@ -182,6 +208,7 @@ public sealed class MainViewModel : ObservableObject
     public event Action<string>? AccentColorChangeRequested;
     public event Action<bool>? AutoHideChangeRequested;
     public event Action<bool>? LaunchAtStartupChangeRequested;
+    public event Action<bool>? ClockVisibilityChangeRequested;
 
     public MainViewModel(WindowSwitcher switcher, bool startPolling = true)
     {
@@ -201,6 +228,21 @@ public sealed class MainViewModel : ObservableObject
             _pollTimer.Tick += (_, _) => _switcher.Refresh();
             _pollTimer.Start();
         }
+
+        // Wall clock: tick once per second so the displayed minute flips as
+        // soon as the system clock rolls over. The render cost is negligible
+        // (a single string allocation only when the formatted value changes
+        // through SetProperty), and using a timer aligned to the next minute
+        // would still drift on system clock changes / sleep wake-ups.
+        _clockTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+        _clockTimer.Tick += (_, _) => UpdateClock();
+        UpdateClock();
+        _clockTimer.Start();
+    }
+
+    private void UpdateClock()
+    {
+        CurrentTime = DateTime.Now.ToString("t", CultureInfo.CurrentCulture);
     }
 
     public void SetOwnHandle(IntPtr handle)
@@ -212,6 +254,7 @@ public sealed class MainViewModel : ObservableObject
     public void Stop()
     {
         _pollTimer?.Stop();
+        _clockTimer.Stop();
         _switcher.WindowsChanged -= OnWindowsChanged;
     }
 

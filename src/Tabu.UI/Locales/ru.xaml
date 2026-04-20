@@ -17,6 +17,9 @@
     <sys:String x:Key="Settings_Branding">Брендинг</sys:String>
     <sys:String x:Key="Settings_ShowLogo">Показать логотип</sys:String>
     <sys:String x:Key="Settings_HideLogo">Скрыть логотип</sys:String>
+    <sys:String x:Key="Settings_Clock">Часы</sys:String>
+    <sys:String x:Key="Settings_ShowClock">Показать часы</sys:String>
+    <sys:String x:Key="Settings_HideClock">Скрыть часы</sys:String>
     <sys:String x:Key="Settings_TabWidth">Ширина вкладок</sys:String>
     <sys:String x:Key="Settings_FullWidth">Полная ширина</sys:String>
     <sys:String x:Key="Settings_FixedWidth">Фиксированная ширина</sys:String>

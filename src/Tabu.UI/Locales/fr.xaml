@@ -17,6 +17,9 @@
     <sys:String x:Key="Settings_Branding">Marque</sys:String>
     <sys:String x:Key="Settings_ShowLogo">Afficher le logo</sys:String>
     <sys:String x:Key="Settings_HideLogo">Masquer le logo</sys:String>
+    <sys:String x:Key="Settings_Clock">Horloge</sys:String>
+    <sys:String x:Key="Settings_ShowClock">Afficher l'horloge</sys:String>
+    <sys:String x:Key="Settings_HideClock">Masquer l'horloge</sys:String>
     <sys:String x:Key="Settings_TabWidth">Largeur des onglets</sys:String>
     <sys:String x:Key="Settings_FullWidth">Pleine largeur</sys:String>
     <sys:String x:Key="Settings_FixedWidth">Largeur fixe</sys:String>

@@ -17,6 +17,9 @@
     <sys:String x:Key="Settings_Branding">Branding</sys:String>
     <sys:String x:Key="Settings_ShowLogo">Logo anzeigen</sys:String>
     <sys:String x:Key="Settings_HideLogo">Logo ausblenden</sys:String>
+    <sys:String x:Key="Settings_Clock">Uhr</sys:String>
+    <sys:String x:Key="Settings_ShowClock">Uhr anzeigen</sys:String>
+    <sys:String x:Key="Settings_HideClock">Uhr ausblenden</sys:String>
     <sys:String x:Key="Settings_TabWidth">Tab-Breite</sys:String>
     <sys:String x:Key="Settings_FullWidth">Volle Breite</sys:String>
     <sys:String x:Key="Settings_FixedWidth">Feste Breite</sys:String>

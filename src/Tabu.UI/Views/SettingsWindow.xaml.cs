@@ -102,6 +102,15 @@ public partial class SettingsWindow : Window
             StartupDisabledRadio.IsChecked = true;
         }
 
+        if (_viewModel.ShowClock)
+        {
+            ClockVisibleRadio.IsChecked = true;
+        }
+        else
+        {
+            ClockHiddenRadio.IsChecked = true;
+        }
+
         _initialized = true;
     }
 
@@ -226,6 +235,18 @@ public partial class SettingsWindow : Window
         if (enabled != _viewModel.LaunchAtStartup)
         {
             _viewModel.LaunchAtStartup = enabled;
+        }
+    }
+
+    private void Clock_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+
+        bool show = ClockVisibleRadio.IsChecked == true;
+
+        if (show != _viewModel.ShowClock)
+        {
+            _viewModel.ShowClock = show;
         }
     }
 

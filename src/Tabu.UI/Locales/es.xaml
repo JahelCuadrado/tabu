@@ -17,6 +17,9 @@
     <sys:String x:Key="Settings_Branding">Marca</sys:String>
     <sys:String x:Key="Settings_ShowLogo">Mostrar logo</sys:String>
     <sys:String x:Key="Settings_HideLogo">Ocultar logo</sys:String>
+    <sys:String x:Key="Settings_Clock">Reloj</sys:String>
+    <sys:String x:Key="Settings_ShowClock">Mostrar reloj</sys:String>
+    <sys:String x:Key="Settings_HideClock">Ocultar reloj</sys:String>
     <sys:String x:Key="Settings_TabWidth">Ancho de pestaña</sys:String>
     <sys:String x:Key="Settings_FullWidth">Ancho completo</sys:String>
     <sys:String x:Key="Settings_FixedWidth">Ancho fijo</sys:String>

@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Tabu Settings"
         Icon="pack://application:,,,/Assets/tabu.ico"
-        Width="340" Height="780"
+        Width="340" Height="830"
         WindowStyle="None" AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
@@ -59,6 +59,7 @@
             <!-- Content -->
             <Grid Grid.Row="1" Margin="20,16,20,20">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -356,8 +357,39 @@
                 </Grid>
             </StackPanel>
 
+            <!-- Clock -->
+            <StackPanel Grid.Row="10" Margin="0,0,0,12">
+                <TextBlock Text="{DynamicResource Settings_Clock}" FontSize="12" FontWeight="Medium"
+                           Foreground="{DynamicResource SecondaryTextBrush}"
+                           Margin="0,0,0,8" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <RadioButton x:Name="ClockVisibleRadio"
+                                 Grid.Column="0"
+                                 GroupName="Clock"
+                                 IsChecked="True"
+                                 Checked="Clock_Changed"
+                                 Foreground="{DynamicResource PrimaryTextBrush}"
+                                 Margin="0,0,8,0">
+                        <TextBlock Text="{DynamicResource Settings_ShowClock}" FontSize="11"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </RadioButton>
+                    <RadioButton x:Name="ClockHiddenRadio"
+                                 Grid.Column="1"
+                                 GroupName="Clock"
+                                 Checked="Clock_Changed"
+                                 Foreground="{DynamicResource PrimaryTextBrush}">
+                        <TextBlock Text="{DynamicResource Settings_HideClock}" FontSize="11"
+                                   Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </RadioButton>
+                </Grid>
+            </StackPanel>
+
             <!-- Done button -->
-            <Button Grid.Row="11"
+            <Button Grid.Row="12"
                     Content="{DynamicResource Settings_Done}"
                     Style="{DynamicResource PrimaryButtonStyle}"
                     Click="Close_Click"

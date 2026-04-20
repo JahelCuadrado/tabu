@@ -17,6 +17,9 @@
     <sys:String x:Key="Settings_Branding">品牌</sys:String>
     <sys:String x:Key="Settings_ShowLogo">显示标志</sys:String>
     <sys:String x:Key="Settings_HideLogo">隐藏标志</sys:String>
+    <sys:String x:Key="Settings_Clock">时钟</sys:String>
+    <sys:String x:Key="Settings_ShowClock">显示时钟</sys:String>
+    <sys:String x:Key="Settings_HideClock">隐藏时钟</sys:String>
     <sys:String x:Key="Settings_TabWidth">标签宽度</sys:String>
     <sys:String x:Key="Settings_FullWidth">全宽</sys:String>
     <sys:String x:Key="Settings_FixedWidth">固定宽度</sys:String>
