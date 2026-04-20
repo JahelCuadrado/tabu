@@ -20,6 +20,10 @@
     <sys:String x:Key="Settings_Clock">時計</sys:String>
     <sys:String x:Key="Settings_ShowClock">時計を表示</sys:String>
     <sys:String x:Key="Settings_HideClock">時計を非表示</sys:String>
+    <sys:String x:Key="Settings_BarSize">バーサイズ</sys:String>
+    <sys:String x:Key="Settings_BarSizeSmall">小</sys:String>
+    <sys:String x:Key="Settings_BarSizeMedium">中</sys:String>
+    <sys:String x:Key="Settings_BarSizeLarge">大</sys:String>
     <sys:String x:Key="Settings_TabWidth">タブ幅</sys:String>
     <sys:String x:Key="Settings_FullWidth">全幅</sys:String>
     <sys:String x:Key="Settings_FixedWidth">固定幅</sys:String>

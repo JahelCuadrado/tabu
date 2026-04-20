@@ -20,6 +20,10 @@
     <sys:String x:Key="Settings_Clock">시계</sys:String>
     <sys:String x:Key="Settings_ShowClock">시계 표시</sys:String>
     <sys:String x:Key="Settings_HideClock">시계 숨기기</sys:String>
+    <sys:String x:Key="Settings_BarSize">바 크기</sys:String>
+    <sys:String x:Key="Settings_BarSizeSmall">작게</sys:String>
+    <sys:String x:Key="Settings_BarSizeMedium">중간</sys:String>
+    <sys:String x:Key="Settings_BarSizeLarge">크게</sys:String>
     <sys:String x:Key="Settings_TabWidth">탭 너비</sys:String>
     <sys:String x:Key="Settings_FullWidth">전체 너비</sys:String>
     <sys:String x:Key="Settings_FixedWidth">고정 너비</sys:String>

@@ -20,6 +20,10 @@
     <sys:String x:Key="Settings_Clock">Horloge</sys:String>
     <sys:String x:Key="Settings_ShowClock">Afficher l'horloge</sys:String>
     <sys:String x:Key="Settings_HideClock">Masquer l'horloge</sys:String>
+    <sys:String x:Key="Settings_BarSize">Taille de la barre</sys:String>
+    <sys:String x:Key="Settings_BarSizeSmall">Petite</sys:String>
+    <sys:String x:Key="Settings_BarSizeMedium">Moyenne</sys:String>
+    <sys:String x:Key="Settings_BarSizeLarge">Grande</sys:String>
     <sys:String x:Key="Settings_TabWidth">Largeur des onglets</sys:String>
     <sys:String x:Key="Settings_FullWidth">Pleine largeur</sys:String>
     <sys:String x:Key="Settings_FixedWidth">Largeur fixe</sys:String>

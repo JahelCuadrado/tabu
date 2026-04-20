@@ -56,7 +56,8 @@ public partial class App : System.Windows.Application
             AccentColor = saved.AccentColor,
             AutoHideBar = saved.AutoHideBar,
             LaunchAtStartup = saved.LaunchAtStartup,
-            ShowClock = saved.ShowClock
+            ShowClock = saved.ShowClock,
+            BarSize = Enum.TryParse<BarSize>(saved.BarSize, out var size) ? size : BarSize.Small
         };
 
         _primaryViewModel.BarPlacementChangeRequested += OnBarPlacementChangeRequested;
@@ -70,6 +71,7 @@ public partial class App : System.Windows.Application
         _primaryViewModel.AutoHideChangeRequested += OnAutoHideChangeRequested;
         _primaryViewModel.LaunchAtStartupChangeRequested += OnLaunchAtStartupChangeRequested;
         _primaryViewModel.ClockVisibilityChangeRequested += OnClockVisibilityChangeRequested;
+        _primaryViewModel.BarSizeChangeRequested += OnBarSizeChangeRequested;
 
         // Reconcile the Run registry value with the persisted preference so that
         // moving/renaming the executable still keeps autostart consistent.
@@ -227,6 +229,21 @@ public partial class App : System.Windows.Application
         PersistSettings();
     }
 
+    private void OnBarSizeChangeRequested(BarSize size)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            foreach (var bar in _secondaryBars)
+            {
+                if (bar.DataContext is MainViewModel vm)
+                {
+                    vm.BarSize = size;
+                }
+            }
+        });
+        PersistSettings();
+    }
+
     private void ApplyDetectionMode(bool sameScreenOnly)
     {
         var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
@@ -276,7 +293,8 @@ public partial class App : System.Windows.Application
                 Language = _primaryViewModel?.Language ?? "en",
                 AccentColor = _primaryViewModel?.AccentColor ?? "purple",
                 AutoHideBar = _primaryViewModel?.AutoHideBar ?? false,
-                ShowClock = _primaryViewModel?.ShowClock ?? true
+                ShowClock = _primaryViewModel?.ShowClock ?? true,
+                BarSize = _primaryViewModel?.BarSize ?? BarSize.Small
             };
 
             var bar = new MainWindow(vm) { TargetScreen = screen, IsPrimary = false };
@@ -331,7 +349,8 @@ public partial class App : System.Windows.Application
             AccentColor = _primaryViewModel.AccentColor,
             AutoHideBar = _primaryViewModel.AutoHideBar,
             LaunchAtStartup = _primaryViewModel.LaunchAtStartup,
-            ShowClock = _primaryViewModel.ShowClock
+            ShowClock = _primaryViewModel.ShowClock,
+            BarSize = _primaryViewModel.BarSize.ToString()
         };
 
         Task.Run(() =>

@@ -5,7 +5,7 @@
         xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
         Title="Tabu"
         Icon="pack://application:,,,/Assets/tabu.ico"
-        Height="36" Width="800"
+        Height="{Binding BarHeight}" Width="800"
         WindowStyle="None" AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
@@ -29,7 +29,7 @@
     </Window.InputBindings>
 
     <!-- Main bar container -->
-    <Grid x:Name="BarContainer" Height="36" VerticalAlignment="Top">
+    <Grid x:Name="BarContainer" Height="{Binding BarHeight}" VerticalAlignment="Top">
         <Grid.RenderTransform>
             <TranslateTransform x:Name="BarTranslate" Y="0" />
         </Grid.RenderTransform>
@@ -115,7 +115,8 @@
                         <Border x:Name="TabBorder"
                                 Background="Transparent"
                                 CornerRadius="6"
-                                Padding="6,4" Margin="4,4"
+                                Padding="{Binding DataContext.TabPadding, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                Margin="4,4"
                                 Cursor="Hand"
                                 RenderTransformOrigin="0.5,0.5"
                                 MouseLeftButtonDown="Tab_MouseLeftButtonDown"
@@ -186,14 +187,14 @@
                     ToolTip="{DynamicResource MainBar_SettingsTooltip}"
                     Style="{DynamicResource TitleBarButtonStyle}"
                     Content="&#xE713;"
-                    Width="36" Height="36" />
+                    Width="{Binding BarHeight}" Height="{Binding BarHeight}" />
 
             <!-- Close button -->
             <Button x:Name="CloseButton" Grid.Column="4"
                     Style="{DynamicResource CloseWindowButtonStyle}"
                     Content="&#xE8BB;" Click="Close_Click"
                     ToolTip="{DynamicResource MainBar_CloseTooltip}"
-                    Width="36" Height="36" />
+                    Width="{Binding BarHeight}" Height="{Binding BarHeight}" />
         </Grid>
     </Grid>
 </Window>

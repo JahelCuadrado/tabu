@@ -20,6 +20,10 @@
     <sys:String x:Key="Settings_Clock">Clock</sys:String>
     <sys:String x:Key="Settings_ShowClock">Show clock</sys:String>
     <sys:String x:Key="Settings_HideClock">Hide clock</sys:String>
+    <sys:String x:Key="Settings_BarSize">Bar size</sys:String>
+    <sys:String x:Key="Settings_BarSizeSmall">Small</sys:String>
+    <sys:String x:Key="Settings_BarSizeMedium">Medium</sys:String>
+    <sys:String x:Key="Settings_BarSizeLarge">Large</sys:String>
     <sys:String x:Key="Settings_TabWidth">Tab Width</sys:String>
     <sys:String x:Key="Settings_FullWidth">Full width</sys:String>
     <sys:String x:Key="Settings_FixedWidth">Fixed width</sys:String>

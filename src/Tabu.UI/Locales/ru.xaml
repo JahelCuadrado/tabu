@@ -20,6 +20,10 @@
     <sys:String x:Key="Settings_Clock">Часы</sys:String>
     <sys:String x:Key="Settings_ShowClock">Показать часы</sys:String>
     <sys:String x:Key="Settings_HideClock">Скрыть часы</sys:String>
+    <sys:String x:Key="Settings_BarSize">Размер панели</sys:String>
+    <sys:String x:Key="Settings_BarSizeSmall">Маленький</sys:String>
+    <sys:String x:Key="Settings_BarSizeMedium">Средний</sys:String>
+    <sys:String x:Key="Settings_BarSizeLarge">Большой</sys:String>
     <sys:String x:Key="Settings_TabWidth">Ширина вкладок</sys:String>
     <sys:String x:Key="Settings_FullWidth">Полная ширина</sys:String>
     <sys:String x:Key="Settings_FixedWidth">Фиксированная ширина</sys:String>

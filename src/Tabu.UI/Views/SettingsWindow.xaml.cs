@@ -111,6 +111,19 @@ public partial class SettingsWindow : Window
             ClockHiddenRadio.IsChecked = true;
         }
 
+        switch (_viewModel.BarSize)
+        {
+            case Tabu.Domain.Entities.BarSize.Medium:
+                BarSizeMediumRadio.IsChecked = true;
+                break;
+            case Tabu.Domain.Entities.BarSize.Large:
+                BarSizeLargeRadio.IsChecked = true;
+                break;
+            default:
+                BarSizeSmallRadio.IsChecked = true;
+                break;
+        }
+
         _initialized = true;
     }
 
@@ -247,6 +260,24 @@ public partial class SettingsWindow : Window
         if (show != _viewModel.ShowClock)
         {
             _viewModel.ShowClock = show;
+        }
+    }
+
+    private void BarSize_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+
+        Tabu.Domain.Entities.BarSize size;
+        if (BarSizeMediumRadio.IsChecked == true)
+            size = Tabu.Domain.Entities.BarSize.Medium;
+        else if (BarSizeLargeRadio.IsChecked == true)
+            size = Tabu.Domain.Entities.BarSize.Large;
+        else
+            size = Tabu.Domain.Entities.BarSize.Small;
+
+        if (size != _viewModel.BarSize)
+        {
+            _viewModel.BarSize = size;
         }
     }
 

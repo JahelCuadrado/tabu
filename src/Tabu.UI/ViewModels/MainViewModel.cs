@@ -27,6 +27,7 @@ public sealed class MainViewModel : ObservableObject
     private bool _launchAtStartup;
     private bool _showClock = true;
     private string _currentTime = string.Empty;
+    private BarSize _barSize = BarSize.Small;
     private IntPtr? _monitorFilter;
 
     public ObservableCollection<TabViewModel> Tabs { get; } = new();
@@ -181,6 +182,36 @@ public sealed class MainViewModel : ObservableObject
         private set => SetProperty(ref _currentTime, value);
     }
 
+    public BarSize BarSize
+    {
+        get => _barSize;
+        set
+        {
+            if (SetProperty(ref _barSize, value))
+            {
+                OnPropertyChanged(nameof(BarHeight));
+                OnPropertyChanged(nameof(TabPadding));
+                BarSizeChangeRequested?.Invoke(value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Pixel/DIP height the bar must occupy for the current
+    /// <see cref="BarSize"/>. Bound by the view to keep layout in sync
+    /// when the user picks a new size.
+    /// </summary>
+    public double BarHeight => (int)_barSize;
+
+    /// <summary>
+    /// Inner padding applied to every tab. Only the left inset scales
+    /// with the bar size so larger bars feel proportionally roomier
+    /// before the icon, while the right/vertical paddings stay fixed
+    /// to preserve the close-button alignment.
+    /// Small=8, Medium≈10, Large≈12 left padding.
+    /// </summary>
+    public System.Windows.Thickness TabPadding => new(BarHeight / 4.5, 4, 6, 4);
+
     public ICommand SwitchToCommand { get; }
     public ICommand NextTabCommand { get; }
     public ICommand PrevTabCommand { get; }
@@ -209,6 +240,7 @@ public sealed class MainViewModel : ObservableObject
     public event Action<bool>? AutoHideChangeRequested;
     public event Action<bool>? LaunchAtStartupChangeRequested;
     public event Action<bool>? ClockVisibilityChangeRequested;
+    public event Action<BarSize>? BarSizeChangeRequested;
 
     public MainViewModel(WindowSwitcher switcher, bool startPolling = true)
     {

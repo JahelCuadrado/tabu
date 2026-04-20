@@ -15,10 +15,17 @@ public partial class MainWindow : Window
 {
     private const int GWL_EXSTYLE = -20;
     private const long WS_EX_TOOLWINDOW = 0x00000080L;
-    private const int BarHeightPixels = 36;
     private const double DragThreshold = 6.0;
     private const int AutoHideRevealTriggerPixels = 2;
     private const int AutoHidePollIntervalMs = 60;
+
+    /// <summary>
+    /// Current bar height in raw pixels. Derived from <see cref="MainViewModel.BarHeight"/>
+    /// and used for AppBar reservation, autohide hot-zone math and
+    /// <see cref="MoveWindow"/> calls. The VM is the single source of
+    /// truth so changes propagate atomically to layout and window sizing.
+    /// </summary>
+    private int BarHeightPixels => (int)ViewModel.BarHeight;
 
     private IntPtr _hwnd;
     private bool _appBarRegistered;
@@ -67,10 +74,22 @@ public partial class MainWindow : Window
         ViewModel.SetOwnHandle(_hwnd);
 
         ViewModel.AutoHideChangeRequested += ApplyAutoHide;
+        ViewModel.BarSizeChangeRequested += OnBarSizeChanged;
         if (ViewModel.AutoHideBar)
         {
             ApplyAutoHide(true);
         }
+    }
+
+    /// <summary>
+    /// Re-issues the AppBar reservation with the new height so the
+    /// taskbar / max-window arrangement honors the freshly chosen
+    /// <see cref="BarSize"/>. WPF layout is updated automatically via
+    /// the <c>BarHeight</c> binding.
+    /// </summary>
+    private void OnBarSizeChanged(Tabu.Domain.Entities.BarSize _)
+    {
+        Dispatcher.BeginInvoke(new Action(SetAppBarPosition), DispatcherPriority.Background);
     }
 
     private static void SetToolWindowStyle(IntPtr hwnd)
@@ -280,6 +299,7 @@ public partial class MainWindow : Window
     private void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
     {
         ViewModel.AutoHideChangeRequested -= ApplyAutoHide;
+        ViewModel.BarSizeChangeRequested -= OnBarSizeChanged;
         StopAutoHideTimer();
         UnregisterAppBar();
         ViewModel.Stop();

@@ -20,6 +20,10 @@
     <sys:String x:Key="Settings_Clock">Uhr</sys:String>
     <sys:String x:Key="Settings_ShowClock">Uhr anzeigen</sys:String>
     <sys:String x:Key="Settings_HideClock">Uhr ausblenden</sys:String>
+    <sys:String x:Key="Settings_BarSize">Leistengröße</sys:String>
+    <sys:String x:Key="Settings_BarSizeSmall">Klein</sys:String>
+    <sys:String x:Key="Settings_BarSizeMedium">Mittel</sys:String>
+    <sys:String x:Key="Settings_BarSizeLarge">Groß</sys:String>
     <sys:String x:Key="Settings_TabWidth">Tab-Breite</sys:String>
     <sys:String x:Key="Settings_FullWidth">Volle Breite</sys:String>
     <sys:String x:Key="Settings_FixedWidth">Feste Breite</sys:String>
