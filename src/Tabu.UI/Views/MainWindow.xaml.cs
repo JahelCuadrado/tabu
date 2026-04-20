@@ -918,43 +918,74 @@ public partial class MainWindow : Window
     }
 
     /// <summary>
-    /// Returns <c>true</c> when the active foreground window matches the
-    /// monitor bounds it lives on AND that monitor is the same one this
-    /// bar instance is anchored to. Filtering by monitor is essential
-    /// in multi-monitor setups: a fullscreen game on monitor #1 must
-    /// never hide the bar reserved on monitor #2.
+    /// Returns <c>true</c> when the topmost visible non-shell window on
+    /// THIS bar's monitor covers the entire monitor bounds. We can't
+    /// rely solely on <c>GetForegroundWindow</c> because in multi-monitor
+    /// setups the user may focus an app on a different display while a
+    /// fullscreen window still occupies our own monitor — in that case
+    /// the bar must remain hidden.
     /// </summary>
     private bool IsForegroundFullscreen()
     {
-        IntPtr fg = GetForegroundWindow();
-        if (fg == IntPtr.Zero || fg == _hwnd) return false;
+        IntPtr ownMonitor = MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
+        if (ownMonitor == IntPtr.Zero) return false;
 
-        // Ignore the shell desktop/taskbar; otherwise we'd hide on the desktop.
         IntPtr shell = GetShellWindow();
         IntPtr desktop = GetDesktopWindow();
-        if (fg == shell || fg == desktop) return false;
 
-        if (!GetWindowRect(fg, out var winRect)) return false;
+        // Walk top-level windows in z-order from front to back and
+        // pick the first visible, uncloaked, non-shell window that
+        // belongs to our monitor.
+        IntPtr candidate = GetTopWindow(IntPtr.Zero);
+        while (candidate != IntPtr.Zero)
+        {
+            if (candidate != _hwnd && candidate != shell && candidate != desktop &&
+                IsWindowVisible(candidate) && !IsWindowCloaked(candidate))
+            {
+                IntPtr mon = MonitorFromWindow(candidate, MONITOR_DEFAULTTONEAREST);
+                if (mon == ownMonitor)
+                {
+                    if (!GetWindowRect(candidate, out var winRect)) return false;
 
-        IntPtr fgMonitor = MonitorFromWindow(fg, MONITOR_DEFAULTTONEAREST);
-        if (fgMonitor == IntPtr.Zero) return false;
+                    var monInfo = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
+                    if (!GetMonitorInfo(ownMonitor, ref monInfo)) return false;
 
-        // Restrict the hide action to the bar that lives on the same
-        // monitor as the fullscreen window. Other bars stay visible.
-        IntPtr ownMonitor = MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
-        if (ownMonitor != IntPtr.Zero && ownMonitor != fgMonitor) return false;
+                    // Skip transient overlays (popup tooltips, IMEs, etc.)
+                    // by requiring a minimum surface area before judging.
+                    long width = winRect.Right - winRect.Left;
+                    long height = winRect.Bottom - winRect.Top;
+                    if (width < 200 || height < 200)
+                    {
+                        candidate = GetWindow(candidate, GW_HWNDNEXT);
+                        continue;
+                    }
 
-        var monInfo = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
-        if (!GetMonitorInfo(fgMonitor, ref monInfo)) return false;
+                    var mr = monInfo.rcMonitor;
+                    return winRect.Left <= mr.Left && winRect.Top <= mr.Top &&
+                           winRect.Right >= mr.Right && winRect.Bottom >= mr.Bottom;
+                }
+            }
+            candidate = GetWindow(candidate, GW_HWNDNEXT);
+        }
 
-        // Use full monitor bounds (rcMonitor), not the work area: a
-        // fullscreen app covers the whole screen including any AppBar.
-        var mr = monInfo.rcMonitor;
-        return winRect.Left <= mr.Left && winRect.Top <= mr.Top &&
-               winRect.Right >= mr.Right && winRect.Bottom >= mr.Bottom;
+        return false;
     }
 
     private const int MONITOR_DEFAULTTONEAREST = 2;
+    private const uint GW_HWNDNEXT = 2;
+    private const int DWMWA_CLOAKED = 14;
+
+    private static bool IsWindowCloaked(IntPtr hwnd)
+    {
+        // DWM marks UWP/virtual-desktop hidden windows as "cloaked".
+        // Treat them as invisible so they never count as the topmost
+        // window of the monitor.
+        if (DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, out int cloaked, sizeof(int)) == 0)
+        {
+            return cloaked != 0;
+        }
+        return false;
+    }
 
     [StructLayout(LayoutKind.Sequential)]
     private struct MONITORINFO
@@ -987,6 +1018,19 @@ public partial class MainWindow : Window
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetTopWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool IsWindowVisible(IntPtr hWnd);
+
+    [DllImport("dwmapi.dll")]
+    private static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out int pvAttribute, int cbAttribute);
 
     #endregion
 }
