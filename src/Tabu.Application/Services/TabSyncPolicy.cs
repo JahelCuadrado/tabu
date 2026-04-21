@@ -49,10 +49,13 @@ public static class TabSyncPolicy
     /// when <c>false</c> the unfiltered set is identical to the
     /// filtered set and the comparison is skipped.
     /// </param>
-    /// <param name="isWindowAlive">
-    /// Callback that asks the OS whether the HWND still references a
-    /// live top-level window. Used to differentiate a real close from
-    /// a transient cloak.
+    /// <param name="isWindowVisibleToUser">
+    /// Callback that asks the OS whether the HWND is alive AND visible
+    /// to the user (rendered on screen OR DWM-cloaked). Used to keep
+    /// tabs alive across transient cloaks (modern standby, virtual
+    /// desktop swap) while still dropping windows the owner explicitly
+    /// hid via <c>ShowWindow(SW_HIDE)</c> — Telegram's media viewer is
+    /// the canonical example of the latter.
     /// </param>
     public static Decision DecideTabFate(
         IntPtr tabHandle,
@@ -79,15 +82,17 @@ public static class TabSyncPolicy
         }
 
         // 3. Window absent from both lists. If the HWND is still alive
-        //    it is a transient cloak (modern standby / display-off /
-        //    virtual desktop swap) — keep the tab to avoid wiping the
-        //    bar after every idle period.
+        //    AND visible (or merely cloaked) it is a transient state —
+        //    keep the tab to avoid wiping the bar after every idle
+        //    period. Apps that explicitly hide their windows via
+        //    ShowWindow(SW_HIDE) (e.g. Telegram's image viewer) are
+        //    treated as not-visible and their tab is dropped.
         if (isWindowAlive(tabHandle))
         {
             return Decision.Keep;
         }
 
-        // 4. HWND no longer alive: window was actually destroyed.
+        // 4. HWND no longer alive (or hidden): tab can be removed.
         return Decision.Drop;
     }
 }

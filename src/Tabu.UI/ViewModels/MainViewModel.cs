@@ -436,7 +436,7 @@ public sealed class MainViewModel : ObservableObject
                 filteredHandles,
                 unfilteredHandles,
                 hasMonitorFilter: _monitorFilter is not null,
-                isWindowAlive: _switcher.IsWindowAlive);
+                isWindowAlive: _switcher.IsWindowVisibleToUser);
 
             if (verdict == TabSyncPolicy.Decision.Drop)
             {

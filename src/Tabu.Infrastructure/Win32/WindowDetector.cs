@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Tabu.Application.Services;
 using Tabu.Domain.Entities;
 using Tabu.Domain.Interfaces;
 
@@ -233,6 +234,19 @@ public sealed class WindowDetector : IWindowDetector
         return handle != IntPtr.Zero && NativeMethods.IsWindow(handle);
     }
 
+    /// <inheritdoc />
+    public bool IsWindowVisibleToUser(IntPtr handle)
+    {
+        if (handle == IntPtr.Zero || !NativeMethods.IsWindow(handle)) return false;
+
+        // Cloaked windows survive (modern standby / display-off /
+        // virtual-desktop swap). A window that the owning app actively
+        // hid via ShowWindow(SW_HIDE) — Telegram's media viewer being
+        // the canonical case — has IsWindowVisible == false AND is not
+        // cloaked, so it is filtered out and its tab can be dropped.
+        return NativeMethods.IsWindowVisible(handle) || NativeMethods.IsCloaked(handle);
+    }
+
     public string GetWindowTitle(IntPtr handle)
     {
         return NativeMethods.GetWindowText(handle);
@@ -274,28 +288,23 @@ public sealed class WindowDetector : IWindowDetector
 
     private static bool IsTopLevelAppWindow(IntPtr hWnd)
     {
-        if (!NativeMethods.IsWindowVisible(hWnd)) return false;
-
-        // DWM-cloaked windows are technically "visible" per the GDI flag
-        // but invisible to the user. UWP / WinUI apps keep their inner
-        // CoreWindow cloaked while the ApplicationFrameWindow is shown,
-        // so without this filter we would track each UWP app twice (and
-        // the duplicate would resurface when the app is minimized,
-        // because cloaking state changes).
-        if (NativeMethods.IsCloaked(hWnd)) return false;
-
-        // Must have no owner (top-level)
+        // Capture the Win32 surface up-front and delegate the verdict to
+        // the pure Application-layer policy. Keeps the rules unit-testable
+        // and ensures UWP host windows (Calculator, Clock, Photos…) are
+        // tracked even when DWM reports them as cloaked, which Windows 11
+        // 24H2 does under perfectly normal conditions.
         var owner = NativeMethods.GetWindow(hWnd, NativeMethods.GW_OWNER);
-        if (owner != IntPtr.Zero) return false;
-
-        // Must be root-owned
         var root = NativeMethods.GetAncestor(hWnd, NativeMethods.GA_ROOTOWNER);
-        if (root != hWnd) return false;
-
-        // Filter out tool windows
         long exStyle = NativeMethods.GetWindowLongPtrW(hWnd, NativeMethods.GWL_EXSTYLE);
-        if ((exStyle & NativeMethods.WS_EX_TOOLWINDOW) != 0) return false;
 
-        return true;
+        var snapshot = new TopLevelWindowFilter.WindowSnapshot(
+            IsVisible: NativeMethods.IsWindowVisible(hWnd),
+            IsCloaked: NativeMethods.IsCloaked(hWnd),
+            HasOwner: owner != IntPtr.Zero,
+            IsRootOwner: root == hWnd,
+            IsToolWindow: (exStyle & NativeMethods.WS_EX_TOOLWINDOW) != 0,
+            ClassName: NativeMethods.GetClassName(hWnd));
+
+        return TopLevelWindowFilter.IsCandidateAppWindow(snapshot);
     }
 }
