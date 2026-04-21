@@ -58,4 +58,8 @@ Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; \
     Flags: uninsdeletevalue; Tasks: launchatstartup
 
 [Run]
+; Interactive install: show "Launch Tabu" checkbox on the final wizard page (checked by default).
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
+; Silent install (in-app self-update path): launch Tabu automatically once the new files are in place.
+; runasoriginaluser keeps the launched process at the same privilege level as the calling Tabu instance.
+Filename: "{app}\{#MyAppExeName}"; Flags: nowait runasoriginaluser; Check: WizardSilent
