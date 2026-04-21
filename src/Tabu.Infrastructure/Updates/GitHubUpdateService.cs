@@ -18,10 +18,34 @@ public sealed class GitHubUpdateService : IUpdateService
     private const string LatestReleaseEndpoint =
         "https://api.github.com/repos/JahelCuadrado/tabu/releases/latest";
 
-    private static readonly Regex InstallerAssetPattern =
+    /// <summary>
+    /// Matches the installer asset name (e.g. <c>TabuSetup-v1.3.2-win-x64.exe</c>).
+    /// Exposed for tests to assert against the same canonical pattern.
+    /// </summary>
+    internal static readonly Regex InstallerAssetPattern =
         new(@"setup.*\.exe$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    private static readonly HttpClient HttpClient = CreateClient();
+    private static readonly HttpClient SharedHttpClient = CreateClient();
+
+    private readonly HttpClient _httpClient;
+
+    /// <summary>
+    /// Production constructor: uses a process-wide shared
+    /// <see cref="HttpClient"/> to avoid socket exhaustion.
+    /// </summary>
+    public GitHubUpdateService()
+        : this(SharedHttpClient) { }
+
+    /// <summary>
+    /// Test/advanced constructor: lets callers inject a pre-configured
+    /// <see cref="HttpClient"/> backed by a custom message handler so
+    /// the GitHub API can be stubbed out in unit tests.
+    /// </summary>
+    public GitHubUpdateService(HttpClient httpClient)
+    {
+        ArgumentNullException.ThrowIfNull(httpClient);
+        _httpClient = httpClient;
+    }
 
     public async Task<UpdateInfo?> CheckForUpdateAsync(Version currentVersion, CancellationToken cancellationToken = default)
     {
@@ -30,7 +54,7 @@ public sealed class GitHubUpdateService : IUpdateService
         GitHubRelease? release;
         try
         {
-            release = await HttpClient
+            release = await _httpClient
                 .GetFromJsonAsync<GitHubRelease>(LatestReleaseEndpoint, cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -80,7 +104,7 @@ public sealed class GitHubUpdateService : IUpdateService
         ArgumentNullException.ThrowIfNull(update);
         ArgumentException.ThrowIfNullOrEmpty(destinationPath);
 
-        using var response = await HttpClient
+        using var response = await _httpClient
             .GetAsync(update.InstallerDownloadUrl, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
             .ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
