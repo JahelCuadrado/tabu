@@ -103,9 +103,8 @@ public sealed class TabSyncPolicyTests
         callbackInvocations.Should().Be(0);
     }
 
-    [Theory]
-    [InlineData(null, null)]
-    public void Throws_WhenRequiredArgumentsAreNull(object? _, object? __)
+    [Fact]
+    public void Throws_WhenRequiredArgumentsAreNull()
     {
         FluentActions.Invoking(() => TabSyncPolicy.DecideTabFate(
             Hwnd, null!, Array.Empty<IntPtr>(), false, _ => true))
