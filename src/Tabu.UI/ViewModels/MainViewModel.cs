@@ -393,41 +393,29 @@ public sealed class MainViewModel : ObservableObject
             ? all.Where(w => w.MonitorHandle == _monitorFilter.Value).ToList()
             : all;
 
-        // Two-phase removal to survive transient enumeration drops:
-        //
-        //   1. Window appears in `current`           → keep / update.
-        //   2. Window appears in `all` but not in    → genuinely outside
-        //      `current` (monitor filter excluded it)  this bar's scope; remove.
-        //   3. Window absent from both AND HWND is   → cloaked transient
-        //      still alive                             (display sleep, modern
-        //                                              standby, virtual desktop
-        //                                              swap). KEEP the tab.
-        //   4. Window absent from both AND HWND is   → window was actually
-        //      no longer alive                         destroyed; remove.
-        //
-        // This prevents the bar from emptying out after the user is idle
-        // for a while: DWM cloaks every visible window briefly during
-        // standby transitions, which used to wipe the entire tab list.
+        // Pre-compute the handle sets once so the per-tab decision in
+        // TabSyncPolicy.DecideTabFate runs in O(1) instead of O(n) per
+        // tab. The policy itself is a pure function exercised by unit
+        // tests in Tabu.Application.Tests so the rules cannot drift.
+        var filteredHandles = current.Select(w => w.Handle).ToHashSet();
+        var unfilteredHandles = _monitorFilter is not null
+            ? all.Select(w => w.Handle).ToHashSet()
+            : filteredHandles;
+
         for (int i = Tabs.Count - 1; i >= 0; i--)
         {
             var handle = Tabs[i].Handle;
-            if (current.Any(w => w.Handle == handle)) continue;
+            var verdict = TabSyncPolicy.DecideTabFate(
+                handle,
+                filteredHandles,
+                unfilteredHandles,
+                hasMonitorFilter: _monitorFilter is not null,
+                isWindowAlive: _switcher.IsWindowAlive);
 
-            bool inUnfiltered = _monitorFilter is not null && all.Any(w => w.Handle == handle);
-            if (inUnfiltered)
+            if (verdict == TabSyncPolicy.Decision.Drop)
             {
-                // Window exists but moved off this monitor: drop from this bar.
                 Tabs.RemoveAt(i);
-                continue;
             }
-
-            if (_switcher.IsWindowAlive(handle))
-            {
-                // Cloaked / temporarily hidden: keep the tab as-is.
-                continue;
-            }
-
-            Tabs.RemoveAt(i);
         }
 
         // Update existing tabs and append new ones at the end (stable order)
