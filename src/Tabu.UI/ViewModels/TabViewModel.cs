@@ -5,6 +5,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
+using Tabu.Application.Services;
 using Tabu.Domain.Entities;
 using Tabu.UI.Helpers;
 using Tabu.UI.Services;
@@ -104,23 +105,15 @@ public sealed class TabViewModel : ObservableObject
         DisplayName = Truncate(updated.Title, 28);
         IsActive = updated.IsActive;
 
-        // Re-resolve when:
-        //   1. We never managed to get any icon at all, or
-        //   2. The CoreWindow handle just became available (UWP / WinUI
-        //      apps frequently appear in the enumeration before their
-        //      inner CoreWindow is registered with the Shell), or
-        //   3. We are still showing a generic fallback for a window the
-        //      Shell ought to know about (UWP) and the package may have
-        //      finished registering since the last poll.
-        bool coreWindowJustAppeared =
-            _lastSeenCoreWindow == IntPtr.Zero
-            && updated.CoreWindowHandle != IntPtr.Zero;
+        // Re-resolve the icon when the pure policy says so. Keeps the
+        // UI thin and the rules unit-testable in IconRefreshPolicyTests.
+        var refreshState = new IconRefreshPolicy.State(
+            HasAnyIcon: Icon is not null,
+            HasShellResolvedIcon: _hasShellResolvedIcon,
+            LastSeenCoreWindow: _lastSeenCoreWindow,
+            CurrentCoreWindow: updated.CoreWindowHandle);
 
-        bool isUwpStillUnresolved =
-            updated.CoreWindowHandle != IntPtr.Zero
-            && !_hasShellResolvedIcon;
-
-        if (Icon is null || coreWindowJustAppeared || isUwpStillUnresolved)
+        if (IconRefreshPolicy.ShouldReloadIcon(refreshState))
         {
             LoadIcon(updated.Handle, updated.CoreWindowHandle, updated.ExecutablePath);
             ScheduleFastIconRetriesIfNeeded(updated.Handle, updated.ExecutablePath);

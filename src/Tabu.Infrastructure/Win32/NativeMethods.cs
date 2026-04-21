@@ -122,34 +122,13 @@ internal static partial class NativeMethods
 
     public const int DWMWA_CLOAKED = 14;
 
-    /// <summary>
-    /// Bit flags returned by <c>DWMWA_CLOAKED</c> identifying who hid
-    /// the window. Combinations are theoretically possible but in
-    /// practice Windows reports a single source per call.
-    /// </summary>
-    public static class DwmCloakReason
-    {
-        /// <summary>The owning app cloaked the window itself
-        /// (e.g. Telegram's media viewer when dismissed by clicking
-        /// outside). Tabs tracking such windows must be dropped.</summary>
-        public const int App = 0x00000001;
-
-        /// <summary>The shell cloaked the window (modern standby,
-        /// lock screen, screen-off). Transient — tabs must survive.</summary>
-        public const int Shell = 0x00000002;
-
-        /// <summary>Cloak inherited from the owner window (virtual
-        /// desktop swap, parent app suspended). Transient — tabs must
-        /// survive.</summary>
-        public const int Inherited = 0x00000004;
-    }
-
     public static bool IsCloaked(IntPtr hwnd) => GetCloakReason(hwnd) != 0;
 
     /// <summary>
     /// Returns the raw <c>DWMWA_CLOAKED</c> bitfield for the supplied
-    /// window. Zero means "not cloaked"; non-zero values must be
-    /// interpreted via <see cref="DwmCloakReason"/>.
+    /// window. Zero means "not cloaked"; non-zero values are the same
+    /// bit layout as <c>Tabu.Application.Services.CloakReason</c>
+    /// (App = 1, Shell = 2, Inherited = 4).
     /// </summary>
     public static int GetCloakReason(IntPtr hwnd)
     {
