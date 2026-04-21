@@ -53,6 +53,10 @@
     <sys:String x:Key="Settings_AutoUpdatesEnable">Activado</sys:String>
     <sys:String x:Key="Settings_AutoUpdatesDisable">Desactivado</sys:String>
     <sys:String x:Key="Settings_CheckUpdatesNow">Buscar actualizaciones ahora</sys:String>
+    <sys:String x:Key="Settings_Reset">Restablecer ajustes por defecto</sys:String>
+    <sys:String x:Key="Settings_ResetConfirmTitle">Restablecer ajustes</sys:String>
+    <sys:String x:Key="Settings_ResetConfirmBody">Todos los ajustes de Tabu se restaurarán a sus valores por defecto. Esta acción no se puede deshacer. ¿Continuar?</sys:String>
+    <sys:String x:Key="Settings_ResetSuccess">Ajustes restablecidos.</sys:String>
     <sys:String x:Key="Update_UpToDateTitle">Estás al día</sys:String>
     <sys:String x:Key="Update_UpToDateBody">Estás usando la última versión de Tabu (v{0}).</sys:String>
     <sys:String x:Key="Update_CheckFailedTitle">Error al buscar actualizaciones</sys:String>

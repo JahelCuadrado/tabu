@@ -53,6 +53,10 @@
     <sys:String x:Key="Settings_AutoUpdatesEnable">Aktiviert</sys:String>
     <sys:String x:Key="Settings_AutoUpdatesDisable">Deaktiviert</sys:String>
     <sys:String x:Key="Settings_CheckUpdatesNow">Jetzt nach Updates suchen</sys:String>
+    <sys:String x:Key="Settings_Reset">Auf Standardeinstellungen zurücksetzen</sys:String>
+    <sys:String x:Key="Settings_ResetConfirmTitle">Einstellungen zurücksetzen</sys:String>
+    <sys:String x:Key="Settings_ResetConfirmBody">Alle Tabu-Einstellungen werden auf ihre Standardwerte zurückgesetzt. Diese Aktion kann nicht rückgängig gemacht werden. Fortfahren?</sys:String>
+    <sys:String x:Key="Settings_ResetSuccess">Einstellungen wurden zurückgesetzt.</sys:String>
     <sys:String x:Key="Update_UpToDateTitle">Auf dem neuesten Stand</sys:String>
     <sys:String x:Key="Update_UpToDateBody">Sie verwenden die neueste Version von Tabu (v{0}).</sys:String>
     <sys:String x:Key="Update_CheckFailedTitle">Update-Prüfung fehlgeschlagen</sys:String>

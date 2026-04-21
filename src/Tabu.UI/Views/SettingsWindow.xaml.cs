@@ -422,6 +422,63 @@ public partial class SettingsWindow : Window
         }
     }
 
+    /// <summary>
+    /// Restores every Tabu setting to its factory default. Mirrors
+    /// the values declared in <see cref="Tabu.Domain.Entities.UserSettings"/>.
+    /// Each radio/slider/combo assignment fires its existing
+    /// <c>*_Changed</c> handler, so the MainViewModel is updated and
+    /// persisted exactly as if the user had toggled each control by hand.
+    /// </summary>
+    private void ResetSettings_Click(object sender, RoutedEventArgs e)
+    {
+        var title = TryFindResource("Settings_ResetConfirmTitle") as string ?? "Reset settings";
+        var body = TryFindResource("Settings_ResetConfirmBody") as string
+                   ?? "All Tabu settings will be restored to their default values. Continue?";
+
+        var result = MessageBox.Show(
+            this,
+            body,
+            title,
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning,
+            MessageBoxResult.No);
+
+        if (result != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        // Bar layout
+        AllBarsRadio.IsChecked = true;
+        DetectSameScreenRadio.IsChecked = true;
+        BarSizeSmallRadio.IsChecked = true;
+        BarAlwaysVisibleRadio.IsChecked = true;
+
+        // Appearance
+        BlurDisabledRadio.IsChecked = true;
+        ThemeSystemRadio.IsChecked = true;
+        OpacitySlider.Value = 100;
+        var defaultAccent = AccentColorManager.AvailableColors
+            .FirstOrDefault(c => c.Code == "blue")
+            ?? AccentColorManager.AvailableColors[0];
+        AccentColorCombo.SelectedItem = defaultAccent;
+        BrandingVisibleRadio.IsChecked = true;
+
+        // Tabs
+        TabFixedWidthRadio.IsChecked = true;
+        ClockVisibleRadio.IsChecked = true;
+
+        // System
+        var defaultLanguage = LocalizationManager.AvailableLanguages
+            .FirstOrDefault(l => l.Code == "en")
+            ?? LocalizationManager.AvailableLanguages[0];
+        LanguageCombo.SelectedItem = defaultLanguage;
+        StartupDisabledRadio.IsChecked = true;
+        AutoUpdatesEnabledRadio.IsChecked = true;
+
+        ShowToast(TryFindResource("Settings_ResetSuccess") as string ?? "Settings restored to defaults.");
+    }
+
     private void Header_MouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
     {
         if (e.LeftButton == System.Windows.Input.MouseButtonState.Pressed)

@@ -53,6 +53,10 @@
     <sys:String x:Key="Settings_AutoUpdatesEnable">Включено</sys:String>
     <sys:String x:Key="Settings_AutoUpdatesDisable">Отключено</sys:String>
     <sys:String x:Key="Settings_CheckUpdatesNow">Проверить обновления</sys:String>
+    <sys:String x:Key="Settings_Reset">Сбросить настройки по умолчанию</sys:String>
+    <sys:String x:Key="Settings_ResetConfirmTitle">Сброс настроек</sys:String>
+    <sys:String x:Key="Settings_ResetConfirmBody">Все настройки Tabu будут восстановлены до значений по умолчанию. Это действие нельзя отменить. Продолжить?</sys:String>
+    <sys:String x:Key="Settings_ResetSuccess">Настройки восстановлены.</sys:String>
     <sys:String x:Key="Update_UpToDateTitle">Актуальная версия</sys:String>
     <sys:String x:Key="Update_UpToDateBody">Установлена последняя версия Tabu (v{0}).</sys:String>
     <sys:String x:Key="Update_CheckFailedTitle">Ошибка проверки</sys:String>

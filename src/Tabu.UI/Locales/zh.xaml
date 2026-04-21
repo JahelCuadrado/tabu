@@ -53,6 +53,10 @@
     <sys:String x:Key="Settings_AutoUpdatesEnable">启用</sys:String>
     <sys:String x:Key="Settings_AutoUpdatesDisable">禁用</sys:String>
     <sys:String x:Key="Settings_CheckUpdatesNow">立即检查更新</sys:String>
+    <sys:String x:Key="Settings_Reset">恢复默认设置</sys:String>
+    <sys:String x:Key="Settings_ResetConfirmTitle">恢复设置</sys:String>
+    <sys:String x:Key="Settings_ResetConfirmBody">所有 Tabu 设置将恢复为默认值。此操作无法撤销。是否继续？</sys:String>
+    <sys:String x:Key="Settings_ResetSuccess">已恢复默认设置。</sys:String>
     <sys:String x:Key="Update_UpToDateTitle">已是最新</sys:String>
     <sys:String x:Key="Update_UpToDateBody">您正在使用最新版本的 Tabu (v{0})。</sys:String>
     <sys:String x:Key="Update_CheckFailedTitle">检查更新失败</sys:String>

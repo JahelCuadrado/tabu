@@ -53,6 +53,10 @@
     <sys:String x:Key="Settings_AutoUpdatesEnable">有効</sys:String>
     <sys:String x:Key="Settings_AutoUpdatesDisable">無効</sys:String>
     <sys:String x:Key="Settings_CheckUpdatesNow">今すぐアップデートを確認</sys:String>
+    <sys:String x:Key="Settings_Reset">既定の設定に戻す</sys:String>
+    <sys:String x:Key="Settings_ResetConfirmTitle">設定をリセット</sys:String>
+    <sys:String x:Key="Settings_ResetConfirmBody">Tabu のすべての設定が既定値に戻ります。この操作は取り消せません。続行しますか？</sys:String>
+    <sys:String x:Key="Settings_ResetSuccess">設定を既定値に戻しました。</sys:String>
     <sys:String x:Key="Update_UpToDateTitle">最新です</sys:String>
     <sys:String x:Key="Update_UpToDateBody">最新バージョンの Tabu (v{0}) を使用しています。</sys:String>
     <sys:String x:Key="Update_CheckFailedTitle">アップデート確認に失敗</sys:String>

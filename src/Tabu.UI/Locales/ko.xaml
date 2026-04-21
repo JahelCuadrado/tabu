@@ -53,6 +53,10 @@
     <sys:String x:Key="Settings_AutoUpdatesEnable">활성화</sys:String>
     <sys:String x:Key="Settings_AutoUpdatesDisable">비활성화</sys:String>
     <sys:String x:Key="Settings_CheckUpdatesNow">지금 업데이트 확인</sys:String>
+    <sys:String x:Key="Settings_Reset">기본 설정으로 재설정</sys:String>
+    <sys:String x:Key="Settings_ResetConfirmTitle">설정 재설정</sys:String>
+    <sys:String x:Key="Settings_ResetConfirmBody">모든 Tabu 설정이 기본값으로 복원됩니다. 이 작업은 취소할 수 없습니다. 계속하시겠습니까?</sys:String>
+    <sys:String x:Key="Settings_ResetSuccess">설정이 기본값으로 복원되었습니다.</sys:String>
     <sys:String x:Key="Update_UpToDateTitle">최신 버전</sys:String>
     <sys:String x:Key="Update_UpToDateBody">최신 버전의 Tabu (v{0})를 사용 중입니다.</sys:String>
     <sys:String x:Key="Update_CheckFailedTitle">업데이트 확인 실패</sys:String>

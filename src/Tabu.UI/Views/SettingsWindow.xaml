@@ -426,6 +426,13 @@
                                     Click="CheckUpdatesNow_Click"
                                     HorizontalAlignment="Stretch"
                                     Padding="12,6" />
+                            <Button x:Name="ResetSettingsButton"
+                                    Content="{DynamicResource Settings_Reset}"
+                                    Style="{DynamicResource SecondaryButtonStyle}"
+                                    Click="ResetSettings_Click"
+                                    HorizontalAlignment="Stretch"
+                                    Padding="12,6"
+                                    Margin="0,8,0,0" />
                         </StackPanel>
                     </Border>
 
