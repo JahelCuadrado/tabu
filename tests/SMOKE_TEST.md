@@ -60,6 +60,15 @@
 - [ ] Wake the display → **all tabs must still be present** in the same order.
 - [ ] Switch virtual desktops (Ctrl+Win+→) and back → tabs persist.
 
+## 6.b · UWP / WinUI quirks (regression v1.4.0)
+
+- [ ] Open **Calculator** → tab appears within ≤ 0.5 s with the calculator icon (NOT a generic stock icon).
+- [ ] Close Calculator → tab disappears.
+- [ ] Reopen Calculator → tab reappears with the **real package logo** in ≤ 0.3 s (no transient generic icon left behind).
+- [ ] Repeat the cycle with **Reloj / Clock** → same behaviour.
+- [ ] Open **Telegram**, double-click a photo → "Visor multimedia" tab appears.
+- [ ] Click outside the photo to dismiss → tab disappears within ≤ 0.5 s (no ghost tab left behind, regression guard for the v1.4.0 cloak-reason fix).
+
 ## 7 · Auto-hide
 
 - [ ] Enable **Auto-hide** in Settings → bar slides up out of view.
