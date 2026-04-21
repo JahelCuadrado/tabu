@@ -2,7 +2,7 @@
 ; Builds TabuSetup.exe from the published single-file Tabu.UI.exe.
 
 #define MyAppName        "Tabu"
-#define MyAppVersion     "1.3.1"
+#define MyAppVersion     "1.3.2"
 #define MyAppPublisher   "Jahel Cuadrado"
 #define MyAppURL         "https://github.com/JahelCuadrado/tabu"
 #define MyAppExeName     "Tabu.UI.exe"
