@@ -6,7 +6,7 @@
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="CornerRadius" Value="6,6,0,0" />
         <Setter Property="Padding" Value="12,6" />
-        <Setter Property="Margin" Value="2,0" />
+        <Setter Property="Margin" Value="1,0" />
         <Setter Property="Cursor" Value="Hand" />
     </Style>
 
