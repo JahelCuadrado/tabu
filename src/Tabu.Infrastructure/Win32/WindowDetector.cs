@@ -239,12 +239,20 @@ public sealed class WindowDetector : IWindowDetector
     {
         if (handle == IntPtr.Zero || !NativeMethods.IsWindow(handle)) return false;
 
-        // Cloaked windows survive (modern standby / display-off /
-        // virtual-desktop swap). A window that the owning app actively
-        // hid via ShowWindow(SW_HIDE) — Telegram's media viewer being
-        // the canonical case — has IsWindowVisible == false AND is not
-        // cloaked, so it is filtered out and its tab can be dropped.
-        return NativeMethods.IsWindowVisible(handle) || NativeMethods.IsCloaked(handle);
+        if (NativeMethods.IsWindowVisible(handle)) return true;
+
+        // The window is hidden in the GDI sense. Distinguish a transient
+        // shell-initiated cloak (modern standby, lock screen, virtual
+        // desktop swap) from an app-initiated cloak: the latter is what
+        // Telegram does to its media viewer when the user clicks
+        // outside, and the corresponding tab must be dropped instead of
+        // lingering as a ghost.
+        var cloakReason = NativeMethods.GetCloakReason(handle);
+        if (cloakReason == 0) return false;
+
+        // App cloak only -> ghost. Shell / inherited cloak -> transient.
+        var transient = NativeMethods.DwmCloakReason.Shell | NativeMethods.DwmCloakReason.Inherited;
+        return (cloakReason & transient) != 0;
     }
 
     public string GetWindowTitle(IntPtr handle)

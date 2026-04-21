@@ -122,18 +122,50 @@ internal static partial class NativeMethods
 
     public const int DWMWA_CLOAKED = 14;
 
-    public static bool IsCloaked(IntPtr hwnd)
+    /// <summary>
+    /// Bit flags returned by <c>DWMWA_CLOAKED</c> identifying who hid
+    /// the window. Combinations are theoretically possible but in
+    /// practice Windows reports a single source per call.
+    /// </summary>
+    public static class DwmCloakReason
     {
-        // dwmapi.dll is only available on Vista+. The call is wrapped in
-        // try/catch because it returns S_FALSE / E_INVALIDARG for windows
-        // that the DWM does not know about (which we treat as not cloaked).
+        /// <summary>The owning app cloaked the window itself
+        /// (e.g. Telegram's media viewer when dismissed by clicking
+        /// outside). Tabs tracking such windows must be dropped.</summary>
+        public const int App = 0x00000001;
+
+        /// <summary>The shell cloaked the window (modern standby,
+        /// lock screen, screen-off). Transient — tabs must survive.</summary>
+        public const int Shell = 0x00000002;
+
+        /// <summary>Cloak inherited from the owner window (virtual
+        /// desktop swap, parent app suspended). Transient — tabs must
+        /// survive.</summary>
+        public const int Inherited = 0x00000004;
+    }
+
+    public static bool IsCloaked(IntPtr hwnd) => GetCloakReason(hwnd) != 0;
+
+    /// <summary>
+    /// Returns the raw <c>DWMWA_CLOAKED</c> bitfield for the supplied
+    /// window. Zero means "not cloaked"; non-zero values must be
+    /// interpreted via <see cref="DwmCloakReason"/>.
+    /// </summary>
+    public static int GetCloakReason(IntPtr hwnd)
+    {
+        // dwmapi.dll is only available on Vista+. The call is wrapped
+        // in try/catch because it returns S_FALSE / E_INVALIDARG for
+        // windows that the DWM does not know about (treated as not
+        // cloaked).
         try
         {
-            return DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, out int cloaked, sizeof(int)) == 0 && cloaked != 0;
+            return DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, out int cloaked, sizeof(int)) == 0
+                ? cloaked
+                : 0;
         }
         catch
         {
-            return false;
+            return 0;
         }
     }
 

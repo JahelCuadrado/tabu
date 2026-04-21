@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Tabu.Domain.Entities;
 using Tabu.UI.Helpers;
 using Tabu.UI.Services;
@@ -45,6 +46,27 @@ public sealed class TabViewModel : ObservableObject
     private string _displayName = string.Empty;
     private bool _isActive;
     private ImageSource? _icon;
+    private IntPtr _lastSeenCoreWindow;
+
+    /// <summary>
+    /// True once the Shell handed us the authoritative package logo for a
+    /// UWP / WinUI window. While false, the tab is showing either no icon
+    /// or a generic fallback (executable icon of ApplicationFrameHost,
+    /// stock pixmap…) and we keep retrying the Shell resolution on every
+    /// poll plus through a short burst of fast retries so the real logo
+    /// appears within ~150 ms of the app showing up.
+    /// </summary>
+    private bool _hasShellResolvedIcon;
+
+    /// <summary>
+    /// Fast-retry timer fired only when a UWP-looking window has not yet
+    /// surfaced its CoreWindow / AUMID. Stops itself the moment we either
+    /// resolve the Shell icon or run out of attempts.
+    /// </summary>
+    private DispatcherTimer? _iconRetryTimer;
+    private int _iconRetryAttempt;
+    private const int MaxFastIconRetries = 6;
+    private static readonly TimeSpan FastIconRetryInterval = TimeSpan.FromMilliseconds(40);
 
     public TrackedWindow Model { get; }
     public IntPtr Handle => Model.Handle;
@@ -72,13 +94,89 @@ public sealed class TabViewModel : ObservableObject
         Model = model;
         _displayName = Truncate(model.Title, 28);
         _isActive = model.IsActive;
+        _lastSeenCoreWindow = model.CoreWindowHandle;
         LoadIcon(model.Handle, model.CoreWindowHandle, model.ExecutablePath);
+        ScheduleFastIconRetriesIfNeeded(model.Handle, model.ExecutablePath);
     }
 
     public void UpdateFrom(TrackedWindow updated)
     {
         DisplayName = Truncate(updated.Title, 28);
         IsActive = updated.IsActive;
+
+        // Re-resolve when:
+        //   1. We never managed to get any icon at all, or
+        //   2. The CoreWindow handle just became available (UWP / WinUI
+        //      apps frequently appear in the enumeration before their
+        //      inner CoreWindow is registered with the Shell), or
+        //   3. We are still showing a generic fallback for a window the
+        //      Shell ought to know about (UWP) and the package may have
+        //      finished registering since the last poll.
+        bool coreWindowJustAppeared =
+            _lastSeenCoreWindow == IntPtr.Zero
+            && updated.CoreWindowHandle != IntPtr.Zero;
+
+        bool isUwpStillUnresolved =
+            updated.CoreWindowHandle != IntPtr.Zero
+            && !_hasShellResolvedIcon;
+
+        if (Icon is null || coreWindowJustAppeared || isUwpStillUnresolved)
+        {
+            LoadIcon(updated.Handle, updated.CoreWindowHandle, updated.ExecutablePath);
+            ScheduleFastIconRetriesIfNeeded(updated.Handle, updated.ExecutablePath);
+        }
+
+        _lastSeenCoreWindow = updated.CoreWindowHandle;
+    }
+
+    /// <summary>
+    /// Spins up a short burst of fast retries (a handful of attempts
+    /// spaced ~40 ms apart) when the icon is missing or the Shell still
+    /// hasn't yielded a UWP package logo. This bridges the typical
+    /// 100-300 ms gap between a UWP app's frame becoming visible and
+    /// its AUMID being queryable, so the real logo appears almost
+    /// instantly after a Calculator / Clock relaunch instead of
+    /// waiting up to a full poll cycle (500 ms).
+    /// </summary>
+    private void ScheduleFastIconRetriesIfNeeded(IntPtr windowHandle, string executablePath)
+    {
+        // Already happy: nothing to do. This is the steady-state branch
+        // executed on every UpdateFrom for the rest of the tab's life.
+        if (_hasShellResolvedIcon) return;
+        if (_iconRetryTimer is not null) return;
+
+        _iconRetryAttempt = 0;
+        _iconRetryTimer = new DispatcherTimer { Interval = FastIconRetryInterval };
+        _iconRetryTimer.Tick += (_, _) =>
+        {
+            _iconRetryAttempt++;
+
+            // Re-walk the Win32 surface to pick up the CoreWindow as
+            // soon as the host registers it. We look the child up
+            // through UwpIconResolver itself to avoid plumbing the
+            // detector all the way down here.
+            var fromShell = UwpIconResolver.TryResolve(windowHandle);
+            if (fromShell is not null)
+            {
+                Icon = fromShell;
+                _hasShellResolvedIcon = true;
+                StopIconRetryTimer();
+                return;
+            }
+
+            if (_iconRetryAttempt >= MaxFastIconRetries)
+            {
+                StopIconRetryTimer();
+            }
+        };
+        _iconRetryTimer.Start();
+    }
+
+    private void StopIconRetryTimer()
+    {
+        if (_iconRetryTimer is null) return;
+        _iconRetryTimer.Stop();
+        _iconRetryTimer = null;
     }
 
     /// <summary>
@@ -112,6 +210,7 @@ public sealed class TabViewModel : ObservableObject
                 if (fromShell is not null)
                 {
                     Icon = fromShell;
+                    _hasShellResolvedIcon = true;
                     return;
                 }
                 // Some UWP windows still publish a class icon — try it.
@@ -142,6 +241,7 @@ public sealed class TabViewModel : ObservableObject
                 if (fromShell is not null)
                 {
                     Icon = fromShell;
+                    _hasShellResolvedIcon = true;
                 }
             }
         }
