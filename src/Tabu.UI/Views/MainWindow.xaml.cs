@@ -940,7 +940,8 @@ public partial class MainWindow : Window
         while (candidate != IntPtr.Zero)
         {
             if (candidate != _hwnd && candidate != shell && candidate != desktop &&
-                IsWindowVisible(candidate) && !IsWindowCloaked(candidate))
+                IsWindowVisible(candidate) && !IsWindowCloaked(candidate) &&
+                !IsShellOrDesktopClass(candidate) && IsCandidateAppWindow(candidate))
             {
                 IntPtr mon = MonitorFromWindow(candidate, MONITOR_DEFAULTTONEAREST);
                 if (mon == ownMonitor)
@@ -971,8 +972,62 @@ public partial class MainWindow : Window
         return false;
     }
 
+    /// <summary>
+    /// Filters out the Windows shell surfaces that are the size of an entire
+    /// monitor by design (desktop wallpaper host, taskbars, start menu, etc.).
+    /// Without this guard, minimizing every app on a monitor would expose
+    /// <c>WorkerW</c>/<c>Progman</c> as the topmost visible window and the
+    /// fullscreen heuristic would erroneously hide the bar.
+    /// </summary>
+    private static bool IsShellOrDesktopClass(IntPtr hwnd)
+    {
+        var buffer = new System.Text.StringBuilder(256);
+        if (GetClassName(hwnd, buffer, buffer.Capacity) == 0) return false;
+
+        string className = buffer.ToString();
+        return className switch
+        {
+            "WorkerW" => true,
+            "Progman" => true,
+            "Shell_TrayWnd" => true,
+            "Shell_SecondaryTrayWnd" => true,
+            "Button" => true,                       // Start button
+            "DV2ControlHost" => true,               // Legacy Start menu
+            "Windows.UI.Core.CoreWindow" => true,   // Start / Search / Action Center
+            "NotifyIconOverflowWindow" => true,
+            "TaskListThumbnailWnd" => true,
+            "TaskListOverlayWnd" => true,
+            "MultitaskingViewFrame" => true,
+            "ForegroundStaging" => true,
+            "ApplicationManager_DesktopShellWindow" => true,
+            "Shell_CharmWindow" => true,
+            "EdgeUiInputTopWndClass" => true,
+            _ => false
+        };
+    }
+
+    /// <summary>
+    /// Heuristic to ensure the candidate is an actual application window
+    /// (i.e. it could plausibly enter fullscreen). Tool windows, the bar
+    /// itself, owned popups and zero-area windows must never count.
+    /// </summary>
+    private static bool IsCandidateAppWindow(IntPtr hwnd)
+    {
+        long exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+
+        // Tool windows (no taskbar entry, transient palettes) and the bar
+        // itself are not real apps for this purpose.
+        if ((exStyle & WS_EX_TOOLWINDOW) != 0) return false;
+
+        // Owned popups (modal dialogs) belong to a parent already counted.
+        if (GetWindow(hwnd, GW_OWNER) != IntPtr.Zero) return false;
+
+        return true;
+    }
+
     private const int MONITOR_DEFAULTTONEAREST = 2;
     private const uint GW_HWNDNEXT = 2;
+    private const uint GW_OWNER = 4;
     private const int DWMWA_CLOAKED = 14;
 
     private static bool IsWindowCloaked(IntPtr hwnd)
@@ -1031,6 +1086,9 @@ public partial class MainWindow : Window
 
     [DllImport("dwmapi.dll")]
     private static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out int pvAttribute, int cbAttribute);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    private static extern int GetClassName(IntPtr hWnd, System.Text.StringBuilder lpClassName, int nMaxCount);
 
     #endregion
 }
