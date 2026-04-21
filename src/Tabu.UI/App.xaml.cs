@@ -59,6 +59,7 @@ public partial class App : System.Windows.Application
             ShowClock = saved.ShowClock,
             BarSize = Enum.TryParse<BarSize>(saved.BarSize, out var size) ? size : BarSize.Small,
             UseBlurEffect = saved.UseBlurEffect,
+            BlurMode = saved.BlurMode,
             AutoCheckUpdates = saved.AutoCheckUpdates
         };
 
@@ -346,6 +347,7 @@ public partial class App : System.Windows.Application
                 ShowClock = _primaryViewModel?.ShowClock ?? true,
                 BarSize = _primaryViewModel?.BarSize ?? BarSize.Small,
                 UseBlurEffect = _primaryViewModel?.UseBlurEffect ?? false,
+                BlurMode = _primaryViewModel?.BlurMode ?? "Acrylic",
                 AutoCheckUpdates = _primaryViewModel?.AutoCheckUpdates ?? true
             };
 
@@ -404,6 +406,7 @@ public partial class App : System.Windows.Application
             ShowClock = _primaryViewModel.ShowClock,
             BarSize = _primaryViewModel.BarSize.ToString(),
             UseBlurEffect = _primaryViewModel.UseBlurEffect,
+            BlurMode = _primaryViewModel.BlurMode,
             AutoCheckUpdates = _primaryViewModel.AutoCheckUpdates
         };
 
