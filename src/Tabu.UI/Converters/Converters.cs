@@ -44,14 +44,12 @@ public sealed class BoolToTabWidthConverter : IValueConverter
 
 /// <summary>
 /// Maps the <c>UseFixedTabWidth</c> flag to the <c>FixedTabWidth</c>
-/// dependency property of <c>TabsPanel</c>: <c>true</c> ⇒ 160 px tabs,
-/// <c>false</c> ⇒ 0 (adaptive layout). The 160 px slot keeps a comfortable
-/// title length while halving the trailing empty space that the user
-/// perceived as a gap between adjacent tabs.
+/// dependency property of <c>TabsPanel</c>: <c>true</c> ⇒ 200 px tabs,
+/// <c>false</c> ⇒ 0 (adaptive layout).
 /// </summary>
 public sealed class BoolToFixedTabWidthConverter : IValueConverter
 {
-    private const double FixedTabWidthPx = 160.0;
+    private const double FixedTabWidthPx = 200.0;
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         => value is true ? FixedTabWidthPx : 0.0;

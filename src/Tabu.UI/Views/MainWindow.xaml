@@ -91,7 +91,7 @@
                                 Background="Transparent"
                                 CornerRadius="6"
                                 Padding="{Binding DataContext.TabPadding, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                Margin="4,4"
+                                Margin="1,4"
                                 Cursor="Hand"
                                 RenderTransformOrigin="0.5,0.5"
                                 MouseLeftButtonDown="Tab_MouseLeftButtonDown"
