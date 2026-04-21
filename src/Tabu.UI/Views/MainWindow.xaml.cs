@@ -6,6 +6,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
+using Tabu.Application.Services;
 using Tabu.Domain.Entities;
 using Tabu.UI.Services;
 using Tabu.UI.ViewModels;
@@ -925,104 +926,71 @@ public partial class MainWindow : Window
     /// fullscreen window still occupies our own monitor — in that case
     /// the bar must remain hidden.
     /// </summary>
+    /// <remarks>
+    /// The actual decision (filter shell windows, tool windows, owned
+    /// popups; require minimum surface; check coverage) lives in
+    /// <see cref="FullscreenDetectionPolicy"/> so it is unit-testable
+    /// without WPF or P/Invoke. This method is responsible solely for
+    /// translating Win32 state into <see cref="FullscreenCandidate"/>
+    /// records.
+    /// </remarks>
     private bool IsForegroundFullscreen()
     {
         IntPtr ownMonitor = MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
         if (ownMonitor == IntPtr.Zero) return false;
 
+        var monInfo = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
+        if (!GetMonitorInfo(ownMonitor, ref monInfo)) return false;
+        var mr = monInfo.rcMonitor;
+        var monitorBounds = new PixelRect(mr.Left, mr.Top, mr.Right, mr.Bottom);
+
         IntPtr shell = GetShellWindow();
         IntPtr desktop = GetDesktopWindow();
 
-        // Walk top-level windows in z-order from front to back and
-        // pick the first visible, uncloaked, non-shell window that
-        // belongs to our monitor.
+        return FullscreenDetectionPolicy.IsFullscreenOnMonitor(
+            EnumerateZOrderTopDown(),
+            ownBarHandle: _hwnd,
+            shellHandle: shell,
+            desktopHandle: desktop,
+            targetMonitor: ownMonitor,
+            monitorBounds: monitorBounds);
+    }
+
+    /// <summary>
+    /// Lazily enumerates every top-level window in z-order, front-most
+    /// first, materialising a <see cref="FullscreenCandidate"/> per
+    /// HWND. Win32 calls happen here so the policy stays pure.
+    /// </summary>
+    private IEnumerable<FullscreenCandidate> EnumerateZOrderTopDown()
+    {
         IntPtr candidate = GetTopWindow(IntPtr.Zero);
         while (candidate != IntPtr.Zero)
         {
-            if (candidate != _hwnd && candidate != shell && candidate != desktop &&
-                IsWindowVisible(candidate) && !IsWindowCloaked(candidate) &&
-                !IsShellOrDesktopClass(candidate) && IsCandidateAppWindow(candidate))
+            PixelRect bounds = default;
+            if (GetWindowRect(candidate, out var winRect))
             {
-                IntPtr mon = MonitorFromWindow(candidate, MONITOR_DEFAULTTONEAREST);
-                if (mon == ownMonitor)
-                {
-                    if (!GetWindowRect(candidate, out var winRect)) return false;
-
-                    var monInfo = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
-                    if (!GetMonitorInfo(ownMonitor, ref monInfo)) return false;
-
-                    // Skip transient overlays (popup tooltips, IMEs, etc.)
-                    // by requiring a minimum surface area before judging.
-                    long width = winRect.Right - winRect.Left;
-                    long height = winRect.Bottom - winRect.Top;
-                    if (width < 200 || height < 200)
-                    {
-                        candidate = GetWindow(candidate, GW_HWNDNEXT);
-                        continue;
-                    }
-
-                    var mr = monInfo.rcMonitor;
-                    return winRect.Left <= mr.Left && winRect.Top <= mr.Top &&
-                           winRect.Right >= mr.Right && winRect.Bottom >= mr.Bottom;
-                }
+                bounds = new PixelRect(winRect.Left, winRect.Top, winRect.Right, winRect.Bottom);
             }
+
+            long exStyle = GetWindowLongPtr(candidate, GWL_EXSTYLE);
+            yield return new FullscreenCandidate(
+                Handle: candidate,
+                MonitorHandle: MonitorFromWindow(candidate, MONITOR_DEFAULTTONEAREST),
+                ClassName: GetWindowClassName(candidate),
+                Bounds: bounds,
+                IsVisible: IsWindowVisible(candidate),
+                IsCloaked: IsWindowCloaked(candidate),
+                IsToolWindow: (exStyle & WS_EX_TOOLWINDOW) != 0,
+                HasOwner: GetWindow(candidate, GW_OWNER) != IntPtr.Zero);
+
             candidate = GetWindow(candidate, GW_HWNDNEXT);
         }
-
-        return false;
     }
 
-    /// <summary>
-    /// Filters out the Windows shell surfaces that are the size of an entire
-    /// monitor by design (desktop wallpaper host, taskbars, start menu, etc.).
-    /// Without this guard, minimizing every app on a monitor would expose
-    /// <c>WorkerW</c>/<c>Progman</c> as the topmost visible window and the
-    /// fullscreen heuristic would erroneously hide the bar.
-    /// </summary>
-    private static bool IsShellOrDesktopClass(IntPtr hwnd)
+    private static string GetWindowClassName(IntPtr hwnd)
     {
         var buffer = new System.Text.StringBuilder(256);
-        if (GetClassName(hwnd, buffer, buffer.Capacity) == 0) return false;
-
-        string className = buffer.ToString();
-        return className switch
-        {
-            "WorkerW" => true,
-            "Progman" => true,
-            "Shell_TrayWnd" => true,
-            "Shell_SecondaryTrayWnd" => true,
-            "Button" => true,                       // Start button
-            "DV2ControlHost" => true,               // Legacy Start menu
-            "Windows.UI.Core.CoreWindow" => true,   // Start / Search / Action Center
-            "NotifyIconOverflowWindow" => true,
-            "TaskListThumbnailWnd" => true,
-            "TaskListOverlayWnd" => true,
-            "MultitaskingViewFrame" => true,
-            "ForegroundStaging" => true,
-            "ApplicationManager_DesktopShellWindow" => true,
-            "Shell_CharmWindow" => true,
-            "EdgeUiInputTopWndClass" => true,
-            _ => false
-        };
-    }
-
-    /// <summary>
-    /// Heuristic to ensure the candidate is an actual application window
-    /// (i.e. it could plausibly enter fullscreen). Tool windows, the bar
-    /// itself, owned popups and zero-area windows must never count.
-    /// </summary>
-    private static bool IsCandidateAppWindow(IntPtr hwnd)
-    {
-        long exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-
-        // Tool windows (no taskbar entry, transient palettes) and the bar
-        // itself are not real apps for this purpose.
-        if ((exStyle & WS_EX_TOOLWINDOW) != 0) return false;
-
-        // Owned popups (modal dialogs) belong to a parent already counted.
-        if (GetWindow(hwnd, GW_OWNER) != IntPtr.Zero) return false;
-
-        return true;
+        return GetClassName(hwnd, buffer, buffer.Capacity) > 0 ? buffer.ToString() : string.Empty;
     }
 
     private const int MONITOR_DEFAULTTONEAREST = 2;

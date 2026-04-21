@@ -13,4 +13,7 @@
     <ProjectReference Include="..\Tabu.Domain\Tabu.Domain.csproj" />
     <ProjectReference Include="..\Tabu.Application\Tabu.Application.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Tabu.Infrastructure.Tests" />
+  </ItemGroup>
 </Project>
