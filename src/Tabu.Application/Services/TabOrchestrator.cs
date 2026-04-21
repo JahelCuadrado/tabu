@@ -102,4 +102,13 @@ public sealed class WindowSwitcher
     {
         return _detector.GetAllScreens();
     }
+
+    /// <summary>
+    /// Reports whether the given window handle still references a live
+    /// top-level window. Used by the UI layer to distinguish a window
+    /// that genuinely vanished from one that is only temporarily
+    /// missing from <see cref="Refresh"/> (e.g. DWM-cloaked while the
+    /// system is idle / display off / between virtual desktop swaps).
+    /// </summary>
+    public bool IsWindowAlive(IntPtr handle) => _detector.IsWindowAlive(handle);
 }
