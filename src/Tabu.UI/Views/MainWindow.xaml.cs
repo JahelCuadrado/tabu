@@ -836,10 +836,19 @@ public partial class MainWindow : Window
     /// </summary>
     private void ApplyBlurEffect(bool enabled)
     {
-        AcrylicWindowEffect.Apply(this, enabled);
+        // Translate the user preference into a concrete backdrop using
+        // the pure Application-layer policy. This keeps the OS gating
+        // (acrylic vs. gaussian fallback for Win11 Enterprise hosts)
+        // unit-testable and out of the WPF code-behind.
+        var resolvedMode = BackdropPolicy.Resolve(
+            userEnabled: enabled,
+            requestedMode: ViewModel?.BlurMode,
+            osBuildNumber: Environment.OSVersion.Version.Build);
+
+        AcrylicWindowEffect.Apply(this, resolvedMode);
         if (BarBackground is null) return;
 
-        if (enabled)
+        if (resolvedMode != BackdropMode.Disabled)
         {
             // Alpha = 1/255 is invisible to the human eye but enough for
             // WPF's hit-test pipeline to treat the brush as opaque, so

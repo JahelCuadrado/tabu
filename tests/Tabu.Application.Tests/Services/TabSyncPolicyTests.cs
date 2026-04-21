@@ -104,6 +104,24 @@ public sealed class TabSyncPolicyTests
     }
 
     [Fact]
+    public void Drops_WhenWindowIsHiddenByOwner_RegressionGuard_TelegramMediaViewer()
+    {
+        // Telegram hides its image viewer with ShowWindow(SW_HIDE)
+        // instead of destroying it. Before v1.4.0 the policy kept the
+        // tab alive because IsWindow() still returned true. The
+        // injected callback is now expected to combine IsWindow with
+        // a visibility check so SW_HIDE'd windows return false here.
+        var verdict = TabSyncPolicy.DecideTabFate(
+            Hwnd,
+            filteredHandles: Array.Empty<IntPtr>(),
+            unfilteredHandles: Array.Empty<IntPtr>(),
+            hasMonitorFilter: false,
+            isWindowAlive: _ => false);
+
+        verdict.Should().Be(TabSyncPolicy.Decision.Drop);
+    }
+
+    [Fact]
     public void Throws_WhenRequiredArgumentsAreNull()
     {
         FluentActions.Invoking(() => TabSyncPolicy.DecideTabFate(

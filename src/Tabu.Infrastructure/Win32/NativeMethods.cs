@@ -122,18 +122,29 @@ internal static partial class NativeMethods
 
     public const int DWMWA_CLOAKED = 14;
 
-    public static bool IsCloaked(IntPtr hwnd)
+    public static bool IsCloaked(IntPtr hwnd) => GetCloakReason(hwnd) != 0;
+
+    /// <summary>
+    /// Returns the raw <c>DWMWA_CLOAKED</c> bitfield for the supplied
+    /// window. Zero means "not cloaked"; non-zero values are the same
+    /// bit layout as <c>Tabu.Application.Services.CloakReason</c>
+    /// (App = 1, Shell = 2, Inherited = 4).
+    /// </summary>
+    public static int GetCloakReason(IntPtr hwnd)
     {
-        // dwmapi.dll is only available on Vista+. The call is wrapped in
-        // try/catch because it returns S_FALSE / E_INVALIDARG for windows
-        // that the DWM does not know about (which we treat as not cloaked).
+        // dwmapi.dll is only available on Vista+. The call is wrapped
+        // in try/catch because it returns S_FALSE / E_INVALIDARG for
+        // windows that the DWM does not know about (treated as not
+        // cloaked).
         try
         {
-            return DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, out int cloaked, sizeof(int)) == 0 && cloaked != 0;
+            return DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, out int cloaked, sizeof(int)) == 0
+                ? cloaked
+                : 0;
         }
         catch
         {
-            return false;
+            return 0;
         }
     }
 

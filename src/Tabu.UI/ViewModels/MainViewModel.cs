@@ -30,6 +30,7 @@ public sealed class MainViewModel : ObservableObject
     private BarSize _barSize = BarSize.Small;
     private IntPtr? _monitorFilter;
     private bool _useBlurEffect;
+    private string _blurMode = "Acrylic";
     private bool _autoCheckUpdates = true;
 
     public ObservableCollection<TabViewModel> Tabs { get; } = new();
@@ -211,6 +212,31 @@ public sealed class MainViewModel : ObservableObject
             if (SetProperty(ref _useBlurEffect, value))
             {
                 BlurEffectChangeRequested?.Invoke(value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// User-selected backdrop variant. Recognised values: <c>Acrylic</c>
+    /// (default Fluent acrylic), <c>Gaussian</c> (Aero kernel-mode blur,
+    /// available on Windows 11 Enterprise hosts where the acrylic API is
+    /// gated by security baselines) and <c>Disabled</c>. The host window
+    /// resolves the effective effect through
+    /// <c>Tabu.Application.Services.BackdropPolicy</c>.
+    /// </summary>
+    public string BlurMode
+    {
+        get => _blurMode;
+        set
+        {
+            var sanitised = string.IsNullOrWhiteSpace(value) ? "Acrylic" : value.Trim();
+            if (SetProperty(ref _blurMode, sanitised))
+            {
+                // Re-apply the backdrop with the new mode. The host
+                // pulls the current value of BlurMode from the VM, so
+                // it is enough to nudge the existing event with the
+                // current master toggle state.
+                BlurEffectChangeRequested?.Invoke(_useBlurEffect);
             }
         }
     }
@@ -410,7 +436,7 @@ public sealed class MainViewModel : ObservableObject
                 filteredHandles,
                 unfilteredHandles,
                 hasMonitorFilter: _monitorFilter is not null,
-                isWindowAlive: _switcher.IsWindowAlive);
+                isWindowAlive: _switcher.IsWindowVisibleToUser);
 
             if (verdict == TabSyncPolicy.Decision.Drop)
             {

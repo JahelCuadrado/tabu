@@ -111,4 +111,14 @@ public sealed class WindowSwitcher
     /// system is idle / display off / between virtual desktop swaps).
     /// </summary>
     public bool IsWindowAlive(IntPtr handle) => _detector.IsWindowAlive(handle);
+
+    /// <summary>
+    /// Reports whether the given window handle is alive AND currently
+    /// visible to the user (either rendered or merely DWM-cloaked).
+    /// Apps that explicitly hide their windows via
+    /// <c>ShowWindow(SW_HIDE)</c> — Telegram's image viewer being the
+    /// canonical case — return <c>false</c> here so their tab is
+    /// dropped immediately rather than lingering on the bar.
+    /// </summary>
+    public bool IsWindowVisibleToUser(IntPtr handle) => _detector.IsWindowVisibleToUser(handle);
 }
