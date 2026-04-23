@@ -40,9 +40,23 @@ public sealed class WindowDetector : IWindowDetector
     /// re-spawning a <see cref="Process"/> wrapper on every poll. Cache is
     /// pruned lazily when entries become stale (the PID no longer exists).
     /// </summary>
+    /// <remarks>
+    /// The cache key includes the process creation timestamp because Windows
+    /// recycles PIDs aggressively (PID space is 32K-ish on most systems and
+    /// wraps within minutes on a busy machine). Without the start-time
+    /// validation, an excluded PID such as <c>TextInputHost</c> could be
+    /// reassigned days later to a real user app — leaving the new app
+    /// permanently filtered out until the bar is restarted. This was the
+    /// root cause of the long-uptime bug where new windows stopped being
+    /// shown as tabs after several days of continuous execution.
+    /// </remarks>
     private readonly Dictionary<int, ProcessMetadata> _processCache = new();
 
-    private readonly record struct ProcessMetadata(string Name, string ExecutablePath, bool Excluded);
+    private readonly record struct ProcessMetadata(
+        string Name,
+        string ExecutablePath,
+        bool Excluded,
+        long StartTimeTicks);
 
     public List<TrackedWindow> GetVisibleWindows()
     {
@@ -137,9 +151,21 @@ public sealed class WindowDetector : IWindowDetector
 
     private ProcessMetadata ResolveMetadata(int pid)
     {
+        long currentStartTicks = GetProcessStartTimeTicks(pid);
+
         if (_processCache.TryGetValue(pid, out var cached))
         {
-            return cached;
+            // Validate that the cached entry still belongs to the same OS
+            // process. Windows reuses PIDs constantly; a stale cache entry
+            // for a recycled PID would make new apps invisible (the most
+            // common symptom: open programs stop appearing as tabs after
+            // several days of uptime).
+            if (currentStartTicks != 0 && cached.StartTimeTicks == currentStartTicks)
+            {
+                return cached;
+            }
+
+            _processCache.Remove(pid);
         }
 
         string name = string.Empty;
@@ -160,10 +186,57 @@ public sealed class WindowDetector : IWindowDetector
             // The PID may have died between EnumWindows and the lookup.
         }
 
-        var metadata = new ProcessMetadata(name, path, ExcludedProcessNames.Contains(name));
+        var metadata = new ProcessMetadata(
+            name,
+            path,
+            ExcludedProcessNames.Contains(name),
+            currentStartTicks);
         _processCache[pid] = metadata;
         return metadata;
     }
+
+    /// <summary>
+    /// Reads the kernel-level creation timestamp of a process via
+    /// <c>OpenProcess</c> + <c>GetProcessTimes</c>. Returns <c>0</c> when
+    /// the PID is gone or access is denied (protected / system process).
+    /// </summary>
+    /// <remarks>
+    /// Uses <c>PROCESS_QUERY_LIMITED_INFORMATION</c> (0x1000) which is the
+    /// least-privileged right that still permits <c>GetProcessTimes</c>;
+    /// it succeeds even for elevated targets running as another user when
+    /// Tabu itself is unelevated. The handle is always released — leaking
+    /// it would re-introduce the v1.2.1 handle-exhaustion crash.
+    /// </remarks>
+    private static long GetProcessStartTimeTicks(int pid)
+    {
+        const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
+        IntPtr handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, (uint)pid);
+        if (handle == IntPtr.Zero) return 0;
+
+        try
+        {
+            if (!GetProcessTimes(handle, out long creation, out _, out _, out _))
+            {
+                return 0;
+            }
+            return creation;
+        }
+        finally
+        {
+            CloseHandle(handle);
+        }
+    }
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    private static extern IntPtr OpenProcess(uint dwDesiredAccess, [MarshalAs(UnmanagedType.Bool)] bool bInheritHandle, uint dwProcessId);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool GetProcessTimes(IntPtr hProcess, out long lpCreationTime, out long lpExitTime, out long lpKernelTime, out long lpUserTime);
+
+    [DllImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool CloseHandle(IntPtr hObject);
 
     private void PruneCache(HashSet<int> seenPids)
     {
