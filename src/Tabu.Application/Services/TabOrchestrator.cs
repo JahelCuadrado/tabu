@@ -10,6 +10,15 @@ public sealed class WindowSwitcher
     private TrackedWindow? _activeWindow;
     private IntPtr _ownHandle;
 
+    /// <summary>
+    /// Set of HWNDs that currently have a pending notification flash. The
+    /// shell hook reports flashes asynchronously; we accumulate them here
+    /// and project the state into <see cref="TrackedWindow.HasNotification"/>
+    /// during the next <see cref="Refresh"/>. Entries are cleared as soon
+    /// as the user activates the corresponding window.
+    /// </summary>
+    private readonly HashSet<IntPtr> _flashingWindows = new();
+
     public IReadOnlyList<TrackedWindow> Windows => _windows.AsReadOnly();
     public TrackedWindow? ActiveWindow => _activeWindow;
 
@@ -23,6 +32,43 @@ public sealed class WindowSwitcher
     public void SetOwnHandle(IntPtr handle)
     {
         _ownHandle = handle;
+    }
+
+    /// <summary>
+    /// Records that <paramref name="hwnd"/> is requesting attention. The
+    /// flag is reflected on the matching tab on the next refresh and is
+    /// idempotent — additional flashes from the same window are no-ops
+    /// until the user activates it.
+    /// </summary>
+    public void NotifyWindowFlashing(IntPtr hwnd)
+    {
+        if (hwnd == IntPtr.Zero || hwnd == _ownHandle) return;
+
+        // Skip flashes coming from the currently active window: the user
+        // is already looking at it, no badge needed.
+        if (_activeWindow?.Handle == hwnd) return;
+
+        if (_flashingWindows.Add(hwnd))
+        {
+            var match = _windows.FirstOrDefault(w => w.Handle == hwnd);
+            if (match is not null)
+            {
+                match.HasNotification = true;
+                WindowsChanged?.Invoke();
+            }
+        }
+    }
+
+    /// <summary>Clears any pending flash for the given HWND.</summary>
+    public void ClearNotification(IntPtr hwnd)
+    {
+        if (!_flashingWindows.Remove(hwnd)) return;
+        var match = _windows.FirstOrDefault(w => w.Handle == hwnd);
+        if (match is not null && match.HasNotification)
+        {
+            match.HasNotification = false;
+            WindowsChanged?.Invoke();
+        }
     }
 
     public void Refresh()
@@ -41,22 +87,60 @@ public sealed class WindowSwitcher
             win.Title = _detector.GetWindowTitle(win.Handle);
         }
 
-        // Detect active foreground window
+        // Detect active foreground window. When the foreground window is
+        // our own bar (because the user clicked the clock, the settings
+        // button, or any non-tab area), we must NOT clear the active
+        // state on every tab — the user-perceived "active" app is still
+        // the previously focused window. Carrying the previous handle
+        // forward keeps the active tab highlighted while the user
+        // interacts with the bar itself.
         var fg = _detector.GetForegroundWindow();
+        IntPtr activeHandle = fg?.Handle ?? IntPtr.Zero;
+        bool barIsForeground = activeHandle != IntPtr.Zero && activeHandle == _ownHandle;
+        if (barIsForeground)
+        {
+            activeHandle = _activeWindow?.Handle ?? IntPtr.Zero;
+        }
+
         foreach (var win in detected)
         {
-            win.IsActive = fg is not null && win.Handle == fg.Handle;
+            win.IsActive = activeHandle != IntPtr.Zero && win.Handle == activeHandle;
+
+            // Project pending flashes onto the matching window. Auto-clear
+            // when the window becomes active — the user has now seen it.
+            if (win.IsActive)
+            {
+                _flashingWindows.Remove(win.Handle);
+                win.HasNotification = false;
+            }
+            else
+            {
+                win.HasNotification = _flashingWindows.Contains(win.Handle);
+            }
+        }
+
+        // Drop pending flashes for windows that no longer exist so the set
+        // does not grow unbounded across long sessions.
+        if (_flashingWindows.Count > 0)
+        {
+            var liveHandles = detected.Select(w => w.Handle).ToHashSet();
+            _flashingWindows.RemoveWhere(h => !liveHandles.Contains(h));
         }
 
         _windows = detected;
-        _activeWindow = detected.FirstOrDefault(w => w.IsActive);
+        _activeWindow = detected.FirstOrDefault(w => w.IsActive) ?? _activeWindow;
         WindowsChanged?.Invoke();
     }
 
     public void SwitchTo(TrackedWindow window)
     {
         _detector.BringToFront(window);
-        foreach (var w in _windows) w.IsActive = w.Handle == window.Handle;
+        _flashingWindows.Remove(window.Handle);
+        foreach (var w in _windows)
+        {
+            w.IsActive = w.Handle == window.Handle;
+            if (w.IsActive) w.HasNotification = false;
+        }
         _activeWindow = window;
         WindowsChanged?.Invoke();
     }

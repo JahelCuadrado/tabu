@@ -57,3 +57,25 @@ public sealed class BoolToFixedTabWidthConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         => throw new NotSupportedException();
 }
+
+/// <summary>
+/// Returns <see cref="Visibility.Visible"/> only when ALL of the supplied
+/// boolean inputs are true. Used by the tab template to gate the
+/// notification dot on the per-tab <c>HasNotification</c> flag AND the
+/// global <c>ShowNotificationBadges</c> user preference.
+/// </summary>
+public sealed class AllBoolsToVisibilityConverter : IMultiValueConverter
+{
+    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (values is null || values.Length == 0) return Visibility.Collapsed;
+        foreach (var value in values)
+        {
+            if (value is not true) return Visibility.Collapsed;
+        }
+        return Visibility.Visible;
+    }
+
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}

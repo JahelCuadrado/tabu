@@ -20,6 +20,13 @@
     <sys:String x:Key="Settings_Clock">時計</sys:String>
     <sys:String x:Key="Settings_ShowClock">時計を表示</sys:String>
     <sys:String x:Key="Settings_HideClock">時計を非表示</sys:String>
+    <sys:String x:Key="Settings_ClockSize">時計のサイズ</sys:String>
+    <sys:String x:Key="Settings_Notifications">通知ドット</sys:String>
+    <sys:String x:Key="Settings_NotificationsEnable">表示</sys:String>
+    <sys:String x:Key="Settings_NotificationsDisable">非表示</sys:String>
+    <sys:String x:Key="Settings_NotificationDotSize">ドットのサイズ</sys:String>
+    <sys:String x:Key="Settings_NotificationDotColor">ドットの色 (hex)</sys:String>
+    <sys:String x:Key="Settings_NotificationDotColorReset">アクセントを使用</sys:String>
     <sys:String x:Key="Settings_BarSize">バーサイズ</sys:String>
     <sys:String x:Key="Settings_BarSizeSmall">小</sys:String>
     <sys:String x:Key="Settings_BarSizeMedium">中</sys:String>

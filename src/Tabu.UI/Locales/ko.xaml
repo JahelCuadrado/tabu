@@ -20,6 +20,13 @@
     <sys:String x:Key="Settings_Clock">시계</sys:String>
     <sys:String x:Key="Settings_ShowClock">시계 표시</sys:String>
     <sys:String x:Key="Settings_HideClock">시계 숨기기</sys:String>
+    <sys:String x:Key="Settings_ClockSize">시계 크기</sys:String>
+    <sys:String x:Key="Settings_Notifications">알림 표시</sys:String>
+    <sys:String x:Key="Settings_NotificationsEnable">표시</sys:String>
+    <sys:String x:Key="Settings_NotificationsDisable">숨기기</sys:String>
+    <sys:String x:Key="Settings_NotificationDotSize">점 크기</sys:String>
+    <sys:String x:Key="Settings_NotificationDotColor">점 색상 (hex)</sys:String>
+    <sys:String x:Key="Settings_NotificationDotColorReset">강조색 사용</sys:String>
     <sys:String x:Key="Settings_BarSize">바 크기</sys:String>
     <sys:String x:Key="Settings_BarSizeSmall">작게</sys:String>
     <sys:String x:Key="Settings_BarSizeMedium">중간</sys:String>

@@ -20,6 +20,13 @@
     <sys:String x:Key="Settings_Clock">Часы</sys:String>
     <sys:String x:Key="Settings_ShowClock">Показать часы</sys:String>
     <sys:String x:Key="Settings_HideClock">Скрыть часы</sys:String>
+    <sys:String x:Key="Settings_ClockSize">Размер часов</sys:String>
+    <sys:String x:Key="Settings_Notifications">Индикаторы уведомлений</sys:String>
+    <sys:String x:Key="Settings_NotificationsEnable">Показать</sys:String>
+    <sys:String x:Key="Settings_NotificationsDisable">Скрыть</sys:String>
+    <sys:String x:Key="Settings_NotificationDotSize">Размер точки</sys:String>
+    <sys:String x:Key="Settings_NotificationDotColor">Цвет точки (hex)</sys:String>
+    <sys:String x:Key="Settings_NotificationDotColorReset">Использовать акцент</sys:String>
     <sys:String x:Key="Settings_BarSize">Размер панели</sys:String>
     <sys:String x:Key="Settings_BarSizeSmall">Маленький</sys:String>
     <sys:String x:Key="Settings_BarSizeMedium">Средний</sys:String>

@@ -13,6 +13,20 @@ public sealed class UserSettings
     public bool AutoHideBar { get; set; }
     public bool LaunchAtStartup { get; set; }
     public bool ShowClock { get; set; } = true;
+    public string ClockSize { get; set; } = "Small";
+    public bool ShowNotificationBadges { get; set; } = true;
+
+    /// <summary>
+    /// Diameter (in DIPs) of the per-tab notification dot. Allowed range 4–12.
+    /// </summary>
+    public int NotificationDotSize { get; set; } = 7;
+
+    /// <summary>
+    /// Optional fill color for the notification dot, in <c>#RRGGBB</c> format.
+    /// Empty string means “follow the current accent color”.
+    /// </summary>
+    public string NotificationDotColor { get; set; } = string.Empty;
+
     public string BarSize { get; set; } = "Small";
     public bool UseBlurEffect { get; set; }
 

@@ -20,6 +20,13 @@
     <sys:String x:Key="Settings_Clock">时钟</sys:String>
     <sys:String x:Key="Settings_ShowClock">显示时钟</sys:String>
     <sys:String x:Key="Settings_HideClock">隐藏时钟</sys:String>
+    <sys:String x:Key="Settings_ClockSize">时钟大小</sys:String>
+    <sys:String x:Key="Settings_Notifications">通知点</sys:String>
+    <sys:String x:Key="Settings_NotificationsEnable">显示</sys:String>
+    <sys:String x:Key="Settings_NotificationsDisable">隐藏</sys:String>
+    <sys:String x:Key="Settings_NotificationDotSize">圆点大小</sys:String>
+    <sys:String x:Key="Settings_NotificationDotColor">圆点颜色 (hex)</sys:String>
+    <sys:String x:Key="Settings_NotificationDotColorReset">使用强调色</sys:String>
     <sys:String x:Key="Settings_BarSize">工具栏大小</sys:String>
     <sys:String x:Key="Settings_BarSizeSmall">小</sys:String>
     <sys:String x:Key="Settings_BarSizeMedium">中</sys:String>

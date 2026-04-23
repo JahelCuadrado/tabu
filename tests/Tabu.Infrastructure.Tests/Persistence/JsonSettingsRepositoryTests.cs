@@ -142,4 +142,38 @@ public sealed class JsonSettingsRepositoryTests : IDisposable
         FluentActions.Invoking(() => sut.Save(null!))
             .Should().Throw<ArgumentNullException>();
     }
+
+    [Fact]
+    public void Load_ReturnsV150Defaults_WhenFileDoesNotExist()
+    {
+        var sut = new JsonSettingsRepository(_tempFile);
+
+        var settings = sut.Load();
+
+        settings.ClockSize.Should().Be("Small");
+        settings.ShowNotificationBadges.Should().BeTrue();
+        settings.NotificationDotSize.Should().Be(7);
+        settings.NotificationDotColor.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void SaveThenLoad_RoundTripsV150NotificationSettings()
+    {
+        var saved = new UserSettings
+        {
+            ClockSize = "Large",
+            ShowNotificationBadges = false,
+            NotificationDotSize = 11,
+            NotificationDotColor = "#FF3366"
+        };
+        var sut = new JsonSettingsRepository(_tempFile);
+
+        sut.Save(saved);
+        var loaded = new JsonSettingsRepository(_tempFile).Load();
+
+        loaded.ClockSize.Should().Be("Large");
+        loaded.ShowNotificationBadges.Should().BeFalse();
+        loaded.NotificationDotSize.Should().Be(11);
+        loaded.NotificationDotColor.Should().Be("#FF3366");
+    }
 }

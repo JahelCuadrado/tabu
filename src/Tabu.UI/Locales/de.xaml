@@ -20,6 +20,13 @@
     <sys:String x:Key="Settings_Clock">Uhr</sys:String>
     <sys:String x:Key="Settings_ShowClock">Uhr anzeigen</sys:String>
     <sys:String x:Key="Settings_HideClock">Uhr ausblenden</sys:String>
+    <sys:String x:Key="Settings_ClockSize">Uhrengröße</sys:String>
+    <sys:String x:Key="Settings_Notifications">Benachrichtigungspunkte</sys:String>
+    <sys:String x:Key="Settings_NotificationsEnable">Anzeigen</sys:String>
+    <sys:String x:Key="Settings_NotificationsDisable">Ausblenden</sys:String>
+    <sys:String x:Key="Settings_NotificationDotSize">Punktgröße</sys:String>
+    <sys:String x:Key="Settings_NotificationDotColor">Punktfarbe (Hex)</sys:String>
+    <sys:String x:Key="Settings_NotificationDotColorReset">Akzent verwenden</sys:String>
     <sys:String x:Key="Settings_BarSize">Leistengröße</sys:String>
     <sys:String x:Key="Settings_BarSizeSmall">Klein</sys:String>
     <sys:String x:Key="Settings_BarSizeMedium">Mittel</sys:String>

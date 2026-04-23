@@ -26,12 +26,16 @@ public sealed class MainViewModel : ObservableObject
     private bool _autoHideBar;
     private bool _launchAtStartup;
     private bool _showClock = true;
+    private ClockSize _clockSize = ClockSize.Small;
     private string _currentTime = string.Empty;
     private BarSize _barSize = BarSize.Small;
     private IntPtr? _monitorFilter;
     private bool _useBlurEffect;
     private string _blurMode = "Acrylic";
     private bool _autoCheckUpdates = true;
+    private bool _showNotificationBadges = true;
+    private double _notificationDotSize = 7;
+    private string _notificationDotColor = string.Empty;
 
     public ObservableCollection<TabViewModel> Tabs { get; } = new();
 
@@ -176,6 +180,27 @@ public sealed class MainViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Discrete font size of the wall-clock display. The numeric value
+    /// of the enum is bound directly as <c>FontSize</c> in the view, so
+    /// changes propagate without any converter logic.
+    /// </summary>
+    public ClockSize ClockSize
+    {
+        get => _clockSize;
+        set
+        {
+            if (SetProperty(ref _clockSize, value))
+            {
+                OnPropertyChanged(nameof(ClockFontSize));
+                ClockSizeChangeRequested?.Invoke(value);
+            }
+        }
+    }
+
+    /// <summary>Numeric font size derived from <see cref="ClockSize"/>.</summary>
+    public double ClockFontSize => (int)_clockSize;
+
+    /// <summary>
     /// Current wall-clock time formatted in the user's short-time pattern.
     /// Updated every minute by <see cref="_clockTimer"/>.
     /// </summary>
@@ -259,6 +284,59 @@ public sealed class MainViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Master switch for the per-tab notification dots. When off, the
+    /// view hides every badge unconditionally; the underlying detection
+    /// keeps running so toggling it back on is instantaneous.
+    /// </summary>
+    public bool ShowNotificationBadges
+    {
+        get => _showNotificationBadges;
+        set
+        {
+            if (SetProperty(ref _showNotificationBadges, value))
+            {
+                NotificationBadgesChangeRequested?.Invoke(value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Diameter (in DIPs) of the per-tab notification dot. The setter
+    /// clamps to the supported 4–12 range so out-of-band values from
+    /// disk are silently sanitised.
+    /// </summary>
+    public double NotificationDotSize
+    {
+        get => _notificationDotSize;
+        set
+        {
+            var clamped = Math.Clamp(Math.Round(value), 4, 12);
+            if (SetProperty(ref _notificationDotSize, clamped))
+            {
+                NotificationDotSizeChangeRequested?.Invoke(clamped);
+            }
+        }
+    }
+
+    /// <summary>
+    /// User-chosen fill color for the notification dot, as a <c>#RRGGBB</c>
+    /// string. Empty means “follow the current accent color”. The setter
+    /// normalises whitespace and casing so persistence stays canonical.
+    /// </summary>
+    public string NotificationDotColor
+    {
+        get => _notificationDotColor;
+        set
+        {
+            var normalised = string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().ToUpperInvariant();
+            if (SetProperty(ref _notificationDotColor, normalised))
+            {
+                NotificationDotColorChangeRequested?.Invoke(normalised);
+            }
+        }
+    }
+
+    /// <summary>
     /// Pixel/DIP height the bar must occupy for the current
     /// <see cref="BarSize"/>. Bound by the view to keep layout in sync
     /// when the user picks a new size.
@@ -303,9 +381,13 @@ public sealed class MainViewModel : ObservableObject
     public event Action<bool>? AutoHideChangeRequested;
     public event Action<bool>? LaunchAtStartupChangeRequested;
     public event Action<bool>? ClockVisibilityChangeRequested;
+    public event Action<ClockSize>? ClockSizeChangeRequested;
     public event Action<BarSize>? BarSizeChangeRequested;
     public event Action<bool>? BlurEffectChangeRequested;
     public event Action<bool>? AutoCheckUpdatesChangeRequested;
+    public event Action<bool>? NotificationBadgesChangeRequested;
+    public event Action<double>? NotificationDotSizeChangeRequested;
+    public event Action<string>? NotificationDotColorChangeRequested;
     /// <summary>Raised when the user explicitly asks to check for a new release.</summary>
     public event Action? ManualUpdateCheckRequested;
 

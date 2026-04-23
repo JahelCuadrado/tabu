@@ -46,6 +46,7 @@ public sealed class TabViewModel : ObservableObject
 
     private string _displayName = string.Empty;
     private bool _isActive;
+    private bool _hasNotification;
     private ImageSource? _icon;
     private IntPtr _lastSeenCoreWindow;
 
@@ -84,6 +85,16 @@ public sealed class TabViewModel : ObservableObject
         set => SetProperty(ref _isActive, value);
     }
 
+    /// <summary>
+    /// True while the underlying window has a pending notification
+    /// (taskbar flash). The view binds this to a small accent dot.
+    /// </summary>
+    public bool HasNotification
+    {
+        get => _hasNotification;
+        set => SetProperty(ref _hasNotification, value);
+    }
+
     public ImageSource? Icon
     {
         get => _icon;
@@ -95,6 +106,7 @@ public sealed class TabViewModel : ObservableObject
         Model = model;
         _displayName = Truncate(model.Title, 28);
         _isActive = model.IsActive;
+        _hasNotification = model.HasNotification;
         _lastSeenCoreWindow = model.CoreWindowHandle;
         LoadIcon(model.Handle, model.CoreWindowHandle, model.ExecutablePath);
         ScheduleFastIconRetriesIfNeeded(model.Handle, model.ExecutablePath);
@@ -104,6 +116,7 @@ public sealed class TabViewModel : ObservableObject
     {
         DisplayName = Truncate(updated.Title, 28);
         IsActive = updated.IsActive;
+        HasNotification = updated.HasNotification;
 
         // Re-resolve the icon when the pure policy says so. Keeps the
         // UI thin and the rules unit-testable in IconRefreshPolicyTests.

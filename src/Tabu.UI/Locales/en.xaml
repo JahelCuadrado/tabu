@@ -20,6 +20,13 @@
     <sys:String x:Key="Settings_Clock">Clock</sys:String>
     <sys:String x:Key="Settings_ShowClock">Show clock</sys:String>
     <sys:String x:Key="Settings_HideClock">Hide clock</sys:String>
+    <sys:String x:Key="Settings_ClockSize">Clock size</sys:String>
+    <sys:String x:Key="Settings_Notifications">Notification dots</sys:String>
+    <sys:String x:Key="Settings_NotificationsEnable">Show</sys:String>
+    <sys:String x:Key="Settings_NotificationsDisable">Hide</sys:String>
+    <sys:String x:Key="Settings_NotificationDotSize">Dot size</sys:String>
+    <sys:String x:Key="Settings_NotificationDotColor">Dot color (hex)</sys:String>
+    <sys:String x:Key="Settings_NotificationDotColorReset">Use accent</sys:String>
     <sys:String x:Key="Settings_BarSize">Bar size</sys:String>
     <sys:String x:Key="Settings_BarSizeSmall">Small</sys:String>
     <sys:String x:Key="Settings_BarSizeMedium">Medium</sys:String>

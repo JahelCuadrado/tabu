@@ -20,6 +20,13 @@
     <sys:String x:Key="Settings_Clock">Orologio</sys:String>
     <sys:String x:Key="Settings_ShowClock">Mostra orologio</sys:String>
     <sys:String x:Key="Settings_HideClock">Nascondi orologio</sys:String>
+    <sys:String x:Key="Settings_ClockSize">Dimensione orologio</sys:String>
+    <sys:String x:Key="Settings_Notifications">Punti di notifica</sys:String>
+    <sys:String x:Key="Settings_NotificationsEnable">Mostra</sys:String>
+    <sys:String x:Key="Settings_NotificationsDisable">Nascondi</sys:String>
+    <sys:String x:Key="Settings_NotificationDotSize">Dimensione del punto</sys:String>
+    <sys:String x:Key="Settings_NotificationDotColor">Colore del punto (hex)</sys:String>
+    <sys:String x:Key="Settings_NotificationDotColorReset">Usa accento</sys:String>
     <sys:String x:Key="Settings_BarSize">Dimensione barra</sys:String>
     <sys:String x:Key="Settings_BarSizeSmall">Piccola</sys:String>
     <sys:String x:Key="Settings_BarSizeMedium">Media</sys:String>

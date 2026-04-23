@@ -111,6 +111,35 @@ public partial class SettingsWindow : Window
             ClockHiddenRadio.IsChecked = true;
         }
 
+        switch (_viewModel.ClockSize)
+        {
+            case Tabu.Domain.Entities.ClockSize.Medium:
+                ClockSizeMediumRadio.IsChecked = true;
+                break;
+            case Tabu.Domain.Entities.ClockSize.Large:
+                ClockSizeLargeRadio.IsChecked = true;
+                break;
+            default:
+                ClockSizeSmallRadio.IsChecked = true;
+                break;
+        }
+        UpdateClockSizeAvailability();
+
+        if (_viewModel.ShowNotificationBadges)
+        {
+            NotificationsEnabledRadio.IsChecked = true;
+        }
+        else
+        {
+            NotificationsDisabledRadio.IsChecked = true;
+        }
+
+        NotificationDotSizeSlider.Value = _viewModel.NotificationDotSize;
+        NotificationDotSizeValueText.Text = $"{(int)_viewModel.NotificationDotSize} px";
+        NotificationDotColorBox.Text = _viewModel.NotificationDotColor;
+        SyncWheelFromHex(_viewModel.NotificationDotColor);
+        UpdateNotificationDotPanelAvailability();
+
         switch (_viewModel.BarSize)
         {
             case Tabu.Domain.Entities.BarSize.Medium:
@@ -281,6 +310,179 @@ public partial class SettingsWindow : Window
         {
             _viewModel.ShowClock = show;
         }
+        UpdateClockSizeAvailability();
+    }
+
+    private void ClockSize_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+
+        Tabu.Domain.Entities.ClockSize size;
+        if (ClockSizeMediumRadio.IsChecked == true)
+            size = Tabu.Domain.Entities.ClockSize.Medium;
+        else if (ClockSizeLargeRadio.IsChecked == true)
+            size = Tabu.Domain.Entities.ClockSize.Large;
+        else
+            size = Tabu.Domain.Entities.ClockSize.Small;
+
+        if (size != _viewModel.ClockSize)
+        {
+            _viewModel.ClockSize = size;
+        }
+    }
+
+    /// <summary>
+    /// Collapses the clock-size selector when the clock itself is hidden,
+    /// keeping the settings UI free of dead controls.
+    /// </summary>
+    private void UpdateClockSizeAvailability()
+    {
+        if (ClockSizePanel is null) return;
+        ClockSizePanel.Visibility = _viewModel.ShowClock ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void Notifications_Changed(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+
+        bool show = NotificationsEnabledRadio.IsChecked == true;
+        if (show != _viewModel.ShowNotificationBadges)
+        {
+            _viewModel.ShowNotificationBadges = show;
+        }
+        UpdateNotificationDotPanelAvailability();
+    }
+
+    private void NotificationDotSize_Changed(object sender, System.Windows.RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (!_initialized) return;
+
+        var size = (int)Math.Round(e.NewValue);
+        if (NotificationDotSizeValueText is not null)
+        {
+            NotificationDotSizeValueText.Text = $"{size} px";
+        }
+        if (Math.Abs(_viewModel.NotificationDotSize - size) > 0.0001)
+        {
+            _viewModel.NotificationDotSize = size;
+        }
+    }
+
+    private void NotificationDotColor_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        if (!_initialized) return;
+
+        var raw = NotificationDotColorBox.Text?.Trim() ?? string.Empty;
+        // Empty input → follow accent. Otherwise only push valid #RRGGBB so
+        // half-typed values don’t flicker the bar mid-edit.
+        if (raw.Length == 0)
+        {
+            if (_viewModel.NotificationDotColor.Length != 0)
+            {
+                _viewModel.NotificationDotColor = string.Empty;
+            }
+            return;
+        }
+
+        if (TryNormaliseHex(raw, out var canonical) && !string.Equals(canonical, _viewModel.NotificationDotColor, StringComparison.Ordinal))
+        {
+            _viewModel.NotificationDotColor = canonical;
+            SyncWheelFromHex(canonical);
+        }
+    }
+
+    private void NotificationDotColorReset_Click(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+        NotificationDotColorBox.Text = string.Empty;
+        if (_viewModel.NotificationDotColor.Length != 0)
+        {
+            _viewModel.NotificationDotColor = string.Empty;
+        }
+    }
+
+    private void DotColorWheel_SelectedColorChanged(object? sender, System.Windows.Media.Color color)
+    {
+        if (!_initialized) return;
+        var hex = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+        if (!string.Equals(NotificationDotColorBox.Text, hex, StringComparison.OrdinalIgnoreCase))
+        {
+            // Setting the textbox triggers TextChanged, which pushes the
+            // value to the VM and avoids duplicating the persistence path.
+            NotificationDotColorBox.Text = hex;
+        }
+    }
+
+    private void DotColorSwatch_Click(object sender, RoutedEventArgs e)
+    {
+        if (DotColorPopup is null) return;
+        // Re-sync the wheel to the current value just before showing it
+        // so the selector lands on the right hue/saturation/brightness.
+        SyncWheelFromHex(_viewModel.NotificationDotColor);
+        DotColorPopup.IsOpen = !DotColorPopup.IsOpen;
+    }
+
+    /// <summary>
+    /// Pushes a hex string into the wheel without retriggering its event
+    /// loop. Falls back to the current accent color when <paramref name="hex"/>
+    /// is empty so the wheel always shows a meaningful selector position.
+    /// </summary>
+    private void SyncWheelFromHex(string hex)
+    {
+        if (DotColorWheel is null) return;
+        System.Windows.Media.Color color;
+        if (!string.IsNullOrWhiteSpace(hex))
+        {
+            try
+            {
+                color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(hex);
+            }
+            catch
+            {
+                return;
+            }
+        }
+        else if (TryFindResource("AccentColor") is System.Windows.Media.Color accent)
+        {
+            color = accent;
+        }
+        else
+        {
+            color = System.Windows.Media.Colors.DodgerBlue;
+        }
+        DotColorWheel.SelectedColor = color;
+    }
+
+    /// <summary>
+    /// Hides the dot size/color editor when notifications are disabled, so
+    /// the user can’t tweak invisible UI.
+    /// </summary>
+    private void UpdateNotificationDotPanelAvailability()
+    {
+        if (NotificationDotPanel is null) return;
+        NotificationDotPanel.Visibility = _viewModel.ShowNotificationBadges ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    /// <summary>
+    /// Accepts <c>#RRGGBB</c>, <c>RRGGBB</c>, <c>#RGB</c> or <c>RGB</c> and
+    /// returns the canonical upper-case <c>#RRGGBB</c> form. Returns false
+    /// for any malformed input so the caller can ignore in-flight typing.
+    /// </summary>
+    private static bool TryNormaliseHex(string input, out string canonical)
+    {
+        canonical = string.Empty;
+        var v = input.StartsWith('#') ? input[1..] : input;
+        if (v.Length == 3)
+        {
+            v = $"{v[0]}{v[0]}{v[1]}{v[1]}{v[2]}{v[2]}";
+        }
+        if (v.Length != 6) return false;
+        for (int i = 0; i < 6; i++)
+        {
+            if (!Uri.IsHexDigit(v[i])) return false;
+        }
+        canonical = "#" + v.ToUpperInvariant();
+        return true;
     }
 
     private void BarSize_Changed(object sender, RoutedEventArgs e)
@@ -467,6 +669,13 @@ public partial class SettingsWindow : Window
         // Tabs
         TabFixedWidthRadio.IsChecked = true;
         ClockVisibleRadio.IsChecked = true;
+        ClockSizeSmallRadio.IsChecked = true;
+        UpdateClockSizeAvailability();
+        NotificationsEnabledRadio.IsChecked = true;
+        NotificationDotSizeSlider.Value = 7;
+        NotificationDotColorBox.Text = string.Empty;
+        SyncWheelFromHex(string.Empty);
+        UpdateNotificationDotPanelAvailability();
 
         // System
         var defaultLanguage = LocalizationManager.AvailableLanguages

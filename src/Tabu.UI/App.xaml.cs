@@ -22,6 +22,7 @@ public partial class App : System.Windows.Application
     private readonly LocalizationManager _localizationManager = new();
     private readonly AccentColorManager _accentColorManager = new();
     private ISettingsRepository _settingsRepository = null!;
+    private ShellHookListener? _shellHook;
 
     public App()
     {
@@ -57,10 +58,14 @@ public partial class App : System.Windows.Application
             AutoHideBar = saved.AutoHideBar,
             LaunchAtStartup = saved.LaunchAtStartup,
             ShowClock = saved.ShowClock,
+            ClockSize = Enum.TryParse<ClockSize>(saved.ClockSize, out var clockSize) ? clockSize : ClockSize.Small,
             BarSize = Enum.TryParse<BarSize>(saved.BarSize, out var size) ? size : BarSize.Small,
             UseBlurEffect = saved.UseBlurEffect,
             BlurMode = saved.BlurMode,
-            AutoCheckUpdates = saved.AutoCheckUpdates
+            AutoCheckUpdates = saved.AutoCheckUpdates,
+            ShowNotificationBadges = saved.ShowNotificationBadges,
+            NotificationDotSize = saved.NotificationDotSize,
+            NotificationDotColor = saved.NotificationDotColor
         };
 
         _primaryViewModel.BarPlacementChangeRequested += OnBarPlacementChangeRequested;
@@ -74,9 +79,13 @@ public partial class App : System.Windows.Application
         _primaryViewModel.AutoHideChangeRequested += OnAutoHideChangeRequested;
         _primaryViewModel.LaunchAtStartupChangeRequested += OnLaunchAtStartupChangeRequested;
         _primaryViewModel.ClockVisibilityChangeRequested += OnClockVisibilityChangeRequested;
+        _primaryViewModel.ClockSizeChangeRequested += OnClockSizeChangeRequested;
         _primaryViewModel.BarSizeChangeRequested += OnBarSizeChangeRequested;
         _primaryViewModel.BlurEffectChangeRequested += OnBlurEffectChangeRequested;
         _primaryViewModel.AutoCheckUpdatesChangeRequested += OnAutoCheckUpdatesChangeRequested;
+        _primaryViewModel.NotificationBadgesChangeRequested += OnNotificationBadgesChangeRequested;
+        _primaryViewModel.NotificationDotSizeChangeRequested += OnNotificationDotSizeChangeRequested;
+        _primaryViewModel.NotificationDotColorChangeRequested += OnNotificationDotColorChangeRequested;
         _primaryViewModel.ManualUpdateCheckRequested += OnManualUpdateCheckRequested;
 
         // Reconcile the Run registry value with the persisted preference so that
@@ -90,6 +99,7 @@ public partial class App : System.Windows.Application
         _localizationManager.Apply(saved.Language);
 
         _accentColorManager.Apply(saved.AccentColor, IsDarkTheme(theme));
+        ApplyNotificationDotBrush(saved.NotificationDotColor);
 
         if (saved.IsBarOnAllMonitors)
         {
@@ -102,6 +112,23 @@ public partial class App : System.Windows.Application
 
         _primaryBar = new MainWindow(_primaryViewModel);
         _primaryBar.Show();
+
+        // Subscribe to shell-level taskbar flash events so we can render
+        // notification dots on tabs whose owning app called FlashWindowEx.
+        // Created lazily after the primary bar so the WPF dispatcher and
+        // global resources are fully initialised.
+        try
+        {
+            _shellHook = new ShellHookListener();
+            _shellHook.WindowFlashed += OnWindowFlashed;
+        }
+        catch (Exception ex)
+        {
+            // Shell hook registration can fail on locked-down sessions
+            // (services, sandboxed accounts). Notification badges then
+            // simply stay dark — no other functionality is impacted.
+            CrashLogger.Log("ShellHook.Register", ex);
+        }
 
         // Fire-and-forget update check; never blocks startup. Gated by
         // the user preference so opting out fully disables network I/O
@@ -200,6 +227,10 @@ public partial class App : System.Windows.Application
         {
             var theme = _primaryViewModel?.AppTheme ?? AppTheme.System;
             _accentColorManager.Apply(colorCode, IsDarkTheme(theme));
+            // The dot brush either follows the accent (empty user color)
+            // or stays on its hex override. Re-evaluate so the change is
+            // visible immediately when the user is on accent-follow mode.
+            ApplyNotificationDotBrush(_primaryViewModel?.NotificationDotColor ?? string.Empty);
         });
         PersistSettings();
     }
@@ -253,6 +284,110 @@ public partial class App : System.Windows.Application
             }
         });
         PersistSettings();
+    }
+
+    private void OnClockSizeChangeRequested(ClockSize size)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            foreach (var bar in _secondaryBars)
+            {
+                if (bar.DataContext is MainViewModel vm)
+                {
+                    vm.ClockSize = size;
+                }
+            }
+        });
+        PersistSettings();
+    }
+
+    private void OnNotificationBadgesChangeRequested(bool show)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            foreach (var bar in _secondaryBars)
+            {
+                if (bar.DataContext is MainViewModel vm)
+                {
+                    vm.ShowNotificationBadges = show;
+                }
+            }
+        });
+        PersistSettings();
+    }
+
+    private void OnNotificationDotSizeChangeRequested(double size)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            foreach (var bar in _secondaryBars)
+            {
+                if (bar.DataContext is MainViewModel vm)
+                {
+                    vm.NotificationDotSize = size;
+                }
+            }
+        });
+        PersistSettings();
+    }
+
+    private void OnNotificationDotColorChangeRequested(string hex)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            ApplyNotificationDotBrush(hex);
+            foreach (var bar in _secondaryBars)
+            {
+                if (bar.DataContext is MainViewModel vm)
+                {
+                    vm.NotificationDotColor = hex;
+                }
+            }
+        });
+        PersistSettings();
+    }
+
+    /// <summary>
+    /// Updates the global <c>NotificationDotBrush</c> resource. When
+    /// <paramref name="hex"/> is empty or invalid the brush mirrors the
+    /// current <c>AccentBrush</c>; otherwise the parsed color wins.
+    /// </summary>
+    private static void ApplyNotificationDotBrush(string hex)
+    {
+        var resources = System.Windows.Application.Current.Resources;
+        System.Windows.Media.Brush brush;
+        if (!string.IsNullOrWhiteSpace(hex) && TryParseHexColor(hex, out var color))
+        {
+            brush = new System.Windows.Media.SolidColorBrush(color);
+        }
+        else if (resources["AccentBrush"] is System.Windows.Media.Brush accent)
+        {
+            brush = accent;
+        }
+        else
+        {
+            brush = System.Windows.Media.Brushes.DodgerBlue;
+        }
+        resources["NotificationDotBrush"] = brush;
+    }
+
+    private static bool TryParseHexColor(string hex, out System.Windows.Media.Color color)
+    {
+        color = default;
+        try
+        {
+            var converted = System.Windows.Media.ColorConverter.ConvertFromString(hex);
+            if (converted is System.Windows.Media.Color c)
+            {
+                color = c;
+                return true;
+            }
+        }
+        catch
+        {
+            // Swallow malformed hex values; the caller falls back to accent.
+        }
+        return false;
     }
 
     private void OnBlurEffectChangeRequested(bool enabled)
@@ -345,6 +480,10 @@ public partial class App : System.Windows.Application
                 AccentColor = _primaryViewModel?.AccentColor ?? "purple",
                 AutoHideBar = _primaryViewModel?.AutoHideBar ?? false,
                 ShowClock = _primaryViewModel?.ShowClock ?? true,
+                ClockSize = _primaryViewModel?.ClockSize ?? ClockSize.Small,
+                ShowNotificationBadges = _primaryViewModel?.ShowNotificationBadges ?? true,
+                NotificationDotSize = _primaryViewModel?.NotificationDotSize ?? 7,
+                NotificationDotColor = _primaryViewModel?.NotificationDotColor ?? string.Empty,
                 BarSize = _primaryViewModel?.BarSize ?? BarSize.Small,
                 UseBlurEffect = _primaryViewModel?.UseBlurEffect ?? false,
                 BlurMode = _primaryViewModel?.BlurMode ?? "Acrylic",
@@ -375,9 +514,30 @@ public partial class App : System.Windows.Application
     {
         PersistSettings();
         DeactivateSecondaryBars();
+        _shellHook?.Dispose();
         await _host.StopAsync();
         _host.Dispose();
         base.OnExit(e);
+    }
+
+    /// <summary>
+    /// Forwards a shell-hook flash event to the switcher so the matching
+    /// tab gets a notification dot. Runs on the dispatcher because the
+    /// hook callback already arrives on the UI thread; no marshalling
+    /// needed beyond the null-check guard.
+    /// </summary>
+    private void OnWindowFlashed(IntPtr hwnd)
+    {
+        if (_primaryViewModel is null || hwnd == IntPtr.Zero) return;
+        try
+        {
+            var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
+            switcher.NotifyWindowFlashing(hwnd);
+        }
+        catch (Exception ex)
+        {
+            CrashLogger.Log("ShellHook.Flash", ex);
+        }
     }
 
     private static bool IsDarkTheme(AppTheme theme) => theme switch
@@ -404,6 +564,10 @@ public partial class App : System.Windows.Application
             AutoHideBar = _primaryViewModel.AutoHideBar,
             LaunchAtStartup = _primaryViewModel.LaunchAtStartup,
             ShowClock = _primaryViewModel.ShowClock,
+            ClockSize = _primaryViewModel.ClockSize.ToString(),
+            ShowNotificationBadges = _primaryViewModel.ShowNotificationBadges,
+            NotificationDotSize = (int)_primaryViewModel.NotificationDotSize,
+            NotificationDotColor = _primaryViewModel.NotificationDotColor,
             BarSize = _primaryViewModel.BarSize.ToString(),
             UseBlurEffect = _primaryViewModel.UseBlurEffect,
             BlurMode = _primaryViewModel.BlurMode,

@@ -16,6 +16,7 @@
             <converters:NotNullToBoolConverter x:Key="NotNullToBoolConverter" />
             <converters:BoolToTabWidthConverter x:Key="BoolToTabWidthConverter" />
             <converters:BoolToFixedTabWidthConverter x:Key="BoolToFixedTabWidthConverter" />
+            <converters:AllBoolsToVisibilityConverter x:Key="AllBoolsToVisibilityConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

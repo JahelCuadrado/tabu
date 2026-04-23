@@ -20,6 +20,13 @@
     <sys:String x:Key="Settings_Clock">Horloge</sys:String>
     <sys:String x:Key="Settings_ShowClock">Afficher l'horloge</sys:String>
     <sys:String x:Key="Settings_HideClock">Masquer l'horloge</sys:String>
+    <sys:String x:Key="Settings_ClockSize">Taille de l'horloge</sys:String>
+    <sys:String x:Key="Settings_Notifications">Pastilles de notification</sys:String>
+    <sys:String x:Key="Settings_NotificationsEnable">Afficher</sys:String>
+    <sys:String x:Key="Settings_NotificationsDisable">Masquer</sys:String>
+    <sys:String x:Key="Settings_NotificationDotSize">Taille du point</sys:String>
+    <sys:String x:Key="Settings_NotificationDotColor">Couleur du point (hex)</sys:String>
+    <sys:String x:Key="Settings_NotificationDotColorReset">Utiliser l’accent</sys:String>
     <sys:String x:Key="Settings_BarSize">Taille de la barre</sys:String>
     <sys:String x:Key="Settings_BarSizeSmall">Petite</sys:String>
     <sys:String x:Key="Settings_BarSizeMedium">Moyenne</sys:String>

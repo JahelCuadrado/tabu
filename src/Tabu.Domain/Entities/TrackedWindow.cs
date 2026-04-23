@@ -8,6 +8,14 @@ public sealed class TrackedWindow
     public string ExecutablePath { get; init; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public bool IsActive { get; set; }
+
+    /// <summary>
+    /// True while the OS taskbar would be flashing this window because
+    /// the owning app called <c>FlashWindowEx</c> (notifications, build
+    /// completion, etc.). The flag is cleared as soon as the user
+    /// brings the window to the foreground or switches to its tab.
+    /// </summary>
+    public bool HasNotification { get; set; }
     public IntPtr MonitorHandle { get; set; }
 
     /// <summary>
