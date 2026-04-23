@@ -16,7 +16,7 @@ namespace Tabu.Infrastructure.Updates;
 public sealed class GitHubUpdateService : IUpdateService
 {
     private const string LatestReleaseEndpoint =
-        "https://api.github.com/repos/JahelCuadrado/tabu/releases/latest";
+        "https://api.github.com/repos/JahelCuadrado/Tabu/releases/latest";
 
     /// <summary>
     /// Matches the installer asset name (e.g. <c>TabuSetup-v1.3.2-win-x64.exe</c>).
@@ -139,7 +139,7 @@ public sealed class GitHubUpdateService : IUpdateService
         {
             Timeout = TimeSpan.FromSeconds(15)
         };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("Tabu-Updater/1.0 (+https://github.com/JahelCuadrado/tabu)");
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("Tabu-Updater/1.0 (+https://github.com/JahelCuadrado/Tabu)");
         client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
         return client;
     }

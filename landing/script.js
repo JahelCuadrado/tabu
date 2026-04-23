@@ -3,7 +3,7 @@
 (() => {
   "use strict";
 
-  const REPO = "JahelCuadrado/tabu";
+  const REPO = "JahelCuadrado/Tabu";
   const STORAGE_KEY_THEME = "tabu.theme";
   const STORAGE_KEY_LANG = "tabu.lang";
 
@@ -96,7 +96,7 @@
       "faq.a4": "In <code>%LocalAppData%\\Tabu\\settings.json</code>. Removing that file resets Tabu.",
       "faq.q5": "Can I contribute?",
       "faq.a5":
-        'Absolutely. PRs and issues are welcome on <a class="link" href="https://github.com/JahelCuadrado/tabu" target="_blank" rel="noopener">GitHub</a>.',
+        'Absolutely. PRs and issues are welcome on <a class="link" href="https://github.com/JahelCuadrado/Tabu" target="_blank" rel="noopener">GitHub</a>.',
       "footer.issues": "Report an issue",
     },
     es: {
@@ -166,7 +166,7 @@
         "En <code>%LocalAppData%\\Tabu\\settings.json</code>. Borrar ese archivo restablece Tabu.",
       "faq.q5": "¿Puedo contribuir?",
       "faq.a5":
-        'Por supuesto. PRs e issues son bienvenidos en <a class="link" href="https://github.com/JahelCuadrado/tabu" target="_blank" rel="noopener">GitHub</a>.',
+        'Por supuesto. PRs e issues son bienvenidos en <a class="link" href="https://github.com/JahelCuadrado/Tabu" target="_blank" rel="noopener">GitHub</a>.',
       "footer.issues": "Reportar un problema",
     },
   };

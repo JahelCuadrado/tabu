@@ -16,7 +16,7 @@ public sealed class GitHubUpdateServiceTests
 {
     private const string SampleAssetName = "TabuSetup-v1.4.0-win-x64.exe";
     private const string SampleAssetUrl =
-        "https://github.com/JahelCuadrado/tabu/releases/download/v1.4.0/" + SampleAssetName;
+        "https://github.com/JahelCuadrado/Tabu/releases/download/v1.4.0/" + SampleAssetName;
 
     [Fact]
     public async Task CheckForUpdate_ReturnsUpdateInfo_WhenLatestReleaseIsNewerAndHasInstaller()
@@ -100,10 +100,10 @@ public sealed class GitHubUpdateServiceTests
         var json = BuildReleaseJson(tag: "v2.0.0", assets:
         [
             ("Tabu-portable.zip",
-             "https://github.com/JahelCuadrado/tabu/releases/download/v2.0.0/Tabu-portable.zip",
+             "https://github.com/JahelCuadrado/Tabu/releases/download/v2.0.0/Tabu-portable.zip",
              1),
             ("checksums.txt",
-             "https://github.com/JahelCuadrado/tabu/releases/download/v2.0.0/checksums.txt",
+             "https://github.com/JahelCuadrado/Tabu/releases/download/v2.0.0/checksums.txt",
              1)
         ]);
         var sut = SutWith(HttpStatusCode.OK, json);

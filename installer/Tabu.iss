@@ -4,7 +4,7 @@
 #define MyAppName        "Tabu"
 #define MyAppVersion     "1.5.0"
 #define MyAppPublisher   "Jahel Cuadrado"
-#define MyAppURL         "https://github.com/JahelCuadrado/tabu"
+#define MyAppURL         "https://github.com/JahelCuadrado/Tabu"
 #define MyAppExeName     "Tabu.UI.exe"
 #define MyAppId          "{{B5E2A1F4-7C9D-4A5E-9D31-5F0F6C3C1A2B}"
 

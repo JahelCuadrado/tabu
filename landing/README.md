@@ -23,7 +23,7 @@ python -m http.server 5173
 ## Notes
 
 - Versions, asset filenames and sizes shown on the page are hydrated at runtime
-  from `https://api.github.com/repos/JahelCuadrado/tabu/releases/latest`.
+  from `https://api.github.com/repos/JahelCuadrado/Tabu/releases/latest`.
   Static fallbacks are baked in so the page is fully readable offline / when
   the API rate limit is hit.
 - No build step. No dependencies to install. No telemetry.
