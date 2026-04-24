@@ -290,15 +290,20 @@ public sealed class UpdateOrchestrator
         {
             try
             {
-                Process.Start(new ProcessStartInfo
+                // The installer runs independently after launch; we only
+                // need its handle to detect the start failure. Disposing
+                // immediately frees the kernel SafeHandle without affecting
+                // the spawned process.
+                using var _ = Process.Start(new ProcessStartInfo
                 {
                     FileName = installerPath,
                     Arguments = SilentInstallerArguments,
                     UseShellExecute = true
                 });
             }
-            catch
+            catch (Exception ex)
             {
+                CrashLogger.Log("Update.LaunchInstaller", ex);
                 TabuDialog.Show(
                     System.Windows.Application.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive),
                     LocalizedString("Update_LaunchFailedBody", "Tabu could not launch the installer."),
