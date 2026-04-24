@@ -17,6 +17,11 @@
             <converters:BoolToTabWidthConverter x:Key="BoolToTabWidthConverter" />
             <converters:BoolToFixedTabWidthConverter x:Key="BoolToFixedTabWidthConverter" />
             <converters:AllBoolsToVisibilityConverter x:Key="AllBoolsToVisibilityConverter" />
+
+            <!-- Tabu dialog variants. Solid brushes — accent stays separate. -->
+            <SolidColorBrush x:Key="TabuDialog_WarningBrush" Color="#F59E0B" />
+            <SolidColorBrush x:Key="TabuDialog_DangerBrush" Color="#DC2626" />
+            <SolidColorBrush x:Key="TabuDialog_SuccessBrush" Color="#16A34A" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

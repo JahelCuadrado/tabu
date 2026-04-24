@@ -51,6 +51,18 @@
     <sys:String x:Key="Settings_Done">완료</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">설정</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Tabu 닫기</sys:String>
+    <sys:String x:Key="MainBar_CloseAllApps">모든 앱 닫기</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmTitle">모든 앱 닫기</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmBody">Tabu가 열려 있는 {0}개의 앱에 종료를 요청합니다. 각 앱이 저장하지 않은 작업을 저장하도록 요청할 수 있습니다. 계속하시겠습니까?</sys:String>
+    <sys:String x:Key="Dialog_Yes">예, 닫기</sys:String>
+    <sys:String x:Key="Dialog_No">취소</sys:String>
+    <sys:String x:Key="Dialog_Ok">확인</sys:String>
+    <sys:String x:Key="Tab_Close">닫기</sys:String>
+    <sys:String x:Key="Tab_KillProcess">프로세스 종료</sys:String>
+    <sys:String x:Key="Tab_KillProcessConfirmTitle">프로세스 강제 종료</sys:String>
+    <sys:String x:Key="Tab_KillProcessConfirmBody">Tabu가 “{0}”을(를) 강제로 종료합니다. 저장하지 않은 모든 작업이 손실됩니다. 계속하시겠습니까?</sys:String>
+    <sys:String x:Key="Settings_ActiveTab">활성 탭 색상</sys:String>
+    <sys:String x:Key="Settings_ActiveTabOpacity">활성 탭 불투명도</sys:String>
 
     <sys:String x:Key="Settings_Blur">배경 흐림</sys:String>
     <sys:String x:Key="Settings_BlurEnable">활성화</sys:String>

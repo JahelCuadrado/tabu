@@ -9,6 +9,15 @@ public interface IWindowDetector
     void BringToFront(TrackedWindow window);
     void MinimizeWindow(TrackedWindow window);
     void CloseWindow(TrackedWindow window);
+
+    /// <summary>
+    /// Force-terminates the OS process that owns the given window. Unlike
+    /// <see cref="CloseWindow"/> this bypasses any "Save changes?" prompt
+    /// the app might display — unsaved work will be lost. Intended for
+    /// the user-initiated "Close process" action only.
+    /// </summary>
+    void KillProcess(TrackedWindow window);
+
     bool IsWindowAlive(IntPtr handle);
 
     /// <summary>

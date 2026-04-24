@@ -140,6 +140,13 @@ public partial class SettingsWindow : Window
         SyncWheelFromHex(_viewModel.NotificationDotColor);
         UpdateNotificationDotPanelAvailability();
 
+        // Active tab tint controls — load from VM. Slider/text changes
+        // round-trip through the same _Changed handlers used at runtime.
+        ActiveTabColorBox.Text = _viewModel.ActiveTabColor;
+        ActiveTabOpacitySlider.Value = _viewModel.ActiveTabOpacity;
+        ActiveTabOpacityValueText.Text = $"{(int)_viewModel.ActiveTabOpacity}%";
+        SyncActiveTabWheelFromHex(_viewModel.ActiveTabColor);
+
         switch (_viewModel.BarSize)
         {
             case Tabu.Domain.Entities.BarSize.Medium:
@@ -463,6 +470,91 @@ public partial class SettingsWindow : Window
         NotificationDotPanel.Visibility = _viewModel.ShowNotificationBadges ? Visibility.Visible : Visibility.Collapsed;
     }
 
+    // --- Active tab tint -----------------------------------------------
+
+    private void ActiveTabOpacity_Changed(object sender, System.Windows.RoutedPropertyChangedEventArgs<double> e)
+    {
+        if (!_initialized) return;
+        var pct = Math.Round(e.NewValue);
+        ActiveTabOpacityValueText.Text = $"{(int)pct}%";
+        if (Math.Abs(_viewModel.ActiveTabOpacity - pct) > 0.0001)
+        {
+            _viewModel.ActiveTabOpacity = pct;
+        }
+    }
+
+    private void ActiveTabColor_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        if (!_initialized) return;
+        var raw = ActiveTabColorBox.Text?.Trim() ?? string.Empty;
+        if (raw.Length == 0)
+        {
+            if (_viewModel.ActiveTabColor.Length != 0)
+            {
+                _viewModel.ActiveTabColor = string.Empty;
+            }
+            return;
+        }
+        if (TryNormaliseHex(raw, out var canonical) && !string.Equals(canonical, _viewModel.ActiveTabColor, StringComparison.Ordinal))
+        {
+            _viewModel.ActiveTabColor = canonical;
+            SyncActiveTabWheelFromHex(canonical);
+        }
+    }
+
+    private void ActiveTabColorReset_Click(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+        ActiveTabColorBox.Text = string.Empty;
+        if (_viewModel.ActiveTabColor.Length != 0)
+        {
+            _viewModel.ActiveTabColor = string.Empty;
+        }
+    }
+
+    private void ActiveTabColorSwatch_Click(object sender, RoutedEventArgs e)
+    {
+        if (ActiveTabColorPopup is null) return;
+        SyncActiveTabWheelFromHex(_viewModel.ActiveTabColor);
+        ActiveTabColorPopup.IsOpen = !ActiveTabColorPopup.IsOpen;
+    }
+
+    private void ActiveTabColorWheel_SelectedColorChanged(object? sender, System.Windows.Media.Color color)
+    {
+        if (!_initialized) return;
+        var hex = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+        if (!string.Equals(ActiveTabColorBox.Text, hex, StringComparison.OrdinalIgnoreCase))
+        {
+            ActiveTabColorBox.Text = hex;
+        }
+    }
+
+    private void SyncActiveTabWheelFromHex(string hex)
+    {
+        if (ActiveTabColorWheel is null) return;
+        System.Windows.Media.Color color;
+        if (!string.IsNullOrWhiteSpace(hex))
+        {
+            try
+            {
+                color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(hex);
+            }
+            catch
+            {
+                return;
+            }
+        }
+        else if (TryFindResource("AccentColor") is System.Windows.Media.Color accent)
+        {
+            color = accent;
+        }
+        else
+        {
+            color = System.Windows.Media.Colors.DodgerBlue;
+        }
+        ActiveTabColorWheel.SelectedColor = color;
+    }
+
     /// <summary>
     /// Accepts <c>#RRGGBB</c>, <c>RRGGBB</c>, <c>#RGB</c> or <c>RGB</c> and
     /// returns the canonical upper-case <c>#RRGGBB</c> form. Returns false
@@ -636,16 +728,19 @@ public partial class SettingsWindow : Window
         var title = TryFindResource("Settings_ResetConfirmTitle") as string ?? "Reset settings";
         var body = TryFindResource("Settings_ResetConfirmBody") as string
                    ?? "All Tabu settings will be restored to their default values. Continue?";
+        var yesText = TryFindResource("Dialog_Yes") as string ?? "Yes";
+        var noText = TryFindResource("Dialog_No") as string ?? "Cancel";
 
-        var result = MessageBox.Show(
+        var result = TabuDialog.Show(
             this,
             body,
             title,
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Warning,
-            MessageBoxResult.No);
+            TabuDialogVariant.Warning,
+            primaryText: yesText,
+            secondaryText: noText,
+            isPrimaryDestructive: true);
 
-        if (result != MessageBoxResult.Yes)
+        if (result != TabuDialogResult.Yes)
         {
             return;
         }
@@ -676,6 +771,10 @@ public partial class SettingsWindow : Window
         NotificationDotColorBox.Text = string.Empty;
         SyncWheelFromHex(string.Empty);
         UpdateNotificationDotPanelAvailability();
+
+        ActiveTabColorBox.Text = string.Empty;
+        ActiveTabOpacitySlider.Value = 100;
+        SyncActiveTabWheelFromHex(string.Empty);
 
         // System
         var defaultLanguage = LocalizationManager.AvailableLanguages

@@ -41,4 +41,18 @@ public sealed class UserSettings
     public string BlurMode { get; set; } = "Acrylic";
 
     public bool AutoCheckUpdates { get; set; } = true;
+
+    /// <summary>
+    /// Optional fill color for the active tab background, in
+    /// <c>#RRGGBB</c> format. Empty string means "follow the current
+    /// accent color" — preserves backwards compatibility with users who
+    /// never touched this setting.
+    /// </summary>
+    public string ActiveTabColor { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Background opacity for the active tab, expressed as 0–100 (percent).
+    /// Defaults to 100 so existing installs render exactly as before.
+    /// </summary>
+    public int ActiveTabOpacity { get; set; } = 100;
 }

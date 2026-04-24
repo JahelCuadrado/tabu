@@ -51,6 +51,18 @@
     <sys:String x:Key="Settings_Done">Fatto</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">Impostazioni</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Chiudi Tabu</sys:String>
+    <sys:String x:Key="MainBar_CloseAllApps">Chiudi tutte le app</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmTitle">Chiudi tutte le app</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmBody">Tabu chiederà a {0} app aperta/e di chiudersi. Ogni app potrebbe chiederti di salvare il lavoro non salvato. Continuare?</sys:String>
+    <sys:String x:Key="Dialog_Yes">Sì, chiudi</sys:String>
+    <sys:String x:Key="Dialog_No">Annulla</sys:String>
+    <sys:String x:Key="Dialog_Ok">OK</sys:String>
+    <sys:String x:Key="Tab_Close">Chiudi</sys:String>
+    <sys:String x:Key="Tab_KillProcess">Chiudi processo</sys:String>
+    <sys:String x:Key="Tab_KillProcessConfirmTitle">Forza chiusura processo</sys:String>
+    <sys:String x:Key="Tab_KillProcessConfirmBody">Tabu forzerà la chiusura di «{0}». Tutto il lavoro non salvato andrà perso. Continuare?</sys:String>
+    <sys:String x:Key="Settings_ActiveTab">Colore della scheda attiva</sys:String>
+    <sys:String x:Key="Settings_ActiveTabOpacity">Opacità della scheda attiva</sys:String>
 
     <sys:String x:Key="Settings_Blur">Sfocatura di sfondo</sys:String>
     <sys:String x:Key="Settings_BlurEnable">Attivato</sys:String>

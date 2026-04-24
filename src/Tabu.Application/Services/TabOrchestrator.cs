@@ -9,6 +9,7 @@ public sealed class WindowSwitcher
     private List<TrackedWindow> _windows = new();
     private TrackedWindow? _activeWindow;
     private IntPtr _ownHandle;
+    private static readonly int _ownProcessId = System.Diagnostics.Process.GetCurrentProcess().Id;
 
     /// <summary>
     /// Set of HWNDs that currently have a pending notification flash. The
@@ -96,7 +97,12 @@ public sealed class WindowSwitcher
         // interacts with the bar itself.
         var fg = _detector.GetForegroundWindow();
         IntPtr activeHandle = fg?.Handle ?? IntPtr.Zero;
-        bool barIsForeground = activeHandle != IntPtr.Zero && activeHandle == _ownHandle;
+        // Treat *any* of our own process windows (bar, Settings, dialogs,
+        // popups…) as "bar foreground" so the highlighted tab survives
+        // while the user is configuring Tabu — otherwise opening Settings
+        // would clear the active-tab tint and prevent live preview.
+        bool barIsForeground = activeHandle != IntPtr.Zero
+            && (activeHandle == _ownHandle || (fg is not null && fg.ProcessId == _ownProcessId));
         if (barIsForeground)
         {
             activeHandle = _activeWindow?.Handle ?? IntPtr.Zero;
@@ -180,6 +186,47 @@ public sealed class WindowSwitcher
     public void CloseWindow(TrackedWindow window)
     {
         _detector.CloseWindow(window);
+    }
+
+    /// <summary>
+    /// Force-terminates the OS process owning <paramref name="window"/>.
+    /// This is the destructive variant of <see cref="CloseWindow"/> and
+    /// must only be invoked after explicit user confirmation. Tabu's own
+    /// process is filtered by <see cref="Refresh"/>, so the bar can never
+    /// be killed through this path.
+    /// </summary>
+    public void KillProcess(TrackedWindow window)
+    {
+        _detector.KillProcess(window);
+    }
+
+    /// <summary>
+    /// Sends a graceful close request (<c>WM_CLOSE</c>, same as the per-tab
+    /// X button) to every currently tracked window. The bar's own HWND is
+    /// already filtered out of <see cref="_windows"/> by <see cref="Refresh"/>,
+    /// so this method never targets Tabu itself. Each app decides whether
+    /// to honour the close (e.g. "Save changes?" dialogs) or veto it; no
+    /// process is force-terminated.
+    /// </summary>
+    /// <returns>The number of close requests dispatched.</returns>
+    public int CloseAll()
+    {
+        // Snapshot to avoid mutation while iterating: closing a window
+        // can trigger an immediate Refresh on the next tick.
+        var snapshot = _windows.ToArray();
+        foreach (var window in snapshot)
+        {
+            try
+            {
+                _detector.CloseWindow(window);
+            }
+            catch
+            {
+                // Swallow per-window failures — one stuck app must not
+                // abort the broadcast to the rest.
+            }
+        }
+        return snapshot.Length;
     }
 
     public List<ScreenInfo> GetAllScreens()

@@ -51,6 +51,18 @@
     <sys:String x:Key="Settings_Done">完了</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">設定</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Tabuを閉じる</sys:String>
+    <sys:String x:Key="MainBar_CloseAllApps">すべてのアプリを閉じる</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmTitle">すべてのアプリを閉じる</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmBody">Tabu は開いている {0} 個のアプリに閉じるよう要求します。各アプリは未保存の作業の保存を促す場合があります。続行しますか？</sys:String>
+    <sys:String x:Key="Dialog_Yes">はい、閉じる</sys:String>
+    <sys:String x:Key="Dialog_No">キャンセル</sys:String>
+    <sys:String x:Key="Dialog_Ok">OK</sys:String>
+    <sys:String x:Key="Tab_Close">閉じる</sys:String>
+    <sys:String x:Key="Tab_KillProcess">プロセスを終了</sys:String>
+    <sys:String x:Key="Tab_KillProcessConfirmTitle">プロセスを強制終了</sys:String>
+    <sys:String x:Key="Tab_KillProcessConfirmBody">Tabu は「{0}」を強制終了します。未保存の作業はすべて失われます。続行しますか？</sys:String>
+    <sys:String x:Key="Settings_ActiveTab">アクティブタブの色</sys:String>
+    <sys:String x:Key="Settings_ActiveTabOpacity">アクティブタブの不透明度</sys:String>
 
     <sys:String x:Key="Settings_Blur">背景のぼかし</sys:String>
     <sys:String x:Key="Settings_BlurEnable">有効</sys:String>

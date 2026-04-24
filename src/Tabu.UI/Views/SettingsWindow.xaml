@@ -492,6 +492,80 @@
                                     </Border>
                                 </Popup>
                             </StackPanel>
+
+                            <!-- Active tab tint (color + opacity) -->
+                            <TextBlock Text="{DynamicResource Settings_ActiveTab}" FontSize="11" FontWeight="Medium"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"
+                                       Margin="0,20,0,8" />
+
+                            <Grid Margin="0,0,0,12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Button Grid.Column="0" x:Name="ActiveTabColorSwatchButton"
+                                        Width="28" Height="28" Padding="0"
+                                        Cursor="Hand"
+                                        Click="ActiveTabColorSwatch_Click"
+                                        Margin="0,0,8,0"
+                                        BorderThickness="0" Background="Transparent">
+                                    <Button.Template>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border CornerRadius="6"
+                                                    Background="{DynamicResource TertiaryBackgroundBrush}"
+                                                    BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+                                                <Rectangle Width="18" Height="18" RadiusX="4" RadiusY="4"
+                                                           Fill="{DynamicResource ActiveTabBackgroundBrush}" />
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                                <TextBox x:Name="ActiveTabColorBox" Grid.Column="1"
+                                         Height="28" Padding="8,4" FontSize="11"
+                                         VerticalContentAlignment="Center"
+                                         Background="{DynamicResource TertiaryBackgroundBrush}"
+                                         Foreground="{DynamicResource PrimaryTextBrush}"
+                                         BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                                         TextChanged="ActiveTabColor_TextChanged"
+                                         ToolTip="#RRGGBB" />
+                                <Button Grid.Column="2" Content="{DynamicResource Settings_NotificationDotColorReset}"
+                                        Click="ActiveTabColorReset_Click"
+                                        Margin="8,0,0,0" Padding="10,4" FontSize="11"
+                                        Background="Transparent"
+                                        Foreground="{DynamicResource MutedTextBrush}"
+                                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" />
+                            </Grid>
+
+                            <Grid Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{DynamicResource Settings_ActiveTabOpacity}" FontSize="11" FontWeight="Medium"
+                                           Foreground="{DynamicResource SecondaryTextBrush}" />
+                                <TextBlock x:Name="ActiveTabOpacityValueText" Grid.Column="1" FontSize="11"
+                                           Foreground="{DynamicResource MutedTextBrush}" Text="100%" />
+                            </Grid>
+                            <Slider x:Name="ActiveTabOpacitySlider"
+                                    Minimum="0" Maximum="100" Value="100"
+                                    IsSnapToTickEnabled="True" TickFrequency="1"
+                                    ValueChanged="ActiveTabOpacity_Changed" />
+
+                            <Popup x:Name="ActiveTabColorPopup" StaysOpen="False"
+                                   Placement="Bottom" PlacementTarget="{Binding ElementName=ActiveTabColorSwatchButton}"
+                                   AllowsTransparency="True" PopupAnimation="Fade">
+                                <Border Background="{DynamicResource SecondaryBackgroundBrush}"
+                                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1"
+                                        CornerRadius="8" Padding="12"
+                                        Margin="0,6,0,0">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="16" ShadowDepth="2" Opacity="0.45" Color="Black" />
+                                    </Border.Effect>
+                                    <controls:ColorWheelPicker x:Name="ActiveTabColorWheel"
+                                                               SelectedColorChanged="ActiveTabColorWheel_SelectedColorChanged" />
+                                </Border>
+                            </Popup>
                         </StackPanel>
                     </Border>
 

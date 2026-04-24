@@ -51,6 +51,18 @@
     <sys:String x:Key="Settings_Done">Listo</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">Ajustes</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Cerrar Tabu</sys:String>
+    <sys:String x:Key="MainBar_CloseAllApps">Cerrar todas las aplicaciones</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmTitle">Cerrar todas las aplicaciones</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmBody">Tabu pedirá a {0} aplicación(es) abierta(s) que se cierren. Cada aplicación puede solicitarte guardar el trabajo no guardado. ¿Continuar?</sys:String>
+    <sys:String x:Key="Dialog_Yes">Sí, cerrarlas</sys:String>
+    <sys:String x:Key="Dialog_No">Cancelar</sys:String>
+    <sys:String x:Key="Dialog_Ok">Aceptar</sys:String>
+    <sys:String x:Key="Tab_Close">Cerrar</sys:String>
+    <sys:String x:Key="Tab_KillProcess">Cerrar proceso</sys:String>
+    <sys:String x:Key="Tab_KillProcessConfirmTitle">Forzar cierre del proceso</sys:String>
+    <sys:String x:Key="Tab_KillProcessConfirmBody">Tabu forzará el cierre de «{0}». Se perderá cualquier trabajo no guardado. ¿Continuar?</sys:String>
+    <sys:String x:Key="Settings_ActiveTab">Color de pestaña activa</sys:String>
+    <sys:String x:Key="Settings_ActiveTabOpacity">Opacidad de pestaña activa</sys:String>
 
     <sys:String x:Key="Settings_Blur">Desenfoque de fondo</sys:String>
     <sys:String x:Key="Settings_BlurEnable">Activado</sys:String>

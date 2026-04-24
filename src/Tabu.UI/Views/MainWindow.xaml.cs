@@ -611,6 +611,86 @@ public partial class MainWindow : Window
         AnimateAndCloseTab(border, tab);
     }
 
+    /// <summary>
+    /// Right-click "Close all" handler. Asks for confirmation showing the
+    /// affected app count, then dispatches a graceful WM_CLOSE to every
+    /// tracked window via <see cref="App.RequestCloseAllTrackedWindows"/>.
+    /// Tabu's own bar is excluded by the switcher; nothing is force-killed.
+    /// </summary>
+    private void CloseAllApps_Click(object sender, RoutedEventArgs e)
+    {
+        if (System.Windows.Application.Current is not App app) return;
+
+        var count = app.GetTrackedWindowCount();
+        if (count <= 0)
+        {
+            return;
+        }
+
+        var titleTemplate = TryFindResource("MainBar_CloseAllConfirmTitle") as string ?? "Close all apps";
+        var bodyTemplate = TryFindResource("MainBar_CloseAllConfirmBody") as string
+                           ?? "This will request {0} app(s) to close. Each app may prompt you to save unsaved work. Continue?";
+
+        var body = string.Format(System.Globalization.CultureInfo.CurrentCulture, bodyTemplate, count);
+
+        var yesText = TryFindResource("Dialog_Yes") as string ?? "Yes";
+        var noText = TryFindResource("Dialog_No") as string ?? "Cancel";
+
+        var result = TabuDialog.Show(
+            this,
+            body,
+            titleTemplate,
+            TabuDialogVariant.Warning,
+            primaryText: yesText,
+            secondaryText: noText,
+            isPrimaryDestructive: true);
+
+        if (result != TabuDialogResult.Yes) return;
+
+        app.RequestCloseAllTrackedWindows();
+    }
+
+    /// <summary>
+    /// Tab context menu — gracefully close (WM_CLOSE). Same effect as the
+    /// X button on the tab; lets apps prompt the user to save their work.
+    /// </summary>
+    private void TabContextClose_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem mi || mi.Tag is not TabViewModel tab) return;
+        ViewModel.CloseTabCommand.Execute(tab);
+    }
+
+    /// <summary>
+    /// Tab context menu — force-terminate the owning process. Destructive
+    /// action: bypasses any "save changes?" prompt the app would normally
+    /// show. Confirmed via <see cref="TabuDialog"/> with the danger variant.
+    /// </summary>
+    private void TabContextKill_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem mi || mi.Tag is not TabViewModel tab) return;
+        if (System.Windows.Application.Current is not App app) return;
+
+        var title = TryFindResource("Tab_KillProcessConfirmTitle") as string ?? "Force close process";
+        var bodyTemplate = TryFindResource("Tab_KillProcessConfirmBody") as string
+                           ?? "Tabu will force-terminate \"{0}\". Any unsaved work will be lost. Continue?";
+        var body = string.Format(System.Globalization.CultureInfo.CurrentCulture, bodyTemplate, tab.DisplayName);
+        var primary = TryFindResource("Tab_KillProcess") as string ?? "Close process";
+        var secondary = TryFindResource("Dialog_No") as string ?? "Cancel";
+
+        var result = TabuDialog.Show(
+            this,
+            body,
+            title,
+            TabuDialogVariant.Danger,
+            primaryText: primary,
+            secondaryText: secondary,
+            isPrimaryDestructive: true);
+
+        if (result != TabuDialogResult.Yes) return;
+
+        app.KillTrackedWindowProcess(tab.Model);
+    }
+
     private void AnimateAndCloseTab(Border tabBorder, TabViewModel tab)
     {
         const int durationMs = 160;

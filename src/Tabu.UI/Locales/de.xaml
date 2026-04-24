@@ -51,6 +51,18 @@
     <sys:String x:Key="Settings_Done">Fertig</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">Einstellungen</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Tabu schließen</sys:String>
+    <sys:String x:Key="MainBar_CloseAllApps">Alle Apps schließen</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmTitle">Alle Apps schließen</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmBody">Tabu fordert {0} geöffnete App(s) zum Schließen auf. Jede App kann zum Speichern nicht gespeicherter Arbeit auffordern. Fortfahren?</sys:String>
+    <sys:String x:Key="Dialog_Yes">Ja, schließen</sys:String>
+    <sys:String x:Key="Dialog_No">Abbrechen</sys:String>
+    <sys:String x:Key="Dialog_Ok">OK</sys:String>
+    <sys:String x:Key="Tab_Close">Schließen</sys:String>
+    <sys:String x:Key="Tab_KillProcess">Prozess beenden</sys:String>
+    <sys:String x:Key="Tab_KillProcessConfirmTitle">Prozess erzwungen beenden</sys:String>
+    <sys:String x:Key="Tab_KillProcessConfirmBody">Tabu beendet „{0}“ sofort. Nicht gespeicherte Arbeit geht verloren. Fortfahren?</sys:String>
+    <sys:String x:Key="Settings_ActiveTab">Farbe des aktiven Tabs</sys:String>
+    <sys:String x:Key="Settings_ActiveTabOpacity">Deckkraft des aktiven Tabs</sys:String>
 
     <sys:String x:Key="Settings_Blur">Hintergrund-Unschärfe</sys:String>
     <sys:String x:Key="Settings_BlurEnable">Aktiviert</sys:String>

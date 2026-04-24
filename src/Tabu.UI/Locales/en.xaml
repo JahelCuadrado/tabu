@@ -51,6 +51,18 @@
     <sys:String x:Key="Settings_Done">Done</sys:String>
     <sys:String x:Key="MainBar_SettingsTooltip">Settings</sys:String>
     <sys:String x:Key="MainBar_CloseTooltip">Close Tabu</sys:String>
+    <sys:String x:Key="MainBar_CloseAllApps">Close all apps</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmTitle">Close all apps</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmBody">Tabu will ask {0} open app(s) to close. Each app may prompt you to save unsaved work. Continue?</sys:String>
+    <sys:String x:Key="Dialog_Yes">Yes, close them</sys:String>
+    <sys:String x:Key="Dialog_No">Cancel</sys:String>
+    <sys:String x:Key="Dialog_Ok">OK</sys:String>
+    <sys:String x:Key="Tab_Close">Close</sys:String>
+    <sys:String x:Key="Tab_KillProcess">Close process</sys:String>
+    <sys:String x:Key="Tab_KillProcessConfirmTitle">Force close process</sys:String>
+    <sys:String x:Key="Tab_KillProcessConfirmBody">Tabu will force-terminate “{0}”. Any unsaved work will be lost. Continue?</sys:String>
+    <sys:String x:Key="Settings_ActiveTab">Active tab color</sys:String>
+    <sys:String x:Key="Settings_ActiveTabOpacity">Active tab opacity</sys:String>
 
     <sys:String x:Key="Settings_Blur">Background blur</sys:String>
     <sys:String x:Key="Settings_BlurEnable">Enabled</sys:String>

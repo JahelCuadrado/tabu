@@ -42,6 +42,12 @@
             <Border.Effect>
                 <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.35" Color="Black" Direction="270" />
             </Border.Effect>
+            <Border.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="{DynamicResource MainBar_CloseAllApps}"
+                              Click="CloseAllApps_Click" />
+                </ContextMenu>
+            </Border.ContextMenu>
         </Border>
 
         <!-- Content layer (always fully opaque) -->
@@ -99,6 +105,16 @@
                                 MouseLeftButtonUp="Tab_MouseLeftButtonUp"
                                 MouseDown="Tab_MouseDown"
                                 Tag="{Binding}">
+                            <Border.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="{DynamicResource Tab_Close}"
+                                              Click="TabContextClose_Click"
+                                              Tag="{Binding}" />
+                                    <MenuItem Header="{DynamicResource Tab_KillProcess}"
+                                              Click="TabContextKill_Click"
+                                              Tag="{Binding}" />
+                                </ContextMenu>
+                            </Border.ContextMenu>
                             <Border.RenderTransform>
                                 <TransformGroup>
                                     <ScaleTransform ScaleX="1" ScaleY="1" />
