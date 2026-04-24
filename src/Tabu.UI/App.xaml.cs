@@ -61,6 +61,11 @@ public partial class App : System.Windows.Application
 
         await _host.StartAsync();
 
+        // Route the legacy CrashLogger facade through the DI logger
+        // factory so all entries flow into the shared FileLoggerProvider
+        // configured in AddInfrastructureServices.
+        CrashLogger.UseLoggerFactory(_host.Services.GetRequiredService<Microsoft.Extensions.Logging.ILoggerFactory>());
+
         var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
         _settingsRepository = _host.Services.GetRequiredService<ISettingsRepository>();
         _barManager = new MultiMonitorBarManager(switcher);
