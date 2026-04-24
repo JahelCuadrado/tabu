@@ -12,28 +12,32 @@ using Tabu.UI.Services;
 
 namespace Tabu.UI.ViewModels;
 
-public sealed class TabViewModel : ObservableObject
+public sealed partial class TabViewModel : ObservableObject
 {
     // --- Native interop for icon resolution -------------------------------
     // Some windows (Task Manager, Registry Editor, any elevated/protected
     // process) deny access to Process.MainModule, so the executable path is
     // unknown and ExtractAssociatedIcon cannot be used. For those we ask the
     // window itself for its icon, which works regardless of UAC level.
+    //
+    // Source-generated P/Invoke (LibraryImport) is preferred over the older
+    // DllImport runtime marshaller: the marshalling stubs are emitted at
+    // compile time, which is faster, AOT-friendly and trim-safe.
 
-    [DllImport("user32.dll", SetLastError = true)]
+    [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool DestroyIcon(IntPtr handle);
+    private static partial bool DestroyIcon(IntPtr handle);
 
-    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-    private static extern IntPtr SendMessageTimeout(
+    [LibraryImport("user32.dll", SetLastError = true)]
+    private static partial IntPtr SendMessageTimeout(
         IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam,
         uint fuFlags, uint uTimeout, out IntPtr lpdwResult);
 
-    [DllImport("user32.dll", EntryPoint = "GetClassLongPtrW")]
-    private static extern IntPtr GetClassLongPtr64(IntPtr hWnd, int nIndex);
+    [LibraryImport("user32.dll", EntryPoint = "GetClassLongPtrW")]
+    private static partial IntPtr GetClassLongPtr64(IntPtr hWnd, int nIndex);
 
-    [DllImport("user32.dll", EntryPoint = "GetClassLongW")]
-    private static extern uint GetClassLong32(IntPtr hWnd, int nIndex);
+    [LibraryImport("user32.dll", EntryPoint = "GetClassLongW")]
+    private static partial uint GetClassLong32(IntPtr hWnd, int nIndex);
 
     private const uint WM_GETICON = 0x007F;
     private const int ICON_SMALL = 0;

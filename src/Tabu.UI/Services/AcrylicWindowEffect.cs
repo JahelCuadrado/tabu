@@ -24,7 +24,7 @@ namespace Tabu.UI.Services;
 /// on unsupported builds without leaking exceptions.
 /// </para>
 /// </summary>
-internal static class AcrylicWindowEffect
+internal static partial class AcrylicWindowEffect
 {
     /// <summary>
     /// Toggles the acrylic blur on the supplied window. Safe to call
@@ -116,8 +116,8 @@ internal static class AcrylicWindowEffect
         }
     }
 
-    [DllImport("user32.dll")]
-    private static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
+    [LibraryImport("user32.dll")]
+    private static partial int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct WindowCompositionAttributeData

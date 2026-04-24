@@ -106,11 +106,11 @@ public partial class MainWindow : Window
         SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle | WS_EX_TOOLWINDOW);
     }
 
-    [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
-    private static extern long GetWindowLongPtr(IntPtr hWnd, int nIndex);
+    [LibraryImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
+    private static partial long GetWindowLongPtr(IntPtr hWnd, int nIndex);
 
-    [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
-    private static extern long SetWindowLongPtr(IntPtr hWnd, int nIndex, long dwNewLong);
+    [LibraryImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
+    private static partial long SetWindowLongPtr(IntPtr hWnd, int nIndex, long dwNewLong);
 
     #region AppBar Registration
 
@@ -150,17 +150,18 @@ public partial class MainWindow : Window
         public int Left, Top, Right, Bottom;
     }
 
-    [DllImport("shell32.dll")]
-    private static extern uint SHAppBarMessage(int dwMessage, ref APPBARDATA pData);
+    [LibraryImport("shell32.dll")]
+    private static partial uint SHAppBarMessage(int dwMessage, ref APPBARDATA pData);
 
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    private static extern uint RegisterWindowMessage(string lpString);
+    [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    private static partial uint RegisterWindowMessage(string lpString);
 
-    [DllImport("user32.dll")]
-    private static extern bool MoveWindow(IntPtr hWnd, int x, int y, int cx, int cy, bool bRepaint);
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool MoveWindow(IntPtr hWnd, int x, int y, int cx, int cy, [MarshalAs(UnmanagedType.Bool)] bool bRepaint);
 
-    [DllImport("user32.dll")]
-    private static extern int GetSystemMetrics(int nIndex);
+    [LibraryImport("user32.dll")]
+    private static partial int GetSystemMetrics(int nIndex);
 
     private const int SM_CXSCREEN = 0;
 
@@ -770,9 +771,9 @@ public partial class MainWindow : Window
         public int Y;
     }
 
-    [DllImport("user32.dll")]
+    [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GetCursorPos(out POINT lpPoint);
+    private static partial bool GetCursorPos(out POINT lpPoint);
 
     private void ApplyAutoHide(bool enabled)
     {
@@ -1078,8 +1079,12 @@ public partial class MainWindow : Window
 
     private static string GetWindowClassName(IntPtr hwnd)
     {
-        var buffer = new System.Text.StringBuilder(256);
-        return GetClassName(hwnd, buffer, buffer.Capacity) > 0 ? buffer.ToString() : string.Empty;
+        // 256 chars = max class name length per Win32 docs (lpszClassName
+        // is capped at 256 by RegisterClassEx). Stack-allocated to avoid
+        // hitting the GC on a hot path.
+        Span<char> buffer = stackalloc char[256];
+        int written = GetClassName(hwnd, ref buffer[0], buffer.Length);
+        return written > 0 ? new string(buffer[..written]) : string.Empty;
     }
 
     private const int MONITOR_DEFAULTTONEAREST = 2;
@@ -1111,41 +1116,48 @@ public partial class MainWindow : Window
     [StructLayout(LayoutKind.Sequential)]
     private struct RECTL { public int Left, Top, Right, Bottom; }
 
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetForegroundWindow();
+    [LibraryImport("user32.dll")]
+    private static partial IntPtr GetForegroundWindow();
 
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetShellWindow();
+    [LibraryImport("user32.dll")]
+    private static partial IntPtr GetShellWindow();
 
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetDesktopWindow();
+    [LibraryImport("user32.dll")]
+    private static partial IntPtr GetDesktopWindow();
 
-    [DllImport("user32.dll")]
+    [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GetWindowRect(IntPtr hWnd, out RECTL lpRect);
+    private static partial bool GetWindowRect(IntPtr hWnd, out RECTL lpRect);
 
-    [DllImport("user32.dll")]
-    private static extern IntPtr MonitorFromWindow(IntPtr hwnd, int dwFlags);
+    [LibraryImport("user32.dll")]
+    private static partial IntPtr MonitorFromWindow(IntPtr hwnd, int dwFlags);
 
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+    [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+    private static partial bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
 
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetTopWindow(IntPtr hWnd);
+    [LibraryImport("user32.dll")]
+    private static partial IntPtr GetTopWindow(IntPtr hWnd);
 
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetWindow(IntPtr hWnd, uint uCmd);
+    [LibraryImport("user32.dll")]
+    private static partial IntPtr GetWindow(IntPtr hWnd, uint uCmd);
 
-    [DllImport("user32.dll")]
+    [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool IsWindowVisible(IntPtr hWnd);
+    private static partial bool IsWindowVisible(IntPtr hWnd);
 
-    [DllImport("dwmapi.dll")]
-    private static extern int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out int pvAttribute, int cbAttribute);
+    [LibraryImport("dwmapi.dll")]
+    private static partial int DwmGetWindowAttribute(IntPtr hwnd, int dwAttribute, out int pvAttribute, int cbAttribute);
 
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    private static extern int GetClassName(IntPtr hWnd, System.Text.StringBuilder lpClassName, int nMaxCount);
+    /// <summary>
+    /// Source-generated GetClassName wrapper. <see cref="LibraryImport"/> does
+    /// not support <c>StringBuilder</c> marshalling, so we expose the Win32
+    /// signature with a <see cref="Span{T}"/> buffer and provide a managed
+    /// helper that allocates a stack-friendly slice and slices it down to the
+    /// returned length.
+    /// </summary>
+    [LibraryImport("user32.dll", EntryPoint = "GetClassNameW", StringMarshalling = StringMarshalling.Utf16)]
+    private static partial int GetClassName(IntPtr hWnd, ref char lpClassName, int nMaxCount);
 
     #endregion
 }

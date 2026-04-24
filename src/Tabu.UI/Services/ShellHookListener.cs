@@ -20,7 +20,7 @@ namespace Tabu.UI.Services;
 /// <c>RegisterShellHookWindow</c> and listen for the dynamically
 /// allocated <c>"SHELLHOOK"</c> message id.
 /// </remarks>
-public sealed class ShellHookListener : IDisposable
+public sealed partial class ShellHookListener : IDisposable
 {
     /// <summary>HSHELL constants exposed by the shell hook protocol.</summary>
     private const int HSHELL_WINDOWCREATED = 1;
@@ -114,14 +114,14 @@ public sealed class ShellHookListener : IDisposable
         _carrier.Close();
     }
 
-    [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-    private static extern uint RegisterWindowMessage(string lpString);
+    [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    private static partial uint RegisterWindowMessage(string lpString);
 
-    [DllImport("user32.dll")]
+    [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool RegisterShellHookWindow(IntPtr hWnd);
+    private static partial bool RegisterShellHookWindow(IntPtr hWnd);
 
-    [DllImport("user32.dll")]
+    [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool DeregisterShellHookWindow(IntPtr hWnd);
+    private static partial bool DeregisterShellHookWindow(IntPtr hWnd);
 }
