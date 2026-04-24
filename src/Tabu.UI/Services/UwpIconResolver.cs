@@ -44,11 +44,15 @@ internal static class UwpIconResolver
 
             return TryGetShellImage(aumid, size);
         }
-        catch
+        catch (System.Runtime.InteropServices.COMException)
         {
-            // Shell APIs throw COMException for missing packages, unsigned
-            // apps or transient namespace failures. None of those should
-            // ever break tab tracking, so swallow and fall through.
+            // Expected for missing packages, unsigned apps and transient
+            // shell-namespace failures. Fall through to a generic icon.
+            return null;
+        }
+        catch (System.IO.FileNotFoundException)
+        {
+            // Manifest stripped by aggressive AV / repair scenarios.
             return null;
         }
     }

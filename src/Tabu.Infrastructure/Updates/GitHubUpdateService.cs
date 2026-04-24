@@ -259,8 +259,12 @@ public sealed class GitHubUpdateService : IUpdateService
         if (!string.Equals(actual, expectedHex, StringComparison.OrdinalIgnoreCase))
         {
             // Best-effort: remove the corrupted/tampered file so it can
-            // never be executed by mistake on a later code path.
-            try { File.Delete(filePath); } catch { /* not actionable */ }
+            // never be executed by mistake on a later code path. Only
+            // IO/access errors are expected; anything else propagates
+            // so the caller's CrashLogger boundary records it.
+            try { File.Delete(filePath); }
+            catch (IOException) { /* file in use by AV scanner */ }
+            catch (UnauthorizedAccessException) { /* read-only or ACL */ }
 
             throw new InstallerIntegrityException(expectedHex, actual);
         }

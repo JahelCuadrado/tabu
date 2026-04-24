@@ -495,8 +495,9 @@ public partial class App : System.Windows.Application
             var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
             return switcher.Windows.Count;
         }
-        catch
+        catch (Exception ex)
         {
+            CrashLogger.Log("GetTrackedWindowCount", ex);
             return 0;
         }
     }

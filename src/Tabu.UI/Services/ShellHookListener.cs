@@ -108,7 +108,14 @@ public sealed partial class ShellHookListener : IDisposable
         {
             DeregisterShellHookWindow(new WindowInteropHelper(_carrier).Handle);
         }
-        catch { /* best-effort cleanup */ }
+        catch (Exception ex)
+        {
+            // Non-fatal: a stale window handle on shutdown means the OS
+            // already cleaned up the registration. Log so persistent
+            // failures (driver bugs, security software hooking) become
+            // visible in diagnostics instead of disappearing silently.
+            CrashLogger.Log("ShellHook.Deregister", ex);
+        }
 
         _source.RemoveHook(WndProc);
         _carrier.Close();

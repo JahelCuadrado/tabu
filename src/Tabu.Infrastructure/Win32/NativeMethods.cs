@@ -142,10 +142,12 @@ internal static partial class NativeMethods
                 ? cloaked
                 : 0;
         }
-        catch
-        {
-            return 0;
-        }
+        catch (DllNotFoundException) { return 0; }
+        catch (EntryPointNotFoundException) { return 0; }
+        // Any other exception (corrupted handle, OOM, AccessViolation
+        // surfaced as managed) is genuinely unexpected for this hot-path
+        // helper and should bubble up so CrashLogger captures it at the
+        // dispatcher boundary instead of silently degrading detection.
     }
 
     public static string GetClassName(IntPtr hWnd)

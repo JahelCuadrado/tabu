@@ -419,7 +419,9 @@ public partial class MainWindow : Window
         var newSource = FindTabBorderForTab(_dragTab) ?? _dragSource;
         if (!ReferenceEquals(newSource, _dragSource))
         {
-            try { _dragSource.ReleaseMouseCapture(); } catch { }
+            // ReleaseMouseCapture only throws on disposed visuals during
+            // teardown races; ignore those, never mask other failures.
+            try { _dragSource.ReleaseMouseCapture(); } catch (InvalidOperationException) { }
             Panel.SetZIndex(_dragSource, 0);
             _dragSource = newSource;
             Panel.SetZIndex(_dragSource, 1000);
@@ -458,7 +460,7 @@ public partial class MainWindow : Window
         _dragTranslate = null;
         _isDragging = false;
 
-        try { source.ReleaseMouseCapture(); } catch { }
+        try { source.ReleaseMouseCapture(); } catch (InvalidOperationException) { /* visual disposed mid-drag */ }
         source.Cursor = Cursors.Hand;
 
         if (wasDragging)
@@ -506,7 +508,7 @@ public partial class MainWindow : Window
         _isDragging = false;
 
         if (source is null) return;
-        try { source.ReleaseMouseCapture(); } catch { }
+        try { source.ReleaseMouseCapture(); } catch (InvalidOperationException) { /* visual disposed mid-drag */ }
         source.Cursor = Cursors.Hand;
         AnimateSnapBack(source, translate);
     }

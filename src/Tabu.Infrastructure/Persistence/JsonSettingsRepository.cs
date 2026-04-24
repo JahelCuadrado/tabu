@@ -77,11 +77,23 @@ public sealed class JsonSettingsRepository : ISettingsRepository
                            ?? new UserSettings();
             return Sanitise(settings);
         }
-        catch
+        catch (JsonException)
         {
-            // Corrupt file: fall back to defaults rather than crashing
-            // on startup. The next Save() call rewrites the file with a
-            // valid payload.
+            // Corrupt or partially-written JSON: fall back to defaults
+            // rather than crashing on startup. The next Save() call
+            // rewrites the file with a valid payload.
+            return new UserSettings();
+        }
+        catch (IOException)
+        {
+            // File transiently locked by AV/backup software. Defaults
+            // are returned for this session; the next Save() retries.
+            return new UserSettings();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Permission denied (read-only profile, locked-down account).
+            // Behave as if no settings exist.
             return new UserSettings();
         }
     }
