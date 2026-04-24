@@ -1,0 +1,79 @@
+name: Attach SHA256SUMS to release
+
+# Audit hardening v1.6 — supply-chain integrity.
+#
+# Triggered automatically when a GitHub Release is published. Downloads
+# every installer asset already attached to the release, computes its
+# SHA-256 digest and uploads a `SHA256SUMS.txt` manifest as an additional
+# asset. The Tabu auto-updater (`GitHubUpdateService`) requires that file
+# to verify installer integrity before execution; releases without it
+# fall back to the legacy "no verification" path.
+#
+# This workflow is deliberately decoupled from the build pipeline: it
+# never recompiles the app, so a tampered build runner can never produce
+# a manifest that matches a malicious binary it slipped in.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to (re)generate the manifest for, e.g. v1.6.0'
+        required: true
+        type: string
+
+permissions:
+  contents: write    # Required to upload the manifest asset to the release.
+
+jobs:
+  attach-checksums:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve target tag
+        id: tag
+        env:
+          GH_RELEASE_TAG: ${{ github.event.release.tag_name }}
+          MANUAL_TAG: ${{ inputs.tag }}
+        run: |
+          tag="${GH_RELEASE_TAG:-$MANUAL_TAG}"
+          if [ -z "$tag" ]; then
+            echo "::error::No release tag could be resolved." >&2
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download installer assets from release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          mkdir -p ./release-assets
+          # Pull every asset that looks like an installer. The pattern is
+          # intentionally narrow so manifests, signatures or release notes
+          # never end up hashed alongside the binaries.
+          gh release download "$TAG" \
+            --repo "${{ github.repository }}" \
+            --pattern '*Setup*.exe' \
+            --dir ./release-assets
+
+      - name: Generate SHA256SUMS.txt
+        working-directory: ./release-assets
+        run: |
+          # Canonical sha256sum -b output (lower-case hex, two spaces,
+          # asterisk, file name). Matches the regex used by the C# parser.
+          sha256sum -b *.exe | tee SHA256SUMS.txt
+          echo "--- manifest ---"
+          cat SHA256SUMS.txt
+
+      - name: Upload manifest to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          gh release upload "$TAG" ./release-assets/SHA256SUMS.txt \
+            --repo "${{ github.repository }}" \
+            --clobber

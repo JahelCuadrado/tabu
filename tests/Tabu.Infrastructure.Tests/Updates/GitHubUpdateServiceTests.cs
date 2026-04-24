@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using FluentAssertions;
+using Tabu.Domain.Entities;
 using Tabu.Infrastructure.Updates;
 using Xunit;
 
@@ -116,11 +117,15 @@ public sealed class GitHubUpdateServiceTests
     [Fact]
     public async Task CheckForUpdate_PicksFirstSetupExeAsset_WhenMultipleAssetsArePresent()
     {
+        // Asset URLs MUST live on the GitHub-trusted host whitelist
+        // (github.com / objects.githubusercontent.com) — the audit
+        // hardening rejects anything else as a defence against a tampered
+        // release JSON pointing the auto-updater at an attacker host.
         var json = BuildReleaseJson(tag: "v2.0.0", assets:
         [
-            ("Tabu-v2.0.0-portable.zip", "https://example/portable.zip", 1),
-            ("TabuSetup-v2.0.0-win-x64.exe", "https://example/setup.exe", 99),
-            ("checksums.txt", "https://example/checksums.txt", 1)
+            ("Tabu-v2.0.0-portable.zip", "https://github.com/JahelCuadrado/Tabu/releases/download/v2.0.0/Tabu-v2.0.0-portable.zip", 1),
+            ("TabuSetup-v2.0.0-win-x64.exe", "https://github.com/JahelCuadrado/Tabu/releases/download/v2.0.0/TabuSetup-v2.0.0-win-x64.exe", 99),
+            ("checksums.txt", "https://github.com/JahelCuadrado/Tabu/releases/download/v2.0.0/checksums.txt", 1)
         ]);
         var sut = SutWith(HttpStatusCode.OK, json);
 
@@ -168,6 +173,84 @@ public sealed class GitHubUpdateServiceTests
         GitHubUpdateService.InstallerAssetPattern.IsMatch("setup-anything.exe").Should().BeTrue();
         GitHubUpdateService.InstallerAssetPattern.IsMatch("Tabu-portable.zip").Should().BeFalse();
         GitHubUpdateService.InstallerAssetPattern.IsMatch("Tabu.exe").Should().BeFalse();
+    }
+
+    // -------------------------------------------------------------------
+    // Security hardening (audit v1.6): host whitelist + integrity manifest
+    // -------------------------------------------------------------------
+
+    [Theory]
+    [InlineData("https://github.com/JahelCuadrado/Tabu/releases/download/v1.0.0/x.exe", true)]
+    [InlineData("https://objects.githubusercontent.com/asset/abc", true)]
+    [InlineData("https://release-assets.githubusercontent.com/asset/abc", true)]
+    [InlineData("http://github.com/JahelCuadrado/Tabu/releases/x.exe", false)]
+    [InlineData("https://evil.example.com/setup.exe", false)]
+    [InlineData("ftp://github.com/x.exe", false)]
+    [InlineData("", false)]
+    [InlineData(null, false)]
+    public void IsTrustedDownloadUrl_OnlyAcceptsHttpsOnGitHubAssetHosts(string? url, bool expected)
+    {
+        GitHubUpdateService.IsTrustedDownloadUrl(url).Should().Be(expected);
+    }
+
+    [Fact]
+    public async Task CheckForUpdate_ReturnsNull_WhenInstallerUrlIsNotOnHostWhitelist()
+    {
+        var json = BuildReleaseJson(tag: "v2.0.0", assets:
+        [
+            ("TabuSetup-v2.0.0-win-x64.exe", "https://evil.example.com/setup.exe", 99)
+        ]);
+        var sut = SutWith(HttpStatusCode.OK, json);
+
+        var result = await sut.CheckForUpdateAsync(new Version("1.0.0"));
+
+        result.Should().BeNull("an installer hosted off the GitHub asset CDN must never reach the orchestrator");
+    }
+
+    [Fact]
+    public async Task DownloadInstallerAsync_Throws_WhenUrlIsNotTrusted()
+    {
+        var sut = SutWith(HttpStatusCode.OK, "");
+        var update = new UpdateInfo
+        {
+            Version = new Version("2.0.0"),
+            Tag = "v2.0.0",
+            InstallerDownloadUrl = "https://evil.example.com/setup.exe",
+            InstallerFileName = "setup.exe"
+        };
+        var dest = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".exe");
+
+        await FluentActions.Invoking(() => sut.DownloadInstallerAsync(update, dest))
+            .Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*trusted GitHub asset host whitelist*");
+    }
+
+    [Fact]
+    public void ExtractDigest_ReturnsLowercaseHash_ForMatchingFileName()
+    {
+        const string hash = "ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789";
+        var manifest =
+            $"{hash} *TabuSetup-v2.0.0-win-x64.exe\n" +
+            "0000000000000000000000000000000000000000000000000000000000000000  other.zip\n";
+
+        var result = GitHubUpdateService.ExtractDigest(manifest, "TabuSetup-v2.0.0-win-x64.exe");
+
+        result.Should().Be(hash.ToLowerInvariant());
+    }
+
+    [Fact]
+    public void ExtractDigest_ReturnsNull_WhenFileNotListed()
+    {
+        var manifest = "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789  other.exe\n";
+
+        GitHubUpdateService.ExtractDigest(manifest, "TabuSetup.exe").Should().BeNull();
+    }
+
+    [Fact]
+    public void ExtractDigest_ReturnsNull_OnEmptyOrNullInput()
+    {
+        GitHubUpdateService.ExtractDigest("", "x.exe").Should().BeNull();
+        GitHubUpdateService.ExtractDigest("anything", "").Should().BeNull();
     }
 
     private static GitHubUpdateService SutWith(HttpStatusCode status, string body)

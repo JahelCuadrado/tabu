@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Windows;
 using Tabu.Domain.Entities;
 using Tabu.Domain.Interfaces;
+using Tabu.UI.Views;
 
 namespace Tabu.UI.Services;
 
@@ -15,6 +16,21 @@ namespace Tabu.UI.Services;
 public sealed class UpdateOrchestrator
 {
     private const string SilentInstallerArguments = "/SILENT /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS /NORESTART";
+
+    /// <summary>
+    /// Hard upper bound for the installer file size accepted from the
+    /// update channel (250 MiB). A defensive guard against accidentally
+    /// downloading something pathologically large advertised by a tampered
+    /// release JSON; the genuine Tabu installer is &lt; 50 MiB.
+    /// </summary>
+    private const long MaxInstallerSizeBytes = 250L * 1024 * 1024;
+
+    /// <summary>
+    /// Age (in days) past which leftover Tabu installers in <c>%TEMP%</c>
+    /// are deleted on the next update flow. Keeps the user's disk tidy
+    /// without aggressively racing in-progress writes from a concurrent run.
+    /// </summary>
+    private const int StaleInstallerMaxAgeDays = 7;
 
     private readonly IUpdateService _updateService;
 
@@ -29,17 +45,16 @@ public sealed class UpdateOrchestrator
     /// </summary>
     public void RunInBackground()
     {
-        _ = Task.Run(async () =>
+        // The work is already fully async I/O; wrapping it in Task.Run only
+        // burns a thread-pool slot. Fire-and-forget directly and observe
+        // the resulting Task to neutralise the unobserved-exception event.
+        _ = ObserveAsync(CheckAndPromptAsync());
+
+        static async Task ObserveAsync(Task work)
         {
-            try
-            {
-                await CheckAndPromptAsync().ConfigureAwait(false);
-            }
-            catch
-            {
-                // Updates are best-effort; never crash the host app.
-            }
-        });
+            try { await work.ConfigureAwait(false); }
+            catch { /* updates are best-effort; never crash the host app */ }
+        }
     }
 
     /// <summary>
@@ -51,7 +66,9 @@ public sealed class UpdateOrchestrator
     /// </summary>
     public void RunManualCheck()
     {
-        _ = Task.Run(async () =>
+        _ = ObserveManualAsync();
+
+        async Task ObserveManualAsync()
         {
             try
             {
@@ -77,7 +94,7 @@ public sealed class UpdateOrchestrator
                     LocalizedString("Update_CheckFailedBody", "Tabu could not reach the update server. Please check your connection and try again."),
                     MessageBoxImage.Warning).ConfigureAwait(false);
             }
-        });
+        }
     }
 
     private async Task CheckAndPromptAsync()
@@ -100,7 +117,34 @@ public sealed class UpdateOrchestrator
             return;
         }
 
-        var destination = Path.Combine(Path.GetTempPath(), update.InstallerFileName);
+        // Defensive size guard: the genuine installer fits well under the
+        // limit; anything larger almost certainly means a tampered or
+        // misconfigured release. Reject before allocating disk space.
+        if (update.InstallerSizeBytes > MaxInstallerSizeBytes)
+        {
+            await ShowMessageAsync(
+                LocalizedString("Update_DownloadFailedTitle", "Update failed"),
+                LocalizedString("Update_DownloadFailedBody", "Tabu could not download the latest installer. Please try again later."),
+                MessageBoxImage.Warning).ConfigureAwait(false);
+            return;
+        }
+
+        // Strip any path segment that may have leaked into the asset name
+        // ("subdir/..\\evil.exe") so the destination is always inside the
+        // session's temp folder. Path.GetFileName(...) is the documented
+        // Windows-safe way to discard traversal sequences.
+        var safeFileName = Path.GetFileName(update.InstallerFileName);
+        if (string.IsNullOrEmpty(safeFileName))
+        {
+            return;
+        }
+
+        // Best-effort housekeeping: previous failed runs may have left
+        // half-downloaded installers behind. Doing this BEFORE the new
+        // download avoids accumulating gigabytes over time.
+        TryCleanupStaleInstallers(safeFileName);
+
+        var destination = Path.Combine(Path.GetTempPath(), safeFileName);
 
         try
         {
@@ -116,6 +160,45 @@ public sealed class UpdateOrchestrator
         }
 
         LaunchInstallerAndShutdown(destination);
+    }
+
+    /// <summary>
+    /// Deletes Tabu installers in <c>%TEMP%</c> older than
+    /// <see cref="StaleInstallerMaxAgeDays"/> days. The pattern is
+    /// intentionally narrow (<c>Tabu*setup*.exe</c>, case-insensitive on
+    /// NTFS) so unrelated user files are never touched. Errors are swallowed
+    /// — this is opportunistic cleanup, not part of the update contract.
+    /// </summary>
+    private static void TryCleanupStaleInstallers(string currentFileName)
+    {
+        try
+        {
+            var temp = Path.GetTempPath();
+            var threshold = DateTime.UtcNow.AddDays(-StaleInstallerMaxAgeDays);
+            foreach (var path in Directory.EnumerateFiles(temp, "Tabu*setup*.exe", SearchOption.TopDirectoryOnly))
+            {
+                if (string.Equals(Path.GetFileName(path), currentFileName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue; // never delete the file we're about to overwrite
+                }
+
+                try
+                {
+                    if (File.GetLastWriteTimeUtc(path) < threshold)
+                    {
+                        File.Delete(path);
+                    }
+                }
+                catch
+                {
+                    // File in use or access denied — skip and try next time.
+                }
+            }
+        }
+        catch
+        {
+            // Temp folder enumeration is non-critical; never propagate.
+        }
     }
 
     private static Version GetCurrentVersion()
@@ -141,8 +224,16 @@ public sealed class UpdateOrchestrator
                 "Update_AvailableBody",
                 "A new version of Tabu is available.\n\nCurrent: {0}\nLatest: {1}\n\nDownload and install now?");
             var body = string.Format(template, current.ToString(3), update.Version.ToString(3));
-            var result = MessageBox.Show(body, title, MessageBoxButton.YesNo, MessageBoxImage.Information, MessageBoxResult.Yes);
-            tcs.SetResult(result == MessageBoxResult.Yes);
+            var yesText = LocalizedString("Dialog_Yes", "Yes");
+            var noText = LocalizedString("Dialog_No", "Cancel");
+            var result = TabuDialog.Show(
+                System.Windows.Application.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive),
+                body,
+                title,
+                TabuDialogVariant.Info,
+                primaryText: yesText,
+                secondaryText: noText);
+            tcs.SetResult(result == TabuDialogResult.Yes);
         });
 
         return tcs.Task;
@@ -160,7 +251,14 @@ public sealed class UpdateOrchestrator
 
         dispatcher.BeginInvoke(() =>
         {
-            MessageBox.Show(body, title, MessageBoxButton.OK, icon);
+            var variant = icon == MessageBoxImage.Warning ? TabuDialogVariant.Warning
+                : icon == MessageBoxImage.Error ? TabuDialogVariant.Danger
+                : TabuDialogVariant.Info;
+            TabuDialog.Show(
+                System.Windows.Application.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive),
+                body,
+                title,
+                variant);
             tcs.SetResult();
         });
 
@@ -188,11 +286,11 @@ public sealed class UpdateOrchestrator
             }
             catch
             {
-                MessageBox.Show(
+                TabuDialog.Show(
+                    System.Windows.Application.Current?.Windows.OfType<Window>().FirstOrDefault(w => w.IsActive),
                     LocalizedString("Update_LaunchFailedBody", "Tabu could not launch the installer."),
                     LocalizedString("Update_LaunchFailedTitle", "Update failed"),
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+                    TabuDialogVariant.Warning);
                 return;
             }
 
