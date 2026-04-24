@@ -150,10 +150,10 @@ public partial class MainWindow : Window
         public int Left, Top, Right, Bottom;
     }
 
-    [LibraryImport("shell32.dll")]
+    [LibraryImport("shell32.dll", EntryPoint = "SHAppBarMessage")]
     private static partial uint SHAppBarMessage(int dwMessage, ref APPBARDATA pData);
 
-    [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport("user32.dll", EntryPoint = "RegisterWindowMessageW", StringMarshalling = StringMarshalling.Utf16)]
     private static partial uint RegisterWindowMessage(string lpString);
 
     [LibraryImport("user32.dll")]
@@ -1132,7 +1132,7 @@ public partial class MainWindow : Window
     [LibraryImport("user32.dll")]
     private static partial IntPtr MonitorFromWindow(IntPtr hwnd, int dwFlags);
 
-    [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport("user32.dll", EntryPoint = "GetMonitorInfoW", StringMarshalling = StringMarshalling.Utf16)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
 

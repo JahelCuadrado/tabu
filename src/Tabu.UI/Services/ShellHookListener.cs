@@ -114,7 +114,7 @@ public sealed partial class ShellHookListener : IDisposable
         _carrier.Close();
     }
 
-    [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport("user32.dll", EntryPoint = "RegisterWindowMessageW", StringMarshalling = StringMarshalling.Utf16)]
     private static partial uint RegisterWindowMessage(string lpString);
 
     [LibraryImport("user32.dll")]
