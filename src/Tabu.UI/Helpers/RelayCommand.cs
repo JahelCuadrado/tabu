@@ -1,4 +1,5 @@
 using System.Windows.Input;
+using Tabu.UI.Services;
 
 namespace Tabu.UI.Helpers;
 
@@ -49,6 +50,14 @@ public sealed class AsyncRelayCommand : ICommand
 
     public bool CanExecute(object? parameter) => !_isExecuting && (_canExecute?.Invoke(parameter) ?? true);
 
+    /// <summary>
+    /// WPF binds <see cref="ICommand.Execute"/> from the UI thread, so the
+    /// signature is forced to be synchronous. We adopt the standard
+    /// fire-and-forget shape but route every exception through
+    /// <see cref="CrashLogger"/> instead of letting them surface as
+    /// process-terminating <c>UnhandledException</c> events — the historical
+    /// failure mode for <c>async void</c> command handlers.
+    /// </summary>
     public async void Execute(object? parameter)
     {
         if (_isExecuting) return;
@@ -57,6 +66,10 @@ public sealed class AsyncRelayCommand : ICommand
         try
         {
             await _execute(parameter);
+        }
+        catch (Exception ex)
+        {
+            CrashLogger.Log("AsyncRelayCommand.Execute", ex);
         }
         finally
         {

@@ -49,8 +49,15 @@ public sealed class WindowDetector : IWindowDetector
     /// permanently filtered out until the bar is restarted. This was the
     /// root cause of the long-uptime bug where new windows stopped being
     /// shown as tabs after several days of continuous execution.
+    /// <para>
+    /// Concurrency: <see cref="GetVisibleWindows"/> is called from the UI
+    /// poll timer while the shell-hook callback may resolve metadata for a
+    /// destroyed window from a different thread. A
+    /// <see cref="System.Collections.Concurrent.ConcurrentDictionary{TKey, TValue}"/>
+    /// gives us atomic insert/remove without coarse locking on the hot path.
+    /// </para>
     /// </remarks>
-    private readonly Dictionary<int, ProcessMetadata> _processCache = new();
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<int, ProcessMetadata> _processCache = new();
 
     private readonly record struct ProcessMetadata(
         string Name,
@@ -165,7 +172,7 @@ public sealed class WindowDetector : IWindowDetector
                 return cached;
             }
 
-            _processCache.Remove(pid);
+            _processCache.TryRemove(pid, out _);
         }
 
         string name = string.Empty;
@@ -242,7 +249,7 @@ public sealed class WindowDetector : IWindowDetector
     {
         if (_processCache.Count <= seenPids.Count) return;
         var stale = _processCache.Keys.Where(k => !seenPids.Contains(k)).ToList();
-        foreach (var pid in stale) _processCache.Remove(pid);
+        foreach (var pid in stale) _processCache.TryRemove(pid, out _);
     }
 
     public TrackedWindow? GetForegroundWindow()
@@ -300,6 +307,36 @@ public sealed class WindowDetector : IWindowDetector
     {
         if (window.Handle == IntPtr.Zero || !NativeMethods.IsWindow(window.Handle)) return;
         NativeMethods.PostMessageW(window.Handle, NativeMethods.WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+    }
+
+    /// <inheritdoc />
+    public void KillProcess(TrackedWindow window)
+    {
+        if (window.ProcessId <= 0) return;
+
+        try
+        {
+            using var process = Process.GetProcessById(window.ProcessId);
+            if (process is null || process.HasExited) return;
+            // Kill the entire process tree so child workers spawned by the
+            // app (e.g. browser renderers, helper processes) also exit. The
+            // OS still cleans up handles and freed memory; nothing leaks.
+            process.Kill(entireProcessTree: true);
+        }
+        catch (ArgumentException)
+        {
+            // Process already gone — nothing to do.
+        }
+        catch (InvalidOperationException)
+        {
+            // Race: process exited between GetProcessById and Kill.
+        }
+        catch (System.ComponentModel.Win32Exception)
+        {
+            // Insufficient privileges (process running as a different user
+            // / elevated). Silently ignore: there is nothing the user-mode
+            // bar can do, and we already warned the user with the dialog.
+        }
     }
 
     public bool IsWindowAlive(IntPtr handle)

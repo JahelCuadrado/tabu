@@ -6,6 +6,7 @@ using Tabu.Application.Services;
 using Tabu.Domain.Entities;
 using Tabu.Domain.Interfaces;
 using Tabu.Infrastructure;
+using Tabu.UI.Helpers;
 using Tabu.UI.Services;
 using Tabu.UI.ViewModels;
 using Tabu.UI.Views;
@@ -35,7 +36,25 @@ public partial class App : System.Windows.Application
             .Build();
     }
 
-    protected override async void OnStartup(StartupEventArgs e)
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        // The WPF lifecycle requires a synchronous override; doing the work
+        // as `async void` (the previous shape) means any unobserved
+        // exception during startup would terminate the process without a
+        // chance for CrashLogger to record it. We block here on a regular
+        // Task so the exception surfaces through normal channels.
+        try
+        {
+            OnStartupAsync(e).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            CrashLogger.Log("App.OnStartup", ex);
+            throw;
+        }
+    }
+
+    private async Task OnStartupAsync(StartupEventArgs e)
     {
         CrashLogger.Attach();
 
@@ -65,7 +84,9 @@ public partial class App : System.Windows.Application
             AutoCheckUpdates = saved.AutoCheckUpdates,
             ShowNotificationBadges = saved.ShowNotificationBadges,
             NotificationDotSize = saved.NotificationDotSize,
-            NotificationDotColor = saved.NotificationDotColor
+            NotificationDotColor = saved.NotificationDotColor,
+            ActiveTabColor = saved.ActiveTabColor,
+            ActiveTabOpacity = saved.ActiveTabOpacity
         };
 
         _primaryViewModel.BarPlacementChangeRequested += OnBarPlacementChangeRequested;
@@ -86,6 +107,8 @@ public partial class App : System.Windows.Application
         _primaryViewModel.NotificationBadgesChangeRequested += OnNotificationBadgesChangeRequested;
         _primaryViewModel.NotificationDotSizeChangeRequested += OnNotificationDotSizeChangeRequested;
         _primaryViewModel.NotificationDotColorChangeRequested += OnNotificationDotColorChangeRequested;
+        _primaryViewModel.ActiveTabColorChangeRequested += OnActiveTabColorChangeRequested;
+        _primaryViewModel.ActiveTabOpacityChangeRequested += OnActiveTabOpacityChangeRequested;
         _primaryViewModel.ManualUpdateCheckRequested += OnManualUpdateCheckRequested;
 
         // Reconcile the Run registry value with the persisted preference so that
@@ -100,6 +123,7 @@ public partial class App : System.Windows.Application
 
         _accentColorManager.Apply(saved.AccentColor, IsDarkTheme(theme));
         ApplyNotificationDotBrush(saved.NotificationDotColor);
+        ApplyActiveTabBrush(saved.ActiveTabColor, saved.ActiveTabOpacity);
 
         if (saved.IsBarOnAllMonitors)
         {
@@ -231,6 +255,9 @@ public partial class App : System.Windows.Application
             // or stays on its hex override. Re-evaluate so the change is
             // visible immediately when the user is on accent-follow mode.
             ApplyNotificationDotBrush(_primaryViewModel?.NotificationDotColor ?? string.Empty);
+            ApplyActiveTabBrush(
+                _primaryViewModel?.ActiveTabColor ?? string.Empty,
+                _primaryViewModel?.ActiveTabOpacity ?? 100);
         });
         PersistSettings();
     }
@@ -348,6 +375,47 @@ public partial class App : System.Windows.Application
     }
 
     /// <summary>
+    /// User changed the active-tab tint. Re-evaluates the global brush
+    /// and broadcasts the new value to every secondary bar so a multi-
+    /// monitor setup updates atomically.
+    /// </summary>
+    private void OnActiveTabColorChangeRequested(string hex)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            ApplyActiveTabBrush(hex, _primaryViewModel?.ActiveTabOpacity ?? 100);
+            foreach (var bar in _secondaryBars)
+            {
+                if (bar.DataContext is MainViewModel vm)
+                {
+                    vm.ActiveTabColor = hex;
+                }
+            }
+        });
+        PersistSettings();
+    }
+
+    /// <summary>
+    /// User dragged the active-tab opacity slider. Same flow as the
+    /// color handler but only the alpha channel changes.
+    /// </summary>
+    private void OnActiveTabOpacityChangeRequested(double opacity)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            ApplyActiveTabBrush(_primaryViewModel?.ActiveTabColor ?? string.Empty, opacity);
+            foreach (var bar in _secondaryBars)
+            {
+                if (bar.DataContext is MainViewModel vm)
+                {
+                    vm.ActiveTabOpacity = opacity;
+                }
+            }
+        });
+        PersistSettings();
+    }
+
+    /// <summary>
     /// Updates the global <c>NotificationDotBrush</c> resource. When
     /// <paramref name="hex"/> is empty or invalid the brush mirrors the
     /// current <c>AccentBrush</c>; otherwise the parsed color wins.
@@ -371,24 +439,43 @@ public partial class App : System.Windows.Application
         resources["NotificationDotBrush"] = brush;
     }
 
-    private static bool TryParseHexColor(string hex, out System.Windows.Media.Color color)
+    /// <summary>
+    /// Updates the global <c>ActiveTabBackgroundBrush</c> resource. The
+    /// alpha channel is derived from the opacity slider (0–100). When
+    /// <paramref name="hex"/> is empty the active tab follows the current
+    /// accent color, replicating the original "no override" behaviour.
+    /// </summary>
+    private static void ApplyActiveTabBrush(string hex, double opacityPercent)
     {
-        color = default;
-        try
+        var resources = System.Windows.Application.Current.Resources;
+        var alpha = (byte)Math.Clamp((int)Math.Round(opacityPercent * 2.55), 0, 255);
+
+        System.Windows.Media.Color baseColor;
+        if (!string.IsNullOrWhiteSpace(hex) && TryParseHexColor(hex, out var parsed))
         {
-            var converted = System.Windows.Media.ColorConverter.ConvertFromString(hex);
-            if (converted is System.Windows.Media.Color c)
-            {
-                color = c;
-                return true;
-            }
+            baseColor = parsed;
         }
-        catch
+        else if (resources["AccentBrush"] is System.Windows.Media.SolidColorBrush accent)
         {
-            // Swallow malformed hex values; the caller falls back to accent.
+            baseColor = accent.Color;
         }
-        return false;
+        else
+        {
+            baseColor = System.Windows.Media.Colors.DodgerBlue;
+        }
+
+        var finalColor = System.Windows.Media.Color.FromArgb(alpha, baseColor.R, baseColor.G, baseColor.B);
+        var brush = new System.Windows.Media.SolidColorBrush(finalColor);
+        resources["ActiveTabBackgroundBrush"] = brush;
+        // Blur mode uses a dedicated brush so the selected tab keeps a
+        // legible contrast over the acrylic backdrop. Mirror the user's
+        // tint there as well — otherwise the slider/color appears to do
+        // nothing while blur is on.
+        resources["ActiveTabBackgroundBlurBrush"] = brush;
     }
+
+    private static bool TryParseHexColor(string hex, out System.Windows.Media.Color color)
+        => ColorParser.TryParse(hex, out color);
 
     private void OnBlurEffectChangeRequested(bool enabled)
     {
@@ -487,7 +574,9 @@ public partial class App : System.Windows.Application
                 BarSize = _primaryViewModel?.BarSize ?? BarSize.Small,
                 UseBlurEffect = _primaryViewModel?.UseBlurEffect ?? false,
                 BlurMode = _primaryViewModel?.BlurMode ?? "Acrylic",
-                AutoCheckUpdates = _primaryViewModel?.AutoCheckUpdates ?? true
+                AutoCheckUpdates = _primaryViewModel?.AutoCheckUpdates ?? true,
+                ActiveTabColor = _primaryViewModel?.ActiveTabColor ?? string.Empty,
+                ActiveTabOpacity = _primaryViewModel?.ActiveTabOpacity ?? 100
             };
 
             var bar = new MainWindow(vm) { TargetScreen = screen, IsPrimary = false };
@@ -510,14 +599,66 @@ public partial class App : System.Windows.Application
         }
     }
 
-    protected override async void OnExit(ExitEventArgs e)
+    protected override void OnExit(ExitEventArgs e)
+    {
+        try
+        {
+            OnExitAsync(e).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            CrashLogger.Log("App.OnExit", ex);
+        }
+    }
+
+    private async Task OnExitAsync(ExitEventArgs e)
     {
         PersistSettings();
+        UnsubscribePrimaryViewModel();
         DeactivateSecondaryBars();
-        _shellHook?.Dispose();
+        if (_shellHook is not null)
+        {
+            _shellHook.WindowFlashed -= OnWindowFlashed;
+            _shellHook.Dispose();
+            _shellHook = null;
+        }
         await _host.StopAsync();
         _host.Dispose();
         base.OnExit(e);
+    }
+
+    /// <summary>
+    /// Tears down every event subscription registered against
+    /// <see cref="_primaryViewModel"/> during <see cref="OnStartupAsync"/>.
+    /// Without this the view-model is rooted by 21 long-lived delegates,
+    /// preventing GC and leaking the entire window graph on app shutdown
+    /// (visible as the process lingering in Task Manager after exit).
+    /// </summary>
+    private void UnsubscribePrimaryViewModel()
+    {
+        if (_primaryViewModel is null) return;
+
+        _primaryViewModel.BarPlacementChangeRequested -= OnBarPlacementChangeRequested;
+        _primaryViewModel.DetectionModeChangeRequested -= OnDetectionModeChangeRequested;
+        _primaryViewModel.ThemeChangeRequested -= OnThemeChangeRequested;
+        _primaryViewModel.OpacityChangeRequested -= OnOpacityChangeRequested;
+        _primaryViewModel.TabWidthChangeRequested -= OnTabWidthChangeRequested;
+        _primaryViewModel.BrandingChangeRequested -= OnBrandingChangeRequested;
+        _primaryViewModel.LanguageChangeRequested -= OnLanguageChangeRequested;
+        _primaryViewModel.AccentColorChangeRequested -= OnAccentColorChangeRequested;
+        _primaryViewModel.AutoHideChangeRequested -= OnAutoHideChangeRequested;
+        _primaryViewModel.LaunchAtStartupChangeRequested -= OnLaunchAtStartupChangeRequested;
+        _primaryViewModel.ClockVisibilityChangeRequested -= OnClockVisibilityChangeRequested;
+        _primaryViewModel.ClockSizeChangeRequested -= OnClockSizeChangeRequested;
+        _primaryViewModel.BarSizeChangeRequested -= OnBarSizeChangeRequested;
+        _primaryViewModel.BlurEffectChangeRequested -= OnBlurEffectChangeRequested;
+        _primaryViewModel.AutoCheckUpdatesChangeRequested -= OnAutoCheckUpdatesChangeRequested;
+        _primaryViewModel.NotificationBadgesChangeRequested -= OnNotificationBadgesChangeRequested;
+        _primaryViewModel.NotificationDotSizeChangeRequested -= OnNotificationDotSizeChangeRequested;
+        _primaryViewModel.NotificationDotColorChangeRequested -= OnNotificationDotColorChangeRequested;
+        _primaryViewModel.ActiveTabColorChangeRequested -= OnActiveTabColorChangeRequested;
+        _primaryViewModel.ActiveTabOpacityChangeRequested -= OnActiveTabOpacityChangeRequested;
+        _primaryViewModel.ManualUpdateCheckRequested -= OnManualUpdateCheckRequested;
     }
 
     /// <summary>
@@ -537,6 +678,65 @@ public partial class App : System.Windows.Application
         catch (Exception ex)
         {
             CrashLogger.Log("ShellHook.Flash", ex);
+        }
+    }
+
+    /// <summary>
+    /// Sends <c>WM_CLOSE</c> to every tracked top-level window. The bar's
+    /// own HWND is filtered out by <see cref="WindowSwitcher"/>, so Tabu
+    /// itself is never targeted. Each app receives a graceful close
+    /// request and may show its own \"Save changes?\" dialog \u2014 nothing
+    /// is force-terminated.
+    /// </summary>
+    /// <returns>The number of close requests dispatched.</returns>
+    public int RequestCloseAllTrackedWindows()
+    {
+        try
+        {
+            var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
+            return switcher.CloseAll();
+        }
+        catch (Exception ex)
+        {
+            CrashLogger.Log("CloseAll", ex);
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// Snapshot count of currently tracked windows, so the View can
+    /// preview the impact of "Close all" in a confirmation dialog
+    /// without reaching into the application layer directly.
+    /// </summary>
+    public int GetTrackedWindowCount()
+    {
+        try
+        {
+            var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
+            return switcher.Windows.Count;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+
+    /// <summary>
+    /// Force-terminates the OS process owning <paramref name="window"/>.
+    /// The View is responsible for asking the user first; this entry
+    /// point performs no additional checks beyond the per-window try/catch
+    /// already provided by the detector.
+    /// </summary>
+    public void KillTrackedWindowProcess(TrackedWindow window)
+    {
+        try
+        {
+            var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
+            switcher.KillProcess(window);
+        }
+        catch (Exception ex)
+        {
+            CrashLogger.Log("KillProcess", ex);
         }
     }
 
@@ -571,7 +771,9 @@ public partial class App : System.Windows.Application
             BarSize = _primaryViewModel.BarSize.ToString(),
             UseBlurEffect = _primaryViewModel.UseBlurEffect,
             BlurMode = _primaryViewModel.BlurMode,
-            AutoCheckUpdates = _primaryViewModel.AutoCheckUpdates
+            AutoCheckUpdates = _primaryViewModel.AutoCheckUpdates,
+            ActiveTabColor = _primaryViewModel.ActiveTabColor,
+            ActiveTabOpacity = (int)_primaryViewModel.ActiveTabOpacity
         };
 
         Task.Run(() =>

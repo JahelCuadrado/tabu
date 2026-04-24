@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
 
@@ -32,7 +33,14 @@ public sealed class ShellHookListener : IDisposable
     private readonly Window _carrier;
     private readonly HwndSource _source;
     private readonly uint _shellHookMessage;
-    private bool _disposed;
+
+    /// <summary>
+    /// 0 while the listener is alive, 1 once <see cref="Dispose"/> has run.
+    /// Manipulated through <see cref="Interlocked.Exchange(ref int, int)"/>
+    /// so concurrent disposes from different threads cannot double-free the
+    /// shell-hook registration or close the carrier window twice.
+    /// </summary>
+    private int _disposed;
 
     /// <summary>Raised on the UI thread whenever a tracked HWND flashes.</summary>
     public event Action<IntPtr>? WindowFlashed;
@@ -94,8 +102,7 @@ public sealed class ShellHookListener : IDisposable
 
     public void Dispose()
     {
-        if (_disposed) return;
-        _disposed = true;
+        if (Interlocked.Exchange(ref _disposed, 1) == 1) return;
 
         try
         {
