@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tabu.Application.Tests", "t
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tabu.Infrastructure.Tests", "tests\Tabu.Infrastructure.Tests\Tabu.Infrastructure.Tests.csproj", "{0B83847D-78CA-40A7-BBA4-FE02146E8A4E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tabu.UI.Tests", "tests\Tabu.UI.Tests\Tabu.UI.Tests.csproj", "{6288BAFA-57DA-4FC1-A103-9497A6E3F324}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,9 +49,14 @@ Global
 		{0B83847D-78CA-40A7-BBA4-FE02146E8A4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B83847D-78CA-40A7-BBA4-FE02146E8A4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0B83847D-78CA-40A7-BBA4-FE02146E8A4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6288BAFA-57DA-4FC1-A103-9497A6E3F324}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6288BAFA-57DA-4FC1-A103-9497A6E3F324}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6288BAFA-57DA-4FC1-A103-9497A6E3F324}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6288BAFA-57DA-4FC1-A103-9497A6E3F324}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{6FFA737B-92F1-4376-8D8D-82FB85FBACDA} = {020F31FA-7C09-419D-B2D0-4918A09156EE}
 		{0B83847D-78CA-40A7-BBA4-FE02146E8A4E} = {020F31FA-7C09-419D-B2D0-4918A09156EE}
+		{6288BAFA-57DA-4FC1-A103-9497A6E3F324} = {020F31FA-7C09-419D-B2D0-4918A09156EE}
 	EndGlobalSection
 EndGlobal

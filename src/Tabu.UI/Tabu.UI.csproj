@@ -29,4 +29,7 @@
     <ProjectReference Include="..\Tabu.Application\Tabu.Application.csproj" />
     <ProjectReference Include="..\Tabu.Infrastructure\Tabu.Infrastructure.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Tabu.UI.Tests" />
+  </ItemGroup>
 </Project>
