@@ -36,6 +36,7 @@
     <sys:String x:Key="Settings_FixedWidth">고정 너비</sys:String>
     <sys:String x:Key="Settings_Language">언어</sys:String>
     <sys:String x:Key="Settings_AccentColor">강조 색상</sys:String>
+    <sys:String x:Key="Settings_AccentColorReset">기본값</sys:String>
     <sys:String x:Key="Settings_BarVisibility">바 표시</sys:String>
     <sys:String x:Key="Settings_AlwaysVisible">항상 표시</sys:String>
     <sys:String x:Key="Settings_AutoHide">자동 숨김</sys:String>

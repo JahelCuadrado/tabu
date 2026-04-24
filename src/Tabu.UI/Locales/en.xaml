@@ -36,6 +36,7 @@
     <sys:String x:Key="Settings_FixedWidth">Fixed width</sys:String>
     <sys:String x:Key="Settings_Language">Language</sys:String>
     <sys:String x:Key="Settings_AccentColor">Accent Color</sys:String>
+    <sys:String x:Key="Settings_AccentColorReset">Default</sys:String>
     <sys:String x:Key="Settings_BarVisibility">Bar Visibility</sys:String>
     <sys:String x:Key="Settings_AlwaysVisible">Always visible</sys:String>
     <sys:String x:Key="Settings_AutoHide">Auto-hide</sys:String>

@@ -36,6 +36,7 @@
     <sys:String x:Key="Settings_FixedWidth">Фиксированная ширина</sys:String>
     <sys:String x:Key="Settings_Language">Язык</sys:String>
     <sys:String x:Key="Settings_AccentColor">Цвет акцента</sys:String>
+    <sys:String x:Key="Settings_AccentColorReset">По умолчанию</sys:String>
     <sys:String x:Key="Settings_BarVisibility">Видимость панели</sys:String>
     <sys:String x:Key="Settings_AlwaysVisible">Всегда видна</sys:String>
     <sys:String x:Key="Settings_AutoHide">Автоскрытие</sys:String>

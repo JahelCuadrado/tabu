@@ -36,6 +36,7 @@
     <sys:String x:Key="Settings_FixedWidth">固定幅</sys:String>
     <sys:String x:Key="Settings_Language">言語</sys:String>
     <sys:String x:Key="Settings_AccentColor">アクセントカラー</sys:String>
+    <sys:String x:Key="Settings_AccentColorReset">既定</sys:String>
     <sys:String x:Key="Settings_BarVisibility">バーの表示</sys:String>
     <sys:String x:Key="Settings_AlwaysVisible">常に表示</sys:String>
     <sys:String x:Key="Settings_AutoHide">自動的に隠す</sys:String>

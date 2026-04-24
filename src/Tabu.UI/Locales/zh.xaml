@@ -36,6 +36,7 @@
     <sys:String x:Key="Settings_FixedWidth">固定宽度</sys:String>
     <sys:String x:Key="Settings_Language">语言</sys:String>
     <sys:String x:Key="Settings_AccentColor">强调色</sys:String>
+    <sys:String x:Key="Settings_AccentColorReset">默认</sys:String>
     <sys:String x:Key="Settings_BarVisibility">标签栏可见性</sys:String>
     <sys:String x:Key="Settings_AlwaysVisible">始终显示</sys:String>
     <sys:String x:Key="Settings_AutoHide">自动隐藏</sys:String>

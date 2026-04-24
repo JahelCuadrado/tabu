@@ -77,12 +77,12 @@ public partial class SettingsWindow : Window
             ?? LocalizationManager.AvailableLanguages[0];
         LanguageCombo.SelectedItem = currentLang;
 
-        // Accent color combo
-        AccentColorCombo.ItemsSource = AccentColorManager.AvailableColors;
-        var currentAccent = AccentColorManager.AvailableColors
-            .FirstOrDefault(c => c.Code == _viewModel.AccentColor)
-            ?? AccentColorManager.AvailableColors[0];
-        AccentColorCombo.SelectedItem = currentAccent;
+        // Accent color: prime the textbox with the canonical hex form so
+        // legacy preset codes ("blue", "red", …) saved before v1.8.0 are
+        // surfaced to the user as proper #RRGGBB strings.
+        var canonicalAccent = AccentColorManager.ResolveCanonicalHex(_viewModel.AccentColor);
+        AccentColorBox.Text = canonicalAccent;
+        SyncAccentWheelFromHex(canonicalAccent);
 
         if (_viewModel.AutoHideBar)
         {
@@ -273,13 +273,69 @@ public partial class SettingsWindow : Window
         }
     }
 
-    private void AccentColor_Changed(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    private void AccentColor_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
         if (!_initialized) return;
 
-        if (AccentColorCombo.SelectedItem is AccentColorOption selected && selected.Code != _viewModel.AccentColor)
+        var raw = AccentColorBox.Text?.Trim() ?? string.Empty;
+        // Empty input snaps back to the default accent. Otherwise only push
+        // a valid #RRGGBB so half-typed values don’t flicker the bar.
+        if (raw.Length == 0)
         {
-            _viewModel.AccentColor = selected.Code;
+            if (!string.Equals(_viewModel.AccentColor, AccentColorManager.DefaultAccentCode, StringComparison.Ordinal))
+            {
+                _viewModel.AccentColor = AccentColorManager.DefaultAccentCode;
+            }
+            return;
+        }
+
+        if (TryNormaliseHex(raw, out var canonical) && !string.Equals(canonical, _viewModel.AccentColor, StringComparison.Ordinal))
+        {
+            _viewModel.AccentColor = canonical;
+            SyncAccentWheelFromHex(canonical);
+        }
+    }
+
+    private void AccentColorReset_Click(object sender, RoutedEventArgs e)
+    {
+        if (!_initialized) return;
+        AccentColorBox.Text = AccentColorManager.DefaultAccentCode;
+        if (!string.Equals(_viewModel.AccentColor, AccentColorManager.DefaultAccentCode, StringComparison.Ordinal))
+        {
+            _viewModel.AccentColor = AccentColorManager.DefaultAccentCode;
+        }
+    }
+
+    private void AccentColorSwatch_Click(object sender, RoutedEventArgs e)
+    {
+        if (AccentColorPopup is null) return;
+        SyncAccentWheelFromHex(_viewModel.AccentColor);
+        AccentColorPopup.IsOpen = !AccentColorPopup.IsOpen;
+    }
+
+    private void AccentColorWheel_SelectedColorChanged(object? sender, System.Windows.Media.Color color)
+    {
+        if (!_initialized) return;
+        var hex = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+        if (!string.Equals(AccentColorBox.Text, hex, StringComparison.OrdinalIgnoreCase))
+        {
+            AccentColorBox.Text = hex;
+        }
+    }
+
+    private void SyncAccentWheelFromHex(string hex)
+    {
+        if (AccentColorWheel is null) return;
+        var canonical = AccentColorManager.ResolveCanonicalHex(hex);
+        try
+        {
+            var color = (System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString(canonical);
+            AccentColorWheel.SelectedColor = color;
+        }
+        catch (FormatException)
+        {
+            // ResolveCanonicalHex always emits a valid form, so this is
+            // defensive only: ignore and leave the wheel where it is.
         }
     }
 
@@ -755,10 +811,8 @@ public partial class SettingsWindow : Window
         BlurDisabledRadio.IsChecked = true;
         ThemeSystemRadio.IsChecked = true;
         OpacitySlider.Value = 100;
-        var defaultAccent = AccentColorManager.AvailableColors
-            .FirstOrDefault(c => c.Code == "blue")
-            ?? AccentColorManager.AvailableColors[0];
-        AccentColorCombo.SelectedItem = defaultAccent;
+        AccentColorBox.Text = AccentColorManager.DefaultAccentCode;
+        SyncAccentWheelFromHex(AccentColorManager.DefaultAccentCode);
         BrandingVisibleRadio.IsChecked = true;
 
         // Tabs
