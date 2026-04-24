@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Windows;
 using Tabu.Domain.Entities;
 using Tabu.Domain.Interfaces;
+using Tabu.Domain.Updates;
 using Tabu.UI.Views;
 
 namespace Tabu.UI.Services;
@@ -149,6 +150,18 @@ public sealed class UpdateOrchestrator
         try
         {
             await _updateService.DownloadInstallerAsync(update, destination).ConfigureAwait(false);
+        }
+        catch (InstallerIntegrityException)
+        {
+            // Hard-fail with a dedicated dialog: a digest mismatch is a
+            // strong signal of tampering or a corrupted CDN cache, not
+            // just a transient network glitch. The user must be told
+            // explicitly so they don't blindly retry.
+            await ShowMessageAsync(
+                LocalizedString("Update_IntegrityFailedTitle", "Update integrity check failed"),
+                LocalizedString("Update_IntegrityFailedBody", "The downloaded installer did not match the expected SHA-256 digest and was deleted. This may indicate the file was tampered with in transit. Please try again later."),
+                MessageBoxImage.Error).ConfigureAwait(false);
+            return;
         }
         catch
         {

@@ -46,6 +46,8 @@
     <sys:String x:Key="Update_AvailableBody">Доступна новая версия Tabu.&#x0a;&#x0a;Текущая: {0}&#x0a;Новая: {1}&#x0a;&#x0a;Скачать и установить сейчас?</sys:String>
     <sys:String x:Key="Update_DownloadFailedTitle">Не удалось обновить</sys:String>
     <sys:String x:Key="Update_DownloadFailedBody">Tabu не смог загрузить установщик. Повторите попытку позже.</sys:String>
+    <sys:String x:Key="Update_IntegrityFailedTitle">Проверка целостности не пройдена</sys:String>
+    <sys:String x:Key="Update_IntegrityFailedBody">Загруженный установщик не соответствует ожидаемому SHA-256 и был удалён. Возможно, файл был изменён при передаче. Повторите попытку позже.</sys:String>
     <sys:String x:Key="Update_LaunchFailedTitle">Не удалось обновить</sys:String>
     <sys:String x:Key="Update_LaunchFailedBody">Tabu не смог запустить установщик.</sys:String>
     <sys:String x:Key="Settings_Done">Готово</sys:String>

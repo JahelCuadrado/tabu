@@ -46,6 +46,8 @@
     <sys:String x:Key="Update_AvailableBody">Tabu 有新版本可用。&#x0a;&#x0a;当前版本：{0}&#x0a;最新版本：{1}&#x0a;&#x0a;立即下载并安装？</sys:String>
     <sys:String x:Key="Update_DownloadFailedTitle">更新失败</sys:String>
     <sys:String x:Key="Update_DownloadFailedBody">Tabu 无法下载安装程序，请稍后再试。</sys:String>
+    <sys:String x:Key="Update_IntegrityFailedTitle">完整性校验失败</sys:String>
+    <sys:String x:Key="Update_IntegrityFailedBody">下载的安装程序与预期的 SHA-256 摘要不匹配，已被删除。文件可能在传输过程中被篡改。请稍后再试。</sys:String>
     <sys:String x:Key="Update_LaunchFailedTitle">更新失败</sys:String>
     <sys:String x:Key="Update_LaunchFailedBody">Tabu 无法启动安装程序。</sys:String>
     <sys:String x:Key="Settings_Done">完成</sys:String>

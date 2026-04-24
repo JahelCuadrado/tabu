@@ -46,6 +46,8 @@
     <sys:String x:Key="Update_AvailableBody">Hay una nueva versión de Tabu disponible.&#x0a;&#x0a;Actual: {0}&#x0a;Nueva: {1}&#x0a;&#x0a;¿Descargar e instalar ahora?</sys:String>
     <sys:String x:Key="Update_DownloadFailedTitle">Error al actualizar</sys:String>
     <sys:String x:Key="Update_DownloadFailedBody">Tabu no pudo descargar el instalador. Inténtalo de nuevo más tarde.</sys:String>
+    <sys:String x:Key="Update_IntegrityFailedTitle">Verificación de integridad fallida</sys:String>
+    <sys:String x:Key="Update_IntegrityFailedBody">El instalador descargado no coincide con la firma SHA-256 esperada y se ha eliminado. Esto puede indicar que el archivo fue manipulado durante la descarga. Inténtalo de nuevo más tarde.</sys:String>
     <sys:String x:Key="Update_LaunchFailedTitle">Error al actualizar</sys:String>
     <sys:String x:Key="Update_LaunchFailedBody">Tabu no pudo iniciar el instalador.</sys:String>
     <sys:String x:Key="Settings_Done">Listo</sys:String>

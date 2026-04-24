@@ -46,6 +46,8 @@
     <sys:String x:Key="Update_AvailableBody">È disponibile una nuova versione di Tabu.&#x0a;&#x0a;Attuale: {0}&#x0a;Ultima: {1}&#x0a;&#x0a;Scaricare e installare ora?</sys:String>
     <sys:String x:Key="Update_DownloadFailedTitle">Aggiornamento non riuscito</sys:String>
     <sys:String x:Key="Update_DownloadFailedBody">Tabu non è riuscito a scaricare il programma di installazione. Riprova più tardi.</sys:String>
+    <sys:String x:Key="Update_IntegrityFailedTitle">Verifica di integrità non riuscita</sys:String>
+    <sys:String x:Key="Update_IntegrityFailedBody">Il programma di installazione scaricato non corrisponde all'hash SHA-256 previsto ed è stato eliminato. Il file potrebbe essere stato manomesso durante il trasferimento. Riprova più tardi.</sys:String>
     <sys:String x:Key="Update_LaunchFailedTitle">Aggiornamento non riuscito</sys:String>
     <sys:String x:Key="Update_LaunchFailedBody">Tabu non è riuscito ad avviare il programma di installazione.</sys:String>
     <sys:String x:Key="Settings_Done">Fatto</sys:String>

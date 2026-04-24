@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Tabu.Domain.Entities;
 using Tabu.Domain.Interfaces;
+using Tabu.Domain.Updates;
 
 namespace Tabu.Infrastructure.Updates;
 
@@ -261,9 +262,7 @@ public sealed class GitHubUpdateService : IUpdateService
             // never be executed by mistake on a later code path.
             try { File.Delete(filePath); } catch { /* not actionable */ }
 
-            throw new InvalidOperationException(
-                $"Installer integrity check failed. Expected SHA-256 {expectedHex}, computed {actual}. " +
-                "The downloaded file has been deleted.");
+            throw new InstallerIntegrityException(expectedHex, actual);
         }
     }
 

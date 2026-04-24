@@ -46,6 +46,8 @@
     <sys:String x:Key="Update_AvailableBody">Tabu の新しいバージョンが利用可能です。&#x0a;&#x0a;現在: {0}&#x0a;最新: {1}&#x0a;&#x0a;今すぐダウンロードしてインストールしますか？</sys:String>
     <sys:String x:Key="Update_DownloadFailedTitle">アップデートに失敗しました</sys:String>
     <sys:String x:Key="Update_DownloadFailedBody">インストーラーをダウンロードできませんでした。後でもう一度お試しください。</sys:String>
+    <sys:String x:Key="Update_IntegrityFailedTitle">整合性チェックに失敗しました</sys:String>
+    <sys:String x:Key="Update_IntegrityFailedBody">ダウンロードしたインストーラーが予期される SHA-256 ダイジェストと一致しなかったため削除されました。転送中にファイルが改ざんされた可能性があります。後でもう一度お試しください。</sys:String>
     <sys:String x:Key="Update_LaunchFailedTitle">アップデートに失敗しました</sys:String>
     <sys:String x:Key="Update_LaunchFailedBody">インストーラーを起動できませんでした。</sys:String>
     <sys:String x:Key="Settings_Done">完了</sys:String>
