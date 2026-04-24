@@ -19,6 +19,7 @@ public partial class App : System.Windows.Application
     private MainWindow? _primaryBar;
     private MainViewModel? _primaryViewModel;
     private MultiMonitorBarManager? _barManager;
+    private SettingsSyncMediator? _settingsSync;
     private readonly ThemeManager _themeManager = new();
     private readonly LocalizationManager _localizationManager = new();
     private readonly AccentColorManager _accentColorManager = new();
@@ -90,6 +91,8 @@ public partial class App : System.Windows.Application
             ActiveTabOpacity = saved.ActiveTabOpacity
         };
 
+        _settingsSync = new SettingsSyncMediator(_settingsRepository, _primaryViewModel);
+
         _primaryViewModel.BarPlacementChangeRequested += OnBarPlacementChangeRequested;
         _primaryViewModel.DetectionModeChangeRequested += OnDetectionModeChangeRequested;
         _primaryViewModel.ThemeChangeRequested += OnThemeChangeRequested;
@@ -123,8 +126,8 @@ public partial class App : System.Windows.Application
         _localizationManager.Apply(saved.Language);
 
         _accentColorManager.Apply(saved.AccentColor, IsDarkTheme(theme));
-        ApplyNotificationDotBrush(saved.NotificationDotColor);
-        ApplyActiveTabBrush(saved.ActiveTabColor, saved.ActiveTabOpacity);
+        SettingsSyncMediator.ApplyNotificationDotBrush(saved.NotificationDotColor);
+        SettingsSyncMediator.ApplyActiveTabBrush(saved.ActiveTabColor, saved.ActiveTabOpacity);
 
         if (saved.IsBarOnAllMonitors)
         {
@@ -228,8 +231,8 @@ public partial class App : System.Windows.Application
             // The dot brush either follows the accent (empty user color)
             // or stays on its hex override. Re-evaluate so the change is
             // visible immediately when the user is on accent-follow mode.
-            ApplyNotificationDotBrush(_primaryViewModel?.NotificationDotColor ?? string.Empty);
-            ApplyActiveTabBrush(
+            SettingsSyncMediator.ApplyNotificationDotBrush(_primaryViewModel?.NotificationDotColor ?? string.Empty);
+            SettingsSyncMediator.ApplyActiveTabBrush(
                 _primaryViewModel?.ActiveTabColor ?? string.Empty,
                 _primaryViewModel?.ActiveTabOpacity ?? 100);
         });
@@ -282,7 +285,7 @@ public partial class App : System.Windows.Application
     {
         Dispatcher.BeginInvoke(() =>
         {
-            ApplyNotificationDotBrush(hex);
+            SettingsSyncMediator.ApplyNotificationDotBrush(hex);
             _barManager?.Broadcast(vm => vm.NotificationDotColor = hex);
         });
         PersistSettings();
@@ -297,7 +300,7 @@ public partial class App : System.Windows.Application
     {
         Dispatcher.BeginInvoke(() =>
         {
-            ApplyActiveTabBrush(hex, _primaryViewModel?.ActiveTabOpacity ?? 100);
+            SettingsSyncMediator.ApplyActiveTabBrush(hex, _primaryViewModel?.ActiveTabOpacity ?? 100);
             _barManager?.Broadcast(vm => vm.ActiveTabColor = hex);
         });
         PersistSettings();
@@ -311,73 +314,19 @@ public partial class App : System.Windows.Application
     {
         Dispatcher.BeginInvoke(() =>
         {
-            ApplyActiveTabBrush(_primaryViewModel?.ActiveTabColor ?? string.Empty, opacity);
+            SettingsSyncMediator.ApplyActiveTabBrush(_primaryViewModel?.ActiveTabColor ?? string.Empty, opacity);
             _barManager?.Broadcast(vm => vm.ActiveTabOpacity = opacity);
         });
         PersistSettings();
     }
 
     /// <summary>
-    /// Updates the global <c>NotificationDotBrush</c> resource. When
-    /// <paramref name="hex"/> is empty or invalid the brush mirrors the
-    /// current <c>AccentBrush</c>; otherwise the parsed color wins.
+    /// Brush helpers and the settings-snapshot writer live in
+    /// <see cref="SettingsSyncMediator"/>; this method is just a stable
+    /// hook for the change handlers above so they don't need to know
+    /// about the mediator's existence.
     /// </summary>
-    private static void ApplyNotificationDotBrush(string hex)
-    {
-        var resources = System.Windows.Application.Current.Resources;
-        System.Windows.Media.Brush brush;
-        if (!string.IsNullOrWhiteSpace(hex) && TryParseHexColor(hex, out var color))
-        {
-            brush = new System.Windows.Media.SolidColorBrush(color);
-        }
-        else if (resources["AccentBrush"] is System.Windows.Media.Brush accent)
-        {
-            brush = accent;
-        }
-        else
-        {
-            brush = System.Windows.Media.Brushes.DodgerBlue;
-        }
-        resources["NotificationDotBrush"] = brush;
-    }
-
-    /// <summary>
-    /// Updates the global <c>ActiveTabBackgroundBrush</c> resource. The
-    /// alpha channel is derived from the opacity slider (0–100). When
-    /// <paramref name="hex"/> is empty the active tab follows the current
-    /// accent color, replicating the original "no override" behaviour.
-    /// </summary>
-    private static void ApplyActiveTabBrush(string hex, double opacityPercent)
-    {
-        var resources = System.Windows.Application.Current.Resources;
-        var alpha = (byte)Math.Clamp((int)Math.Round(opacityPercent * 2.55), 0, 255);
-
-        System.Windows.Media.Color baseColor;
-        if (!string.IsNullOrWhiteSpace(hex) && TryParseHexColor(hex, out var parsed))
-        {
-            baseColor = parsed;
-        }
-        else if (resources["AccentBrush"] is System.Windows.Media.SolidColorBrush accent)
-        {
-            baseColor = accent.Color;
-        }
-        else
-        {
-            baseColor = System.Windows.Media.Colors.DodgerBlue;
-        }
-
-        var finalColor = System.Windows.Media.Color.FromArgb(alpha, baseColor.R, baseColor.G, baseColor.B);
-        var brush = new System.Windows.Media.SolidColorBrush(finalColor);
-        resources["ActiveTabBackgroundBrush"] = brush;
-        // Blur mode uses a dedicated brush so the selected tab keeps a
-        // legible contrast over the acrylic backdrop. Mirror the user's
-        // tint there as well — otherwise the slider/color appears to do
-        // nothing while blur is on.
-        resources["ActiveTabBackgroundBlurBrush"] = brush;
-    }
-
-    private static bool TryParseHexColor(string hex, out System.Windows.Media.Color color)
-        => ColorParser.TryParse(hex, out color);
+    private void PersistSettings() => _settingsSync?.Persist();
 
     private void OnBlurEffectChangeRequested(bool enabled)
     {
@@ -577,40 +526,4 @@ public partial class App : System.Windows.Application
         AppTheme.Dark => true,
         _ => ThemeManager.IsSystemDarkMode()
     };
-
-    private void PersistSettings()
-    {
-        if (_primaryViewModel is null) return;
-
-        var settings = new UserSettings
-        {
-            IsBarOnAllMonitors = _primaryViewModel.IsBarOnAllMonitors,
-            IsDetectSameScreenOnly = _primaryViewModel.IsDetectSameScreenOnly,
-            AppTheme = _primaryViewModel.AppTheme.ToString(),
-            BarOpacity = _primaryViewModel.BarOpacity,
-            UseFixedTabWidth = _primaryViewModel.UseFixedTabWidth,
-            ShowBranding = _primaryViewModel.ShowBranding,
-            Language = _primaryViewModel.Language,
-            AccentColor = _primaryViewModel.AccentColor,
-            AutoHideBar = _primaryViewModel.AutoHideBar,
-            LaunchAtStartup = _primaryViewModel.LaunchAtStartup,
-            ShowClock = _primaryViewModel.ShowClock,
-            ClockSize = _primaryViewModel.ClockSize.ToString(),
-            ShowNotificationBadges = _primaryViewModel.ShowNotificationBadges,
-            NotificationDotSize = (int)_primaryViewModel.NotificationDotSize,
-            NotificationDotColor = _primaryViewModel.NotificationDotColor,
-            BarSize = _primaryViewModel.BarSize.ToString(),
-            UseBlurEffect = _primaryViewModel.UseBlurEffect,
-            BlurMode = _primaryViewModel.BlurMode,
-            AutoCheckUpdates = _primaryViewModel.AutoCheckUpdates,
-            ActiveTabColor = _primaryViewModel.ActiveTabColor,
-            ActiveTabOpacity = (int)_primaryViewModel.ActiveTabOpacity
-        };
-
-        Task.Run(() =>
-        {
-            try { _settingsRepository.Save(settings); }
-            catch { /* Silently ignore file write failures */ }
-        });
-    }
 }
