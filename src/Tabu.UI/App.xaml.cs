@@ -18,7 +18,7 @@ public partial class App : System.Windows.Application
     private readonly IHost _host;
     private MainWindow? _primaryBar;
     private MainViewModel? _primaryViewModel;
-    private readonly List<MainWindow> _secondaryBars = new();
+    private MultiMonitorBarManager? _barManager;
     private readonly ThemeManager _themeManager = new();
     private readonly LocalizationManager _localizationManager = new();
     private readonly AccentColorManager _accentColorManager = new();
@@ -62,6 +62,7 @@ public partial class App : System.Windows.Application
 
         var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
         _settingsRepository = _host.Services.GetRequiredService<ISettingsRepository>();
+        _barManager = new MultiMonitorBarManager(switcher);
 
         var saved = _settingsRepository.Load();
 
@@ -196,46 +197,19 @@ public partial class App : System.Windows.Application
 
     private void OnOpacityChangeRequested(double opacity)
     {
-        Dispatcher.BeginInvoke(() =>
-        {
-            foreach (var bar in _secondaryBars)
-            {
-                if (bar.DataContext is MainViewModel vm)
-                {
-                    vm.BarOpacity = opacity;
-                }
-            }
-        });
+        Dispatcher.BeginInvoke(() => _barManager?.Broadcast(vm => vm.BarOpacity = opacity));
         PersistSettings();
     }
 
     private void OnTabWidthChangeRequested(bool useFixed)
     {
-        Dispatcher.BeginInvoke(() =>
-        {
-            foreach (var bar in _secondaryBars)
-            {
-                if (bar.DataContext is MainViewModel vm)
-                {
-                    vm.UseFixedTabWidth = useFixed;
-                }
-            }
-        });
+        Dispatcher.BeginInvoke(() => _barManager?.Broadcast(vm => vm.UseFixedTabWidth = useFixed));
         PersistSettings();
     }
 
     private void OnBrandingChangeRequested(bool show)
     {
-        Dispatcher.BeginInvoke(() =>
-        {
-            foreach (var bar in _secondaryBars)
-            {
-                if (bar.DataContext is MainViewModel vm)
-                {
-                    vm.ShowBranding = show;
-                }
-            }
-        });
+        Dispatcher.BeginInvoke(() => _barManager?.Broadcast(vm => vm.ShowBranding = show));
         PersistSettings();
     }
 
@@ -264,16 +238,7 @@ public partial class App : System.Windows.Application
 
     private void OnAutoHideChangeRequested(bool autoHide)
     {
-        Dispatcher.BeginInvoke(() =>
-        {
-            foreach (var bar in _secondaryBars)
-            {
-                if (bar.DataContext is MainViewModel vm)
-                {
-                    vm.AutoHideBar = autoHide;
-                }
-            }
-        });
+        Dispatcher.BeginInvoke(() => _barManager?.Broadcast(vm => vm.AutoHideBar = autoHide));
         PersistSettings();
     }
 
@@ -285,76 +250,31 @@ public partial class App : System.Windows.Application
 
     private void OnClockVisibilityChangeRequested(bool show)
     {
-        Dispatcher.BeginInvoke(() =>
-        {
-            foreach (var bar in _secondaryBars)
-            {
-                if (bar.DataContext is MainViewModel vm)
-                {
-                    vm.ShowClock = show;
-                }
-            }
-        });
+        Dispatcher.BeginInvoke(() => _barManager?.Broadcast(vm => vm.ShowClock = show));
         PersistSettings();
     }
 
     private void OnBarSizeChangeRequested(BarSize size)
     {
-        Dispatcher.BeginInvoke(() =>
-        {
-            foreach (var bar in _secondaryBars)
-            {
-                if (bar.DataContext is MainViewModel vm)
-                {
-                    vm.BarSize = size;
-                }
-            }
-        });
+        Dispatcher.BeginInvoke(() => _barManager?.Broadcast(vm => vm.BarSize = size));
         PersistSettings();
     }
 
     private void OnClockSizeChangeRequested(ClockSize size)
     {
-        Dispatcher.BeginInvoke(() =>
-        {
-            foreach (var bar in _secondaryBars)
-            {
-                if (bar.DataContext is MainViewModel vm)
-                {
-                    vm.ClockSize = size;
-                }
-            }
-        });
+        Dispatcher.BeginInvoke(() => _barManager?.Broadcast(vm => vm.ClockSize = size));
         PersistSettings();
     }
 
     private void OnNotificationBadgesChangeRequested(bool show)
     {
-        Dispatcher.BeginInvoke(() =>
-        {
-            foreach (var bar in _secondaryBars)
-            {
-                if (bar.DataContext is MainViewModel vm)
-                {
-                    vm.ShowNotificationBadges = show;
-                }
-            }
-        });
+        Dispatcher.BeginInvoke(() => _barManager?.Broadcast(vm => vm.ShowNotificationBadges = show));
         PersistSettings();
     }
 
     private void OnNotificationDotSizeChangeRequested(double size)
     {
-        Dispatcher.BeginInvoke(() =>
-        {
-            foreach (var bar in _secondaryBars)
-            {
-                if (bar.DataContext is MainViewModel vm)
-                {
-                    vm.NotificationDotSize = size;
-                }
-            }
-        });
+        Dispatcher.BeginInvoke(() => _barManager?.Broadcast(vm => vm.NotificationDotSize = size));
         PersistSettings();
     }
 
@@ -363,13 +283,7 @@ public partial class App : System.Windows.Application
         Dispatcher.BeginInvoke(() =>
         {
             ApplyNotificationDotBrush(hex);
-            foreach (var bar in _secondaryBars)
-            {
-                if (bar.DataContext is MainViewModel vm)
-                {
-                    vm.NotificationDotColor = hex;
-                }
-            }
+            _barManager?.Broadcast(vm => vm.NotificationDotColor = hex);
         });
         PersistSettings();
     }
@@ -384,13 +298,7 @@ public partial class App : System.Windows.Application
         Dispatcher.BeginInvoke(() =>
         {
             ApplyActiveTabBrush(hex, _primaryViewModel?.ActiveTabOpacity ?? 100);
-            foreach (var bar in _secondaryBars)
-            {
-                if (bar.DataContext is MainViewModel vm)
-                {
-                    vm.ActiveTabColor = hex;
-                }
-            }
+            _barManager?.Broadcast(vm => vm.ActiveTabColor = hex);
         });
         PersistSettings();
     }
@@ -404,13 +312,7 @@ public partial class App : System.Windows.Application
         Dispatcher.BeginInvoke(() =>
         {
             ApplyActiveTabBrush(_primaryViewModel?.ActiveTabColor ?? string.Empty, opacity);
-            foreach (var bar in _secondaryBars)
-            {
-                if (bar.DataContext is MainViewModel vm)
-                {
-                    vm.ActiveTabOpacity = opacity;
-                }
-            }
+            _barManager?.Broadcast(vm => vm.ActiveTabOpacity = opacity);
         });
         PersistSettings();
     }
@@ -490,13 +392,7 @@ public partial class App : System.Windows.Application
                 _primaryViewModel.AppTheme = AppTheme.Dark;
             }
 
-            foreach (var bar in _secondaryBars)
-            {
-                if (bar.DataContext is MainViewModel vm)
-                {
-                    vm.UseBlurEffect = enabled;
-                }
-            }
+            _barManager?.Broadcast(vm => vm.UseBlurEffect = enabled);
         });
         PersistSettings();
     }
@@ -519,84 +415,19 @@ public partial class App : System.Windows.Application
 
     private void ApplyDetectionMode(bool sameScreenOnly)
     {
-        var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
-        var screens = switcher.GetAllScreens();
-        var primaryScreen = screens.FirstOrDefault(s => s.IsPrimary);
-
-        if (_primaryViewModel is not null)
-        {
-            _primaryViewModel.MonitorFilter = sameScreenOnly && primaryScreen is not null
-                ? primaryScreen.Handle
-                : null;
-        }
-
-        foreach (var bar in _secondaryBars)
-        {
-            if (bar.DataContext is MainViewModel vm)
-            {
-                vm.MonitorFilter = sameScreenOnly && bar.TargetScreen is not null
-                    ? bar.TargetScreen.Handle
-                    : null;
-            }
-        }
+        if (_primaryViewModel is null || _barManager is null) return;
+        _barManager.ApplyDetectionMode(sameScreenOnly, _primaryViewModel);
     }
 
     private void ActivateAllMonitorBars()
     {
-        var switcher = _host.Services.GetRequiredService<WindowSwitcher>();
-        var screens = switcher.GetAllScreens();
-        var primaryScreen = screens.FirstOrDefault(s => s.IsPrimary);
-        bool sameScreen = _primaryViewModel?.IsDetectSameScreenOnly ?? false;
-
-        if (_primaryViewModel is not null && primaryScreen is not null)
-        {
-            _primaryViewModel.MonitorFilter = sameScreen ? primaryScreen.Handle : null;
-        }
-
-        foreach (var screen in screens.Where(s => !s.IsPrimary))
-        {
-            var vm = new MainViewModel(switcher, startPolling: false)
-            {
-                MonitorFilter = sameScreen ? screen.Handle : null,
-                IsBarOnAllMonitors = true,
-                IsDetectSameScreenOnly = sameScreen,
-                BarOpacity = _primaryViewModel?.BarOpacity ?? 1.0,
-                UseFixedTabWidth = _primaryViewModel?.UseFixedTabWidth ?? false,
-                ShowBranding = _primaryViewModel?.ShowBranding ?? true,
-                Language = _primaryViewModel?.Language ?? "en",
-                AccentColor = _primaryViewModel?.AccentColor ?? "purple",
-                AutoHideBar = _primaryViewModel?.AutoHideBar ?? false,
-                ShowClock = _primaryViewModel?.ShowClock ?? true,
-                ClockSize = _primaryViewModel?.ClockSize ?? ClockSize.Small,
-                ShowNotificationBadges = _primaryViewModel?.ShowNotificationBadges ?? true,
-                NotificationDotSize = _primaryViewModel?.NotificationDotSize ?? 7,
-                NotificationDotColor = _primaryViewModel?.NotificationDotColor ?? string.Empty,
-                BarSize = _primaryViewModel?.BarSize ?? BarSize.Small,
-                UseBlurEffect = _primaryViewModel?.UseBlurEffect ?? false,
-                BlurMode = _primaryViewModel?.BlurMode ?? "Acrylic",
-                AutoCheckUpdates = _primaryViewModel?.AutoCheckUpdates ?? true,
-                ActiveTabColor = _primaryViewModel?.ActiveTabColor ?? string.Empty,
-                ActiveTabOpacity = _primaryViewModel?.ActiveTabOpacity ?? 100
-            };
-
-            var bar = new MainWindow(vm) { TargetScreen = screen, IsPrimary = false };
-            bar.Show();
-            _secondaryBars.Add(bar);
-        }
+        if (_primaryViewModel is null || _barManager is null) return;
+        _barManager.ActivateAll(_primaryViewModel);
     }
 
     private void DeactivateSecondaryBars()
     {
-        foreach (var bar in _secondaryBars)
-        {
-            bar.Close();
-        }
-        _secondaryBars.Clear();
-
-        if (_primaryViewModel is not null)
-        {
-            _primaryViewModel.MonitorFilter = null;
-        }
+        _barManager?.Deactivate(_primaryViewModel);
     }
 
     protected override void OnExit(ExitEventArgs e)
