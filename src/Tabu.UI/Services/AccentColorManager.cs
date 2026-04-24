@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Media;
+using Tabu.UI.Helpers;
 
 namespace Tabu.UI.Services;
 
@@ -36,8 +37,12 @@ public sealed class AccentColorManager
 
         var resources = System.Windows.Application.Current.Resources;
 
-        var accent = (Color)ColorConverter.ConvertFromString(option.Hex);
-        var hover = (Color)ColorConverter.ConvertFromString(option.HoverHex);
+        // ColorParser.TryParse is the exception-safe shim around
+        // ColorConverter.ConvertFromString; it never throws on a malformed
+        // catalog entry. The fallback (DodgerBlue) keeps the UI legible if
+        // someone ever introduces a typo in AvailableColors.
+        if (!ColorParser.TryParse(option.Hex, out var accent)) accent = Colors.DodgerBlue;
+        if (!ColorParser.TryParse(option.HoverHex, out var hover)) hover = accent;
 
         resources["AccentColor"] = accent;
         resources["AccentHoverColor"] = hover;

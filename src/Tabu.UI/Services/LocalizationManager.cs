@@ -27,6 +27,14 @@ public sealed class LocalizationManager
 
     public void Apply(string languageCode)
     {
+        // Whitelist guard: a tampered settings.json could otherwise inject
+        // a relative URI that resolves to an unintended embedded resource.
+        // Falling back to English keeps the UI usable on any unknown code.
+        var resolved = AvailableLanguages.Any(l =>
+            string.Equals(l.Code, languageCode, StringComparison.OrdinalIgnoreCase))
+            ? languageCode
+            : "en";
+
         var mergedDictionaries = System.Windows.Application.Current.Resources.MergedDictionaries;
 
         if (_currentLocale is not null)
@@ -34,7 +42,7 @@ public sealed class LocalizationManager
             mergedDictionaries.Remove(_currentLocale);
         }
 
-        var source = $"{LocalePrefix}{languageCode}{LocaleSuffix}";
+        var source = $"{LocalePrefix}{resolved}{LocaleSuffix}";
         var newLocale = new ResourceDictionary
         {
             Source = new System.Uri(source, System.UriKind.Relative)

@@ -36,6 +36,8 @@ public sealed class MainViewModel : ObservableObject
     private bool _showNotificationBadges = true;
     private double _notificationDotSize = 7;
     private string _notificationDotColor = string.Empty;
+    private string _activeTabColor = string.Empty;
+    private double _activeTabOpacity = 100;
 
     public ObservableCollection<TabViewModel> Tabs { get; } = new();
 
@@ -328,10 +330,54 @@ public sealed class MainViewModel : ObservableObject
         get => _notificationDotColor;
         set
         {
-            var normalised = string.IsNullOrWhiteSpace(value) ? string.Empty : value.Trim().ToUpperInvariant();
+            // Whitelist: only persist a strict #RRGGBB value, otherwise
+            // collapse to empty (the "follow accent" sentinel). Prevents
+            // arbitrary strings from being round-tripped through disk.
+            var normalised = Helpers.ColorParser.IsValidHex(value?.Trim())
+                ? value!.Trim().ToUpperInvariant()
+                : string.Empty;
             if (SetProperty(ref _notificationDotColor, normalised))
             {
                 NotificationDotColorChangeRequested?.Invoke(normalised);
+            }
+        }
+    }
+
+    /// <summary>
+    /// User-chosen background color for the active tab, as <c>#RRGGBB</c>.
+    /// Empty means "use the current accent color" — preserves the legacy
+    /// behaviour for users who never opened the new control.
+    /// </summary>
+    public string ActiveTabColor
+    {
+        get => _activeTabColor;
+        set
+        {
+            // Same defensive whitelist as NotificationDotColor — keep the
+            // two setters in sync to avoid divergent persistence rules.
+            var normalised = Helpers.ColorParser.IsValidHex(value?.Trim())
+                ? value!.Trim().ToUpperInvariant()
+                : string.Empty;
+            if (SetProperty(ref _activeTabColor, normalised))
+            {
+                ActiveTabColorChangeRequested?.Invoke(normalised);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Background opacity (percent, 0–100) of the active tab. Clamps the
+    /// raw slider value before persisting so disk values stay sane.
+    /// </summary>
+    public double ActiveTabOpacity
+    {
+        get => _activeTabOpacity;
+        set
+        {
+            var clamped = Math.Clamp(Math.Round(value), 0, 100);
+            if (SetProperty(ref _activeTabOpacity, clamped))
+            {
+                ActiveTabOpacityChangeRequested?.Invoke(clamped);
             }
         }
     }
@@ -357,7 +403,15 @@ public sealed class MainViewModel : ObservableObject
     public ICommand PrevTabCommand { get; }
     public ICommand GoToTabCommand { get; }
     public ICommand CloseTabCommand { get; }
+    public ICommand CloseAllTabsCommand { get; }
     public ICommand CheckForUpdatesCommand { get; }
+
+    /// <summary>
+    /// Raised when the user activates the bar's “Close all” action.
+    /// The View handles confirmation + dispatches the actual close.
+    /// Kept as an event so the VM stays free of WPF MessageBox.
+    /// </summary>
+    public event Action? CloseAllTabsRequested;
 
     /// <summary>
     /// Moves the source tab to the position of the target tab.
@@ -388,6 +442,8 @@ public sealed class MainViewModel : ObservableObject
     public event Action<bool>? NotificationBadgesChangeRequested;
     public event Action<double>? NotificationDotSizeChangeRequested;
     public event Action<string>? NotificationDotColorChangeRequested;
+    public event Action<string>? ActiveTabColorChangeRequested;
+    public event Action<double>? ActiveTabOpacityChangeRequested;
     /// <summary>Raised when the user explicitly asks to check for a new release.</summary>
     public event Action? ManualUpdateCheckRequested;
 
@@ -400,6 +456,7 @@ public sealed class MainViewModel : ObservableObject
         PrevTabCommand = new RelayCommand(PrevTab);
         GoToTabCommand = new RelayCommand(p => GoToTab(p));
         CloseTabCommand = new RelayCommand(p => CloseTab(p as TabViewModel));
+        CloseAllTabsCommand = new RelayCommand(_ => CloseAllTabsRequested?.Invoke());
         CheckForUpdatesCommand = new RelayCommand(_ => ManualUpdateCheckRequested?.Invoke());
 
         _switcher.WindowsChanged += OnWindowsChanged;
