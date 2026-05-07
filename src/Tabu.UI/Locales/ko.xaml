@@ -57,7 +57,8 @@
     <sys:String x:Key="MainBar_CloseAllApps">모든 앱 닫기</sys:String>
     <sys:String x:Key="MainBar_CloseAllConfirmTitle">모든 앱 닫기</sys:String>
     <sys:String x:Key="MainBar_CloseAllConfirmBody">Tabu가 열려 있는 {0}개의 앱에 종료를 요청합니다. 각 앱이 저장하지 않은 작업을 저장하도록 요청할 수 있습니다. 계속하시겠습니까?</sys:String>
-    <sys:String x:Key="Dialog_Yes">예, 닫기</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmYes">예, 모두 닫기</sys:String>
+    <sys:String x:Key="Dialog_Yes">예</sys:String>
     <sys:String x:Key="Dialog_No">취소</sys:String>
     <sys:String x:Key="Dialog_Ok">확인</sys:String>
     <sys:String x:Key="Tab_Close">닫기</sys:String>

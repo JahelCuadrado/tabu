@@ -57,7 +57,8 @@
     <sys:String x:Key="MainBar_CloseAllApps">すべてのアプリを閉じる</sys:String>
     <sys:String x:Key="MainBar_CloseAllConfirmTitle">すべてのアプリを閉じる</sys:String>
     <sys:String x:Key="MainBar_CloseAllConfirmBody">Tabu は開いている {0} 個のアプリに閉じるよう要求します。各アプリは未保存の作業の保存を促す場合があります。続行しますか？</sys:String>
-    <sys:String x:Key="Dialog_Yes">はい、閉じる</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmYes">はい、すべて閉じる</sys:String>
+    <sys:String x:Key="Dialog_Yes">はい</sys:String>
     <sys:String x:Key="Dialog_No">キャンセル</sys:String>
     <sys:String x:Key="Dialog_Ok">OK</sys:String>
     <sys:String x:Key="Tab_Close">閉じる</sys:String>

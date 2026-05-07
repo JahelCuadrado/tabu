@@ -731,7 +731,7 @@ public partial class MainWindow : Window
 
         var body = string.Format(System.Globalization.CultureInfo.CurrentCulture, bodyTemplate, count);
 
-        var yesText = TryFindResource("Dialog_Yes") as string ?? "Yes";
+        var yesText = TryFindResource("MainBar_CloseAllConfirmYes") as string ?? "Yes, close them";
         var noText = TryFindResource("Dialog_No") as string ?? "Cancel";
 
         var result = TabuDialog.Show(

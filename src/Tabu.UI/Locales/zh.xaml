@@ -57,7 +57,8 @@
     <sys:String x:Key="MainBar_CloseAllApps">关闭所有应用</sys:String>
     <sys:String x:Key="MainBar_CloseAllConfirmTitle">关闭所有应用</sys:String>
     <sys:String x:Key="MainBar_CloseAllConfirmBody">Tabu 将请求关闭 {0} 个打开的应用。每个应用可能会提示保存未保存的工作。是否继续？</sys:String>
-    <sys:String x:Key="Dialog_Yes">是，全部关闭</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmYes">是，全部关闭</sys:String>
+    <sys:String x:Key="Dialog_Yes">是</sys:String>
     <sys:String x:Key="Dialog_No">取消</sys:String>
     <sys:String x:Key="Dialog_Ok">确定</sys:String>
     <sys:String x:Key="Tab_Close">关闭</sys:String>

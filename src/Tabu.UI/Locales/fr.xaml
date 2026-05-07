@@ -57,7 +57,8 @@
     <sys:String x:Key="MainBar_CloseAllApps">Fermer toutes les applications</sys:String>
     <sys:String x:Key="MainBar_CloseAllConfirmTitle">Fermer toutes les applications</sys:String>
     <sys:String x:Key="MainBar_CloseAllConfirmBody">Tabu demandera à {0} application(s) ouverte(s) de se fermer. Chaque application peut vous demander d’enregistrer le travail non enregistré. Continuer ?</sys:String>
-    <sys:String x:Key="Dialog_Yes">Oui, fermer</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmYes">Oui, toutes fermer</sys:String>
+    <sys:String x:Key="Dialog_Yes">Oui</sys:String>
     <sys:String x:Key="Dialog_No">Annuler</sys:String>
     <sys:String x:Key="Dialog_Ok">OK</sys:String>
     <sys:String x:Key="Tab_Close">Fermer</sys:String>

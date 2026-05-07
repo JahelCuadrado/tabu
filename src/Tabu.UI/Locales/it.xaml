@@ -57,7 +57,8 @@
     <sys:String x:Key="MainBar_CloseAllApps">Chiudi tutte le app</sys:String>
     <sys:String x:Key="MainBar_CloseAllConfirmTitle">Chiudi tutte le app</sys:String>
     <sys:String x:Key="MainBar_CloseAllConfirmBody">Tabu chiederà a {0} app aperta/e di chiudersi. Ogni app potrebbe chiederti di salvare il lavoro non salvato. Continuare?</sys:String>
-    <sys:String x:Key="Dialog_Yes">Sì, chiudi</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmYes">Sì, chiudi tutte</sys:String>
+    <sys:String x:Key="Dialog_Yes">Sì</sys:String>
     <sys:String x:Key="Dialog_No">Annulla</sys:String>
     <sys:String x:Key="Dialog_Ok">OK</sys:String>
     <sys:String x:Key="Tab_Close">Chiudi</sys:String>

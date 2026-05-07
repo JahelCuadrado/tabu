@@ -57,7 +57,8 @@
     <sys:String x:Key="MainBar_CloseAllApps">Alle Apps schließen</sys:String>
     <sys:String x:Key="MainBar_CloseAllConfirmTitle">Alle Apps schließen</sys:String>
     <sys:String x:Key="MainBar_CloseAllConfirmBody">Tabu fordert {0} geöffnete App(s) zum Schließen auf. Jede App kann zum Speichern nicht gespeicherter Arbeit auffordern. Fortfahren?</sys:String>
-    <sys:String x:Key="Dialog_Yes">Ja, schließen</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmYes">Ja, alle schließen</sys:String>
+    <sys:String x:Key="Dialog_Yes">Ja</sys:String>
     <sys:String x:Key="Dialog_No">Abbrechen</sys:String>
     <sys:String x:Key="Dialog_Ok">OK</sys:String>
     <sys:String x:Key="Tab_Close">Schließen</sys:String>

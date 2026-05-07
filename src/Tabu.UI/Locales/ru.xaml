@@ -57,7 +57,8 @@
     <sys:String x:Key="MainBar_CloseAllApps">Закрыть все приложения</sys:String>
     <sys:String x:Key="MainBar_CloseAllConfirmTitle">Закрыть все приложения</sys:String>
     <sys:String x:Key="MainBar_CloseAllConfirmBody">Tabu попросит {0} открытое/ых приложение/я закрыться. Каждое приложение может попросить сохранить несохранённую работу. Продолжить?</sys:String>
-    <sys:String x:Key="Dialog_Yes">Да, закрыть</sys:String>
+    <sys:String x:Key="MainBar_CloseAllConfirmYes">Да, закрыть все</sys:String>
+    <sys:String x:Key="Dialog_Yes">Да</sys:String>
     <sys:String x:Key="Dialog_No">Отмена</sys:String>
     <sys:String x:Key="Dialog_Ok">OK</sys:String>
     <sys:String x:Key="Tab_Close">Закрыть</sys:String>
