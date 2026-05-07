@@ -183,6 +183,47 @@ public sealed class WindowDetector : IWindowDetector
         }
     }
 
+    /// <inheritdoc />
+    public bool ForceBringToFront(TrackedWindow window)
+    {
+        var hwnd = window.Handle;
+        if (hwnd == IntPtr.Zero || !NativeMethods.IsWindow(hwnd)) return false;
+
+        if (NativeMethods.IsIconic(hwnd))
+        {
+            NativeMethods.ShowWindow(hwnd, NativeMethods.SW_RESTORE);
+        }
+
+        // Break the foreground lock by injecting a synthetic key-up
+        // event. Windows requires "recent user input" before granting
+        // SetForegroundWindow; the null keystroke satisfies this check
+        // without producing visible effects (VK 0 is undefined).
+        NativeMethods.keybd_event(0, 0, NativeMethods.KEYEVENTF_EXTENDEDKEY | NativeMethods.KEYEVENTF_KEYUP, 0);
+
+        // Allow any process to grab foreground (belt-and-suspenders).
+        NativeMethods.AllowSetForegroundWindow(NativeMethods.ASFW_ANY);
+
+        var foreground = NativeMethods.GetForegroundWindow();
+        var foregroundThread = NativeMethods.GetWindowThreadProcessId(foreground, out _);
+        var currentThread = NativeMethods.GetCurrentThreadId();
+
+        if (foregroundThread != currentThread)
+        {
+            NativeMethods.AttachThreadInput(currentThread, foregroundThread, true);
+            NativeMethods.SetForegroundWindow(hwnd);
+            NativeMethods.SetFocus(hwnd);
+            NativeMethods.AttachThreadInput(currentThread, foregroundThread, false);
+        }
+        else
+        {
+            NativeMethods.SetForegroundWindow(hwnd);
+            NativeMethods.SetFocus(hwnd);
+        }
+
+        // Check if the activation actually succeeded.
+        return NativeMethods.GetForegroundWindow() == hwnd;
+    }
+
     public void MinimizeWindow(TrackedWindow window)
     {
         if (window.Handle == IntPtr.Zero) return;

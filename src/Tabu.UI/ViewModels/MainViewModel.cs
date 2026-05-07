@@ -503,6 +503,18 @@ public sealed class MainViewModel : ObservableObject
         _switcher.SwitchTo(tab.Model);
     }
 
+    /// <summary>
+    /// Activates the window behind a tab using the forced foreground path
+    /// designed for OLE drag-drop scenarios. Unlike <see cref="SwitchTo"/>,
+    /// this does NOT optimistically set <c>IsActive</c> — the normal
+    /// polling cycle will detect and reflect the real foreground state,
+    /// avoiding the flicker caused by SetForegroundWindow failing mid-drag.
+    /// </summary>
+    public void ActivateTabDuringDrag(TabViewModel tab)
+    {
+        _switcher.ActivateWindowDuringDrag(tab.Model);
+    }
+
     private void CloseTab(TabViewModel? tab)
     {
         if (tab is null) return;

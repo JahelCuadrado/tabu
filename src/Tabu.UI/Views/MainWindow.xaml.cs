@@ -46,6 +46,11 @@ public partial class MainWindow : Window
     private TranslateTransform? _dragTranslate;
     private int _dragOriginalIdx;
 
+    // External drag-hover activation (Windows-taskbar-like). When the user
+    // drags an arbitrary payload (file, text, URL, ...) over a tab we
+    // immediately bring the owning window to the foreground so they can
+    // drop onto its real surface.
+
     private MainViewModel ViewModel => (MainViewModel)DataContext;
 
     public ScreenInfo? TargetScreen { get; set; }
@@ -369,6 +374,57 @@ public partial class MainWindow : Window
             border.CaptureMouse();
         }
     }
+
+    #region External Drag Hover Activation
+
+    /// <summary>
+    /// Mirrors the Windows taskbar UX: when the user drags a payload over
+    /// a tab and dwells, we activate the owning window so they can drop
+    /// onto its real surface. We never consume the data - effects stay
+    /// at <see cref="DragDropEffects.None"/> at the tab level so the
+    /// destination application is the one negotiating the drop.
+    /// </summary>
+    private void Tab_DragEnter(object sender, DragEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.DataContext is TabViewModel tab)
+        {
+            ActivateTabFromDrag(tab);
+        }
+        // Link semantically conveys "this gesture redirects to another
+        // surface" — cursor shows a normal arrow with a small link badge
+        // instead of the no-drop circle. The actual data transfer happens
+        // when the user releases on the activated window, not on Tabu.
+        e.Effects = DragDropEffects.Link;
+        e.Handled = true;
+    }
+
+    private void Tab_DragOver(object sender, DragEventArgs e)
+    {
+        e.Effects = DragDropEffects.Link;
+        e.Handled = true;
+    }
+
+    private void Tab_DragLeave(object sender, DragEventArgs e)
+    {
+        e.Handled = true;
+    }
+
+    private void Tab_Drop(object sender, DragEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.DataContext is TabViewModel tab)
+        {
+            ActivateTabFromDrag(tab);
+        }
+        e.Effects = DragDropEffects.Link;
+        e.Handled = true;
+    }
+
+    private void ActivateTabFromDrag(TabViewModel tab)
+    {
+        ViewModel.ActivateTabDuringDrag(tab);
+    }
+
+    #endregion
 
     private void Tab_MouseMove(object sender, MouseEventArgs e)
     {

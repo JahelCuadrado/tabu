@@ -151,6 +151,30 @@ public sealed class WindowSwitcher
         WindowsChanged?.Invoke();
     }
 
+    /// <summary>
+    /// Attempts to bring a window to the foreground using the forced path
+    /// (keybd_event hack) suitable for OLE drag-drop scenarios.
+    /// Only sets <c>IsActive</c> when the OS confirms the window is now
+    /// foreground — avoids the flickering that would occur if we marked
+    /// it optimistically and <c>SetForegroundWindow</c> had failed.
+    /// </summary>
+    public void ActivateWindowDuringDrag(TrackedWindow window)
+    {
+        bool activated = _detector.ForceBringToFront(window);
+        _flashingWindows.Remove(window.Handle);
+
+        if (activated)
+        {
+            foreach (var w in _windows)
+            {
+                w.IsActive = w.Handle == window.Handle;
+                if (w.IsActive) w.HasNotification = false;
+            }
+            _activeWindow = window;
+            WindowsChanged?.Invoke();
+        }
+    }
+
     public void SwitchToIndex(int index)
     {
         if (index >= 0 && index < _windows.Count)

@@ -77,6 +77,22 @@ internal static partial class NativeMethods
     [LibraryImport("user32.dll")]
     public static partial IntPtr SetFocus(IntPtr hWnd);
 
+    // Foreground-lock bypass helpers for drag-and-drop scenarios.
+    // keybd_event with VK=0 fires a harmless null keystroke that
+    // satisfies the "recent user input" condition Windows requires
+    // before granting SetForegroundWindow calls.
+    public const uint KEYEVENTF_EXTENDEDKEY = 0x0001;
+    public const uint KEYEVENTF_KEYUP = 0x0002;
+
+    [LibraryImport("user32.dll")]
+    public static partial void keybd_event(byte bVk, byte bScan, uint dwFlags, nuint dwExtraInfo);
+
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool AllowSetForegroundWindow(int dwProcessId);
+
+    public const int ASFW_ANY = -1;
+
     // Monitor enumeration
 
     [StructLayout(LayoutKind.Sequential)]

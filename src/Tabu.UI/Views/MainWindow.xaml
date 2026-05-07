@@ -93,7 +93,19 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type vm:TabViewModel}">
-                        <Border x:Name="TabBorder"
+                        <!-- Outer wrapper expands the drop hit-area to the full
+                             tab cell (incl. the vertical gap reserved by the
+                             inner TabBorder margin) so external drags catch
+                             the tab even when the cursor is near the bar's
+                             top/bottom edge. Inner Border keeps the visual
+                             chrome unchanged. -->
+                        <Border Background="Transparent"
+                                AllowDrop="True"
+                                DragEnter="Tab_DragEnter"
+                                DragOver="Tab_DragOver"
+                                DragLeave="Tab_DragLeave"
+                                Drop="Tab_Drop">
+                            <Border x:Name="TabBorder"
                                 Background="Transparent"
                                 CornerRadius="6"
                                 Padding="{Binding DataContext.TabPadding, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
@@ -160,6 +172,7 @@
                                         Margin="4,0,0,0"
                                         Visibility="Hidden" />
                             </Grid>
+                        </Border>
                         </Border>
                         <DataTemplate.Triggers>
                             <DataTrigger Binding="{Binding IsActive}" Value="True">

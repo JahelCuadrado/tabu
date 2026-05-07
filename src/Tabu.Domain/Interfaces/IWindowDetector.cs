@@ -7,6 +7,15 @@ public interface IWindowDetector
     List<TrackedWindow> GetVisibleWindows();
     TrackedWindow? GetForegroundWindow();
     void BringToFront(TrackedWindow window);
+
+    /// <summary>
+    /// Forces the window to the foreground even when the OS denies
+    /// <c>SetForegroundWindow</c> (e.g. during an active OLE drag-drop
+    /// session). Uses the <c>keybd_event</c> hack to break the
+    /// foreground lock. Returns <c>true</c> if the window is now the
+    /// foreground window after the attempt.
+    /// </summary>
+    bool ForceBringToFront(TrackedWindow window);
     void MinimizeWindow(TrackedWindow window);
     void CloseWindow(TrackedWindow window);
 
