@@ -165,6 +165,46 @@ public partial class MainWindow : Window
 
     private const int SM_CXSCREEN = 0;
 
+    // Per-monitor DPI (Win 8.1+). Required for correct WPF coordinate
+    // conversion on multi-monitor setups where displays have different
+    // scale factors (e.g. 100% external + 150% laptop panel). Relying on
+    // PresentationSource.FromVisual(this) returns the DPI of the monitor
+    // that currently *hosts* the HwndSource, which on a freshly-created
+    // secondary bar is still the primary monitor — yielding wrong
+    // Left/Top/Width values and an offset between the visible bar and
+    // the AppBar reservation.
+    private const int MDT_EFFECTIVE_DPI = 0;
+    private const double LogicalDpi = 96.0;
+
+    [LibraryImport("shcore.dll")]
+    private static partial int GetDpiForMonitor(IntPtr hmonitor, int dpiType, out uint dpiX, out uint dpiY);
+
+    /// <summary>
+    /// Resolves the effective DPI scale of the monitor that owns this bar.
+    /// Falls back to <see cref="MonitorFromWindow"/> when the
+    /// <see cref="TargetScreen"/> handle is not yet available, and to
+    /// <see cref="PresentationSource"/> as a last resort. Returns (1.0, 1.0)
+    /// only when every native call fails.
+    /// </summary>
+    private (double scaleX, double scaleY) GetMonitorScale()
+    {
+        IntPtr monitor = TargetScreen?.Handle ?? IntPtr.Zero;
+        if (monitor == IntPtr.Zero && _hwnd != IntPtr.Zero)
+        {
+            monitor = MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
+        }
+
+        if (monitor != IntPtr.Zero && GetDpiForMonitor(monitor, MDT_EFFECTIVE_DPI, out uint dpiX, out uint dpiY) == 0)
+        {
+            return (dpiX / LogicalDpi, dpiY / LogicalDpi);
+        }
+
+        var source = PresentationSource.FromVisual(this);
+        double scaleX = source?.CompositionTarget?.TransformToDevice.M11 ?? 1.0;
+        double scaleY = source?.CompositionTarget?.TransformToDevice.M22 ?? 1.0;
+        return (scaleX, scaleY);
+    }
+
     private void RegisterAppBar()
     {
         // Lazily allocate a per-process unique message id so the shell can
@@ -214,14 +254,15 @@ public partial class MainWindow : Window
         SHAppBarMessage(ABM_QUERYPOS, ref abd);
         SHAppBarMessage(ABM_SETPOS, ref abd);
 
-        // Position window to the reserved area
+        // Position window to the reserved area (physical pixels).
         MoveWindow(_hwnd, abd.rc.Left, abd.rc.Top,
             abd.rc.Right - abd.rc.Left, abd.rc.Bottom - abd.rc.Top, true);
 
-        // Update WPF layout to match pixel position
-        var source = PresentationSource.FromVisual(this);
-        double scaleX = source?.CompositionTarget?.TransformToDevice.M11 ?? 1.0;
-        double scaleY = source?.CompositionTarget?.TransformToDevice.M22 ?? 1.0;
+        // Update WPF layout to match pixel position using the DPI of the
+        // *target* monitor, not whichever monitor WPF currently thinks
+        // hosts this HwndSource. This is what fixes the offset/overlap
+        // observed when the laptop panel is used as a secondary display.
+        var (scaleX, scaleY) = GetMonitorScale();
         Left = abd.rc.Left / scaleX;
         Top = abd.rc.Top / scaleY;
         Width = (abd.rc.Right - abd.rc.Left) / scaleX;
@@ -288,9 +329,7 @@ public partial class MainWindow : Window
     {
         if (screen is not null)
         {
-            var source = PresentationSource.FromVisual(this);
-            double scaleX = source?.CompositionTarget?.TransformToDevice.M11 ?? 1.0;
-            double scaleY = source?.CompositionTarget?.TransformToDevice.M22 ?? 1.0;
+            var (scaleX, scaleY) = GetMonitorScale();
 
             Left = screen.WorkLeft / scaleX;
             Top = screen.WorkTop / scaleY;
