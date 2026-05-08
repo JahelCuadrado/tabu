@@ -23,11 +23,19 @@ public partial class MainWindow : Window
 
     /// <summary>
     /// Current bar height in raw pixels. Derived from <see cref="MainViewModel.BarHeight"/>
-    /// and used for AppBar reservation, autohide hot-zone math and
-    /// <see cref="MoveWindow"/> calls. The VM is the single source of
-    /// truth so changes propagate atomically to layout and window sizing.
+    /// (which is in DIPs / logical units) and scaled by the target monitor's
+    /// DPI so that the AppBar reservation and <see cref="MoveWindow"/> calls
+    /// use genuine physical pixels. On a 150 % display a 36-DIP bar becomes
+    /// 54 physical pixels, matching what WPF actually renders.
     /// </summary>
-    private int BarHeightPixels => (int)ViewModel.BarHeight;
+    private int BarHeightPixels
+    {
+        get
+        {
+            var (_, scaleY) = GetMonitorScale();
+            return (int)Math.Round(ViewModel.BarHeight * scaleY);
+        }
+    }
 
     private IntPtr _hwnd;
     private bool _appBarRegistered;
