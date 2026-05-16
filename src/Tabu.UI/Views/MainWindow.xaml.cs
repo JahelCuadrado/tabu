@@ -89,6 +89,8 @@ public partial class MainWindow : Window
         }
 
         ViewModel.SetOwnHandle(_hwnd);
+        ViewModel.MonitorHandleProvider = () =>
+            _hwnd != IntPtr.Zero ? MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST) : IntPtr.Zero;
 
         ViewModel.AutoHideChangeRequested += ApplyAutoHide;
         ViewModel.BarSizeChangeRequested += OnBarSizeChanged;
@@ -258,28 +260,73 @@ public partial class MainWindow : Window
         }
         else
         {
-            abd.rc.Left = 0;
-            abd.rc.Top = 0;
-            abd.rc.Right = GetSystemMetrics(SM_CXSCREEN);
-            abd.rc.Bottom = BarHeightPixels;
+            // Primary bar: query the current monitor dynamically so the
+            // reservation adapts after resolution / DPI changes without
+            // relying on the fixed SM_CXSCREEN metric.
+            var monRect = GetOwnMonitorBounds();
+            abd.rc.Left = monRect.Left;
+            abd.rc.Top = monRect.Top;
+            abd.rc.Right = monRect.Right;
+            abd.rc.Bottom = monRect.Top + BarHeightPixels;
         }
 
         SHAppBarMessage(ABM_QUERYPOS, ref abd);
         SHAppBarMessage(ABM_SETPOS, ref abd);
 
-        // Position window to the reserved area (physical pixels).
+        // MoveWindow first: moves the HWND to the target monitor, which
+        // triggers WM_DPICHANGED synchronously (via SendMessage) when the
+        // monitors have different DPI. WPF's default handler updates its
+        // internal DPI context during that dispatch, BEFORE we reach the
+        // property assignments below.
         MoveWindow(_hwnd, abd.rc.Left, abd.rc.Top,
             abd.rc.Right - abd.rc.Left, abd.rc.Bottom - abd.rc.Top, true);
 
         // Update WPF layout to match pixel position using the DPI of the
         // *target* monitor, not whichever monitor WPF currently thinks
-        // hosts this HwndSource. This is what fixes the offset/overlap
-        // observed when the laptop panel is used as a secondary display.
+        // hosts this HwndSource.
         var (scaleX, scaleY) = GetMonitorScale();
         Left = abd.rc.Left / scaleX;
         Top = abd.rc.Top / scaleY;
         Width = (abd.rc.Right - abd.rc.Left) / scaleX;
         Height = (abd.rc.Bottom - abd.rc.Top) / scaleY;
+
+        // Final MoveWindow guarantees pixel-perfect positioning even when
+        // WPF's DPI context does not perfectly match the target monitor's
+        // scale (e.g. during the first placement of a secondary bar or
+        // right after a display configuration change). The Win32 call is
+        // authoritative; any sub-pixel rounding WPF introduced above is
+        // overridden. The call is cheap when the position is already exact.
+        MoveWindow(_hwnd, abd.rc.Left, abd.rc.Top,
+            abd.rc.Right - abd.rc.Left, abd.rc.Bottom - abd.rc.Top, true);
+    }
+
+    /// <summary>
+    /// Returns the full monitor bounds (physical pixels) for the monitor
+    /// that currently hosts this bar's HWND. Falls back to the primary
+    /// screen metrics when the native calls fail.
+    /// </summary>
+    private RECTL GetOwnMonitorBounds()
+    {
+        if (_hwnd != IntPtr.Zero)
+        {
+            IntPtr monitor = MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
+            if (monitor != IntPtr.Zero)
+            {
+                var monInfo = new MONITORINFO { cbSize = System.Runtime.InteropServices.Marshal.SizeOf<MONITORINFO>() };
+                if (GetMonitorInfo(monitor, ref monInfo))
+                {
+                    return monInfo.rcMonitor;
+                }
+            }
+        }
+
+        return new RECTL
+        {
+            Left = 0,
+            Top = 0,
+            Right = GetSystemMetrics(SM_CXSCREEN),
+            Bottom = GetSystemMetrics(SM_CYSCREEN)
+        };
     }
 
     private APPBARDATA NewAppBarData()
@@ -326,14 +373,75 @@ public partial class MainWindow : Window
 
         switch (msg)
         {
-            case WM_DPICHANGED:
             case WM_DISPLAYCHANGE:
+                // Monitor topology changed (lid close/open, dock/undock,
+                // resolution change). Refresh the stored HMONITOR handle
+                // and monitor geometry BEFORE re-issuing the AppBar
+                // reservation so both TargetScreen and MonitorFilter use
+                // current values. Without this, stale handles cause
+                // tabs to be dropped on the next SyncTabs cycle and the
+                // AppBar rect to reference defunct coordinates.
+                RefreshTargetScreen();
+                Dispatcher.BeginInvoke(new Action(SetAppBarPosition), DispatcherPriority.Background);
+                break;
+            case WM_DPICHANGED:
             case WM_SETTINGCHANGE:
                 Dispatcher.BeginInvoke(new Action(SetAppBarPosition), DispatcherPriority.Background);
                 break;
         }
 
         return IntPtr.Zero;
+    }
+
+    /// <summary>
+    /// Re-queries the HMONITOR handle and geometry for the monitor that
+    /// currently hosts this bar's HWND. Called from
+    /// <see cref="WndProc"/> when <c>WM_DISPLAYCHANGE</c> signals that
+    /// the display topology has changed (monitor hot-plug, lid close/open,
+    /// resolution or DPI change). Updates both <see cref="TargetScreen"/>
+    /// (used by <see cref="SetAppBarPosition"/> and
+    /// <see cref="GetMonitorScale"/>) and the view-model's
+    /// <see cref="MainViewModel.MonitorFilter"/> (used by
+    /// <see cref="MainViewModel"/> to partition tabs per monitor).
+    /// </summary>
+    private void RefreshTargetScreen()
+    {
+        if (_hwnd == IntPtr.Zero) return;
+
+        IntPtr currentMonitor = MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
+        if (currentMonitor == IntPtr.Zero) return;
+
+        // Refresh the ViewModel's monitor filter so tab filtering uses
+        // the new HMONITOR handle. Without this, tabs disappear after
+        // sleep/wake or dock/undock because every window now reports a
+        // different HMONITOR than the one stored in MonitorFilter.
+        if (ViewModel.MonitorFilter is not null)
+        {
+            ViewModel.MonitorFilter = currentMonitor;
+        }
+
+        // Secondary bars: refresh the target screen geometry so the
+        // AppBar registration and DPI queries use current bounds.
+        if (TargetScreen is not null)
+        {
+            var monInfo = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
+            if (GetMonitorInfo(currentMonitor, ref monInfo))
+            {
+                TargetScreen = new ScreenInfo
+                {
+                    Handle = currentMonitor,
+                    Left = monInfo.rcMonitor.Left,
+                    Top = monInfo.rcMonitor.Top,
+                    Width = monInfo.rcMonitor.Right - monInfo.rcMonitor.Left,
+                    Height = monInfo.rcMonitor.Bottom - monInfo.rcMonitor.Top,
+                    WorkLeft = monInfo.rcWork.Left,
+                    WorkTop = monInfo.rcWork.Top,
+                    WorkWidth = monInfo.rcWork.Right - monInfo.rcWork.Left,
+                    WorkHeight = monInfo.rcWork.Bottom - monInfo.rcWork.Top,
+                    IsPrimary = (monInfo.dwFlags & 1) != 0
+                };
+            }
+        }
     }
 
     #endregion

@@ -43,6 +43,16 @@ public sealed class MainViewModel : ObservableObject
 
     public bool HasTabs => Tabs.Count > 0;
 
+    /// <summary>
+    /// Callback provided by the view to resolve the HMONITOR handle for
+    /// the bar's own HWND. Used as a safety net inside
+    /// <see cref="SyncTabs"/> to refresh <see cref="MonitorFilter"/>
+    /// when display configuration changes invalidate stored handles
+    /// (e.g. WM_DISPLAYCHANGE was not received or arrived after a
+    /// poll tick).
+    /// </summary>
+    public Func<IntPtr>? MonitorHandleProvider { get; set; }
+
     public bool IsBarOnAllMonitors
     {
         get => _isBarOnAllMonitors;
@@ -565,6 +575,22 @@ public sealed class MainViewModel : ObservableObject
     private void SyncTabs()
     {
         var all = _switcher.Windows;
+
+        // Refresh the monitor filter from the bar's current HMONITOR so
+        // that stale handles left over from display configuration changes
+        // (lid close/open, dock/undock, hibernate) don't cause every tab
+        // to be dropped. WM_DISPLAYCHANGE normally refreshes the filter
+        // through RefreshTargetScreen, but the poll timer can fire before
+        // the message is dispatched; this acts as a belt-and-suspenders
+        // safety net.
+        if (_monitorFilter is not null && MonitorHandleProvider is not null)
+        {
+            var currentMonitor = MonitorHandleProvider();
+            if (currentMonitor != IntPtr.Zero && currentMonitor != _monitorFilter.Value)
+            {
+                _monitorFilter = currentMonitor;
+            }
+        }
 
         IReadOnlyList<TrackedWindow> current = _monitorFilter is not null
             ? all.Where(w => w.MonitorHandle == _monitorFilter.Value).ToList()
